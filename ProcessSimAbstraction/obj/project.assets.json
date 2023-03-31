@@ -1,0 +1,114 @@
+{
+  "version": 3,
+  "targets": {
+    "net6.0": {
+      "SimSharp/3.4.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/SimSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/SimSharp.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SimSharp/3.4.1": {
+      "sha512": "xojHPnfrtHEu+a/ILZrmwRBSc/1/28xo1uAnGyA0DL4qcpNmpEXMFFncuo0A5/6ayf1YC7g6wSKdS1DlRpBzUw==",
+      "type": "package",
+      "path": "simsharp/3.4.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.txt",
+        "lib/net45/SimSharp.dll",
+        "lib/net45/SimSharp.xml",
+        "lib/netstandard2.0/SimSharp.dll",
+        "lib/netstandard2.0/SimSharp.xml",
+        "simsharp.3.4.1.nupkg.sha512",
+        "simsharp.nuspec"
+      ]
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net6.0": [
+      "SimSharp >= 3.4.1"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\Martin\\.nuget\\packages\\": {},
+    "C:\\SharedResources\\Microsoft\\VisualStudio\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\Martin\\source\\repos\\SimpleProcessSim\\ProcessSimAbstraction\\ProcessSim.Abstraction.csproj",
+      "projectName": "ProcessSim.Abstraction",
+      "projectPath": "C:\\Users\\Martin\\source\\repos\\SimpleProcessSim\\ProcessSimAbstraction\\ProcessSim.Abstraction.csproj",
+      "packagesPath": "C:\\Users\\Martin\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Martin\\source\\repos\\SimpleProcessSim\\ProcessSimAbstraction\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\SharedResources\\Microsoft\\VisualStudio\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\Martin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net6.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
+        "C:\\Users\\Martin\\source\\repos\\StructureDependency\\StructureDependency\\StructureDependency.Package\\bin\\Release\\out": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "projectReferences": {}
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      }
+    },
+    "frameworks": {
+      "net6.0": {
+        "targetAlias": "net6.0",
+        "dependencies": {
+          "SimSharp": {
+            "target": "Package",
+            "version": "[3.4.1, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
