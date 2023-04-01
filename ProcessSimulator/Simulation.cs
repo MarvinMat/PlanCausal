@@ -2,10 +2,11 @@
 using ProcessSim.Implementation.Core.SimulationModels;
 using ProcessSim.Implementation.Services;
 using ProcessSimImplementation.Domain;
+using SimSharp;
 
 var start = DateTime.Now;
 
-var simulation = new SimulatorBuilder(start).Build();
+var simulation = new Simulation(start);
 
 var workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
 var workPlanVOs = workPlanProvider.Load();
