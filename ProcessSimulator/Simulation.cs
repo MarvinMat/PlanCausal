@@ -1,22 +1,59 @@
 ﻿using ProcessSim.Implementation.Core;
 using ProcessSim.Implementation.Core.SimulationModels;
 using ProcessSim.Implementation.Services;
-
-using SimSharp;
+using ProcessSimImplementation.Domain;
 
 var start = DateTime.Now;
 
-var simulation = new SimulatorBuilder().Build();
+var simulation = new SimulatorBuilder(start).Build();
 
-//var machine1 = new MachineModel(simulation, "Maschine 1", "Testbeschreibung");
+var workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
+var workPlanVOs = workPlanProvider.Load();
 
-var machines = new ResourcePool(simulation, );
-var machine2 = new PreemptiveResource(simulation, 1);
-var machine3 = new Resource(simulation, 2);
+var machinesById = new Dictionary<int, MachineModel>();
+var workPlans = new List<WorkPlan>();
+workPlanVOs.ForEach(plan =>
+{
+    var operations = new List<WorkOperation>();
+    plan.ForEach(operation =>
+    {
+        if (!machinesById.TryGetValue(operation.MachineId, out var machineModel))
+        {
+            var machine = new Machine() { Name = $"Maschine {operation.MachineId}" };
+            machineModel = new MachineModel(simulation, machine);
+            machinesById.TryAdd(operation.MachineId, machineModel);
+            SimWorkShop.Instance.Resources.TryAdd(machineModel.Id, machineModel.simMachine);
+        }
 
+        operations.Add(new WorkOperation()
+        {
+            Name = operation.Name,
+            Duration = TimeSpan.FromMinutes(operation.Duration),
+            Resources = new List<Guid> { machineModel.Id }
+        });
+    });
 
-var gen = new OrderGenerator(simulation);
+    workPlans.Add(new WorkPlan()
+    {
+        Name = $"Produkt {workPlans.Count + 1}",
+        WorkOperations = operations
+    });
+});
 
-simulation.Run(TimeSpan.FromHours(9));
+var gen = new OrderGenerator(simulation) 
+{
+    WorkPlans = workPlans
+};
 
-simulation.Log($"{machine1.Name} made {machine1.PartsMade} parts.");
+simulation.Run(TimeSpan.FromHours(24));
+
+machinesById.ToList().ForEach(machine =>
+{
+    machine.Value.Monitors.ForEach(monitor => { 
+        //simulation.Log(monitor.Summarize());
+
+        File.AppendAllText("../../../../MachineOutput.log",monitor.Summarize());
+
+    });
+
+});

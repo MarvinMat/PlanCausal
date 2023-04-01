@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <Compile Remove="Domain\Models\WorkPlanVO.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Domain\Models\NewFile1.txt" />
   </ItemGroup>
 
   <ItemGroup>

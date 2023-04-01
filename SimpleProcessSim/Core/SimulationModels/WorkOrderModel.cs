@@ -19,10 +19,10 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             foreach (var operation in WorkPlan.WorkOperations) 
             {
                 var store = new Store(Environment, 1);
-                new WorkOperationModel(Environment, store) { Operation = operation };
+                new WorkOperationModel(Environment, store, operation);
                 yield return store.WhenFull();
             }
-            Store.Put(new object());
+            _store.Put(new object());
         }
       
     }

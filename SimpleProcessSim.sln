@@ -3,15 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessSim.Implementation", "SimpleProcessSim\ProcessSim.Implementation.csproj", "{FD313B05-3000-41CD-94C9-E4394D50B5F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessSim.Implementation", "SimpleProcessSim\ProcessSim.Implementation.csproj", "{FD313B05-3000-41CD-94C9-E4394D50B5F2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{122A80E2-8AFB-4659-9F37-CBBB3CAA4FBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessSim.Abstraction", "ProcessSimAbstraction\ProcessSim.Abstraction.csproj", "{DC93669A-87F2-4DEA-95C9-4C9A4537F6D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessSim.Abstraction", "ProcessSimAbstraction\ProcessSim.Abstraction.csproj", "{DC93669A-87F2-4DEA-95C9-4C9A4537F6D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simulator", "Simulator", "{EB3830E3-F30F-44BC-9AEC-5EBC8110E486}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessSimulator", "ProcessSimulator\ProcessSimulator.csproj", "{B4CEB68C-93BF-4635-AE2C-2EA82A4AF311}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessSimulator", "ProcessSimulator\ProcessSimulator.csproj", "{B4CEB68C-93BF-4635-AE2C-2EA82A4AF311}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WorkPlans", "WorkPlans", "{A79B1302-D42C-4836-AA1C-05D45CDE6318}"
+	ProjectSection(SolutionItems) = preProject
+		WorkPlans.json = WorkPlans.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -40,6 +45,7 @@ Global
 		{DC93669A-87F2-4DEA-95C9-4C9A4537F6D2} = {EB3830E3-F30F-44BC-9AEC-5EBC8110E486}
 		{EB3830E3-F30F-44BC-9AEC-5EBC8110E486} = {122A80E2-8AFB-4659-9F37-CBBB3CAA4FBD}
 		{B4CEB68C-93BF-4635-AE2C-2EA82A4AF311} = {EB3830E3-F30F-44BC-9AEC-5EBC8110E486}
+		{A79B1302-D42C-4836-AA1C-05D45CDE6318} = {122A80E2-8AFB-4659-9F37-CBBB3CAA4FBD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC055ABA-6F11-41FF-984E-9076C26DA000}

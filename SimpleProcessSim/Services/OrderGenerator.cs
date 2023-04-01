@@ -17,15 +17,15 @@ namespace ProcessSim.Implementation.Services
         public OrderGenerator(Simulation environment) : base(environment)
         {
             WorkPlans = new List<WorkPlan>();
-            environment.Process(GenerateWorkOperations());
+            environment.Process(GenerateProductionOrders());
         }
 
-        private IEnumerable<Event> GenerateWorkOperations ()
+        private IEnumerable<Event> GenerateProductionOrders ()
         {
             var productionOrders = new List<ProductionOrderModel>();
             while (true) 
             {
-                var wait = Environment.Rand(EXP(TimeSpan.FromMinutes(10)));
+                var wait = Environment.Rand(EXP(TimeSpan.FromMinutes(60)));
                 yield return Environment.Timeout(wait);
 
                 if (!WorkPlans.Any()) continue;
@@ -33,17 +33,13 @@ namespace ProcessSim.Implementation.Services
                 var rand = new Random();
                 var idx = rand.Next(0, WorkPlans.Count);
                 var plan = WorkPlans.ElementAt(idx);
-                var quantity = (int)Environment.Rand(EXP(5));
+                var quantity = (int)Math.Ceiling(Environment.Rand(EXP(3)));
 
-                productionOrders.Add(new ProductionOrderModel(Environment, new ProductionOrder() { WorkPlan = plan, Quantity = quantity }));
-                
+                var order = new ProductionOrder() { WorkPlan = plan, Quantity = quantity };
+                Environment.Log($"Received an order with id {order.Id} for product {plan.Name} with quantity {quantity} at {Environment.Now}.");
+
+                productionOrders.Add(new ProductionOrderModel(Environment, order));
             }
         }
-
-        public IEnumerable<Event> GenerateWorkPlans()
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

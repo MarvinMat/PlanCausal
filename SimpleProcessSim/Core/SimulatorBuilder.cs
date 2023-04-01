@@ -12,9 +12,11 @@ namespace ProcessSim.Implementation.Core
     {
         private Simulation simulation;
         private List<IResource> resources;
+        public DateTime StartTime { get; set; }
 
-        public SimulatorBuilder() {
-            simulation = new Simulation();
+        public SimulatorBuilder(DateTime startTime) {
+            StartTime = startTime;
+            simulation = new Simulation(startTime);
             resources = new List<IResource>();
         }
 

@@ -12,15 +12,28 @@ namespace ProcessSim.Implementation.Core.SimulationModels
     public class MachineModel : ActiveObject<Simulation>
     {
         private readonly Machine _machine;
-        private PreemptiveResource simMachine;
+        public PreemptiveResource simMachine;
+        public Guid Id => _machine.Id;
         public string Name => _machine.Name;
         public int PartsMade => _machine.PartsMade;
         public int Capacity { get; set; } = 1;
+        public List<IMonitor> Monitors { get; set; }
 
         public MachineModel(Simulation environment, Machine machine) : base(environment)
         {
             _machine = machine;
-            simMachine = new PreemptiveResource(environment, Capacity);
+            Monitors = new List<IMonitor>();
+            var utilization = new TimeSeriesMonitor(environment, name: "Utilization", collect: true);
+            var queueLength = new TimeSeriesMonitor(environment, name: "Queue Length", collect: true);
+            Monitors.Add(utilization);
+            Monitors.Add(queueLength);
+
+            simMachine = new PreemptiveResource(environment, Capacity) 
+            {
+                Utilization = utilization,
+                QueueLength = queueLength
+                
+            };
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProcessSimImplementation.Domain
 {
-    public class WorkPlan 
+    public class WorkPlan : IWorkPlan
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
