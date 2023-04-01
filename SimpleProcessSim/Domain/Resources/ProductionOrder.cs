@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ProcessSimImplementation.Domain
 {
-    public class ProductionOrder : IResource
+    public class ProductionOrder 
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
@@ -18,15 +18,15 @@ namespace ProcessSimImplementation.Domain
 
         public OrderState State { get; set; }
 
-        public List<WorkOrder> WorkOrders { get; set; }
+        public WorkPlan WorkPlan { get; init; }
 
-        ProductionOrder()
+        public ProductionOrder()
         {
             Id = Guid.NewGuid();
             Name = "Unnamed Product";
             Quantity = 0;
             State = OrderState.Created;
-            WorkOrders = new List<WorkOrder>();
+            WorkPlan = new WorkPlan();
         }
     }
 }

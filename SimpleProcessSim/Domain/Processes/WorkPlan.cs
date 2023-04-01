@@ -11,13 +11,13 @@ namespace ProcessSimImplementation.Domain
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
-        public List<WorkOrder> WorkOrders { get; set; }
+        public List<WorkOperation> WorkOperations { get; set; }
 
-        WorkPlan() 
+        public WorkPlan() 
         {
             Id = Guid.NewGuid();
             Name = "Unnamed work plan";
-            WorkOrders = new List<WorkOrder>();
+            WorkOperations = new List<WorkOperation>();
         }
     }
 }

@@ -31,6 +31,12 @@ namespace ProcessSim.Implementation.Core
             return this;
         }
 
+        public SimulatorBuilder AddPreemptiveResource(int capacity)
+        {
+            var resource = new PreemptiveResource(simulation, capacity);
+            return this;
+        }
+
         public Simulation Build()
         {
             return simulation;

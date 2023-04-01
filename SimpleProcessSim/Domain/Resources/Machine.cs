@@ -1,15 +1,7 @@
-﻿using ProcessSim.Abstraction.Domain.Interfaces;
-using SimSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
+﻿
 namespace ProcessSimImplementation.Domain
 {
-    internal class Machine : IResource
+    public class Machine
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
@@ -22,6 +14,8 @@ namespace ProcessSimImplementation.Domain
             Name = "Unnamed Machine";
             Description = "No Description";
             PartsMade = 0;
+
         }
+
     }
 }

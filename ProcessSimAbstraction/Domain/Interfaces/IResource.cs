@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimSharp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,6 @@ namespace ProcessSim.Abstraction.Domain.Interfaces
 {
     public interface IResource
     {
+        public Event Request();
     }
 }
