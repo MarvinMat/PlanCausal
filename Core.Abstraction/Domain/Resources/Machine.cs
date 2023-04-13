@@ -1,5 +1,4 @@
-﻿
-namespace ProcessSimImplementation.Domain
+﻿namespace Core.Abstraction.Domain.Resources
 {
     public class Machine
     {

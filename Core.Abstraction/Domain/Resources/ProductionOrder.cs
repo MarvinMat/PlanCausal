@@ -1,14 +1,14 @@
-﻿using ProcessSim.Abstraction.Domain.Enums;
-using ProcessSim.Abstraction.Domain.Interfaces;
+﻿using Core.Abstraction.Domain.Enums;
+using Core.Abstraction.Domain.Processes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProcessSimImplementation.Domain
+namespace Core.Abstraction.Domain.Resources
 {
-    public class ProductionOrder 
+    public class ProductionOrder
     {
         public Guid Id { get; init; }
         public string Name { get; set; }

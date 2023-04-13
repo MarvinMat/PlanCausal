@@ -7,18 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Domain\Resources\Maschines.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="Domain\Processes\NewFile1.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="SimSharp" Version="3.4.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
     <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 

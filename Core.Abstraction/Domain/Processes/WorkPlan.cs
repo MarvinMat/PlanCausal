@@ -1,19 +1,18 @@
-﻿using ProcessSim.Abstraction.Domain.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProcessSimImplementation.Domain
+namespace Core.Abstraction.Domain.Processes
 {
-    public class WorkPlan : IWorkPlan
+    public class WorkPlan
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
         public List<WorkOperation> WorkOperations { get; set; }
 
-        public WorkPlan() 
+        public WorkPlan()
         {
             Id = Guid.NewGuid();
             Name = "Unnamed work plan";

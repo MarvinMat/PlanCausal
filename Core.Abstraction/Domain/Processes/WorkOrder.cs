@@ -1,14 +1,8 @@
-﻿using ProcessSim.Abstraction.Domain.Enums;
-using ProcessSim.Abstraction.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Abstraction.Domain.Enums;
 
-namespace ProcessSimImplementation.Domain
+namespace Core.Abstraction.Domain.Processes
 {
-    public class WorkOrder 
+    public class WorkOrder
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
@@ -18,7 +12,7 @@ namespace ProcessSimImplementation.Domain
         public OrderState State { get; set; }
         public List<WorkOperation> WorkOperations { get; set; }
 
-        WorkOrder() 
+        WorkOrder()
         {
             Id = Guid.NewGuid();
             Name = "Unnamed work order";

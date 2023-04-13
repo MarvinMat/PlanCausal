@@ -3,12 +3,12 @@
     {
       "machineId": 1,
       "duration": 15,
-      "name": "Tischbein sägen"
+      "name": "Tischbein sï¿½gen"
     },
     {
       "machineId": 2,
       "duration": 10,
-      "name": "Tischplatte sägen"
+      "name": "Tischplatte sï¿½gen"
     },
     {
       "machineId": 3,
@@ -30,12 +30,12 @@
     {
       "machineId": 5,
       "duration": 2,
-      "name": "Auf den Pfeil drücken"
+      "name": "Auf den Pfeil drï¿½cken"
     },
     {
       "machineId": 1,
       "duration": 18,
-      "name": "Tube öffnen"
+      "name": "Tube ï¿½ffnen"
     }
   ]
 ]

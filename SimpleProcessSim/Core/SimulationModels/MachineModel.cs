@@ -1,11 +1,5 @@
-﻿using ProcessSim.Abstraction.Domain.Interfaces;
-using ProcessSimImplementation.Domain;
+﻿using Core.Abstraction.Domain.Resources;
 using SimSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
@@ -28,11 +22,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             Monitors.Add(utilization);
             Monitors.Add(queueLength);
 
-            simMachine = new PreemptiveResource(environment, Capacity) 
+            simMachine = new PreemptiveResource(environment, Capacity)
             {
                 Utilization = utilization,
                 QueueLength = queueLength
-                
+
             };
         }
     }

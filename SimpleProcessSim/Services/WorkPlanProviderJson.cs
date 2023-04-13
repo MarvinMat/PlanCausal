@@ -1,38 +1,56 @@
-﻿using ProcessSim.Abstraction.Domain.Interfaces;
+﻿using Core.Abstraction.Domain.Models;
+using Core.Abstraction.Domain.Processes;
 using ProcessSim.Abstraction.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json;
-using ProcessSimImplementation.Domain;
 using System.Diagnostics;
-using ProcessSim.Abstraction.Domain.Models;
-using System.IO;
+using System.Text.Json;
+
 
 namespace ProcessSim.Implementation.Services
 {
     public class WorkPlanProviderJson : IWorkPlanProvider
     {
         private readonly string _path;
-        public WorkPlanProviderJson(string path) {
+        public WorkPlanProviderJson(string path)
+        {
             _path = path;
         }
 
 
-        public List<List<WorkOperationVO>> Load()
+        public List<WorkPlan> Load()
         {
             try
             {
                 string json = File.ReadAllText(_path);
 
-                var workPlans = JsonSerializer.Deserialize<List<List<WorkOperationVO>>>(json);
-                if (workPlans == null)
+                var workPlanVOs = JsonSerializer.Deserialize<List<List<WorkOperationVO>>>(json);
+
+                if (workPlanVOs == null)
                 {
                     Debug.WriteLine("Empty Workplan list");
-                    return new List<List<WorkOperationVO>>();
+                    return new List<WorkPlan>();
                 }
+
+                var workPlans = new List<WorkPlan>();
+                workPlanVOs.ForEach(plan =>
+                {
+                    var operations = new List<WorkOperation>();
+                    plan.ForEach(operation =>
+                    {
+                        operations.Add(new WorkOperation()
+                        {
+                            Name = operation.Name,
+                            Duration = TimeSpan.FromMinutes(operation.Duration),
+                        });
+                    });
+
+                    workPlans.Add(new WorkPlan()
+                    {
+                        Name = $"Produkt {workPlanVOs.Count + 1}",
+                        WorkOperations = operations
+                    });
+                });
+
+
                 return workPlans;
             }
             catch (Exception ex)
@@ -41,4 +59,5 @@ namespace ProcessSim.Implementation.Services
             }
         }
     }
+
 }

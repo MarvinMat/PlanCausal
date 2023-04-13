@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProcessSim.Abstraction.Domain.Interfaces;
+﻿using Core.Abstraction.Domain.Processes;
+using Core.Abstraction.Domain.Resources;
 using ProcessSim.Implementation.Core.SimulationModels;
-using ProcessSimImplementation.Domain;
 using SimSharp;
 using static SimSharp.Distributions;
 
@@ -20,10 +15,10 @@ namespace ProcessSim.Implementation.Services
             environment.Process(GenerateProductionOrders());
         }
 
-        private IEnumerable<Event> GenerateProductionOrders ()
+        private IEnumerable<Event> GenerateProductionOrders()
         {
             var productionOrders = new List<ProductionOrderModel>();
-            while (true) 
+            while (true)
             {
                 var wait = Environment.Rand(EXP(TimeSpan.FromMinutes(60)));
                 yield return Environment.Timeout(wait);

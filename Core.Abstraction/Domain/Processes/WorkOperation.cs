@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProcessSim.Abstraction.Domain.Interfaces;
-using SimSharp;
-
-namespace ProcessSimImplementation.Domain
+﻿namespace Core.Abstraction.Domain.Processes
 {
-    public class WorkOperation 
+    public class WorkOperation
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
@@ -16,7 +8,7 @@ namespace ProcessSimImplementation.Domain
         public TimeSpan Duration { get; set; }
 
         public List<Guid> Resources { get; set; }
-
+        //TODO: Add type of machines
         public WorkOperation()
         {
             Id = Guid.NewGuid();

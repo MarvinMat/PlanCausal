@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProcessSim.Abstraction.Domain.Enums
+namespace Core.Abstraction.Domain.Enums
 {
 
     public enum OrderState
@@ -14,6 +14,6 @@ namespace ProcessSim.Abstraction.Domain.Enums
         InProgress,
         Completed,
         Cancelled
-    
-}
+
+    }
 }
