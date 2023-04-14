@@ -10,7 +10,7 @@ namespace Core.Abstraction.Domain.Processes
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public OrderState State { get; set; }
-        public List<WorkOperation> WorkOperations { get; set; }
+        public List<WorkPlanPosition> WorkOperations { get; set; }
 
         WorkOrder()
         {
@@ -18,7 +18,7 @@ namespace Core.Abstraction.Domain.Processes
             Name = "Unnamed work order";
             Description = "No description";
             State = OrderState.Created;
-            WorkOperations = new List<WorkOperation>();
+            WorkOperations = new List<WorkPlanPosition>();
         }
     }
 }

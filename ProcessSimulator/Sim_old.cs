@@ -14,7 +14,7 @@ var machinesById = new Dictionary<int, MachineModel>();
 var workPlans = new List<WorkPlan>();
 //workPlanVOs.ForEach(plan =>
 //{
-//    var operations = new List<WorkOperation>();
+//    var operations = new List<WorkPlanPosition>();
 //    plan.ForEach(operation =>
 //    {
 //        if (!machinesById.TryGetValue(operation.MachineId, out var machineModel))
@@ -25,7 +25,7 @@ var workPlans = new List<WorkPlan>();
 //            SimWorkShop.Instance.Resources.TryAdd(machineModel.Id, machineModel.simMachine);
 //        }
 
-//        operations.Add(new WorkOperation()
+//        operations.Add(new WorkPlanPosition()
 //        {
 //            Name = operation.Name,
 //            Duration = TimeSpan.FromMinutes(operation.Duration),

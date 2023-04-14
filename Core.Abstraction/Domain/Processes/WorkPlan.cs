@@ -10,13 +10,13 @@ namespace Core.Abstraction.Domain.Processes
     {
         public Guid Id { get; init; }
         public string Name { get; set; }
-        public List<WorkOperation> WorkOperations { get; set; }
+        public List<WorkPlanPosition> WorkPlanPositions { get; set; }
 
         public WorkPlan()
         {
             Id = Guid.NewGuid();
             Name = "Unnamed work plan";
-            WorkOperations = new List<WorkOperation>();
+            WorkPlanPositions = new List<WorkPlanPosition>();
         }
     }
 }

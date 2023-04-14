@@ -1,6 +1,6 @@
 ﻿using Core.Abstraction.Domain.Processes;
 
-namespace ProcessSim.Abstraction.Services
+namespace Core.Abstraction.Services
 {
     public interface IWorkPlanProvider
     {

@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Domain\Models\MachineVO.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Domain\Models\NewFile1.txt" />
+    <None Remove="Services\NewFile1.txt" />
+  </ItemGroup>
+
 </Project>

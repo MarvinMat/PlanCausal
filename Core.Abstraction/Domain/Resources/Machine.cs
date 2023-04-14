@@ -7,6 +7,8 @@
         public string Description { get; set; }
         public int PartsMade { get; set; }
 
+        public int MachineType { get; set; }
+
         public Machine()
         {
             Id = Guid.NewGuid();

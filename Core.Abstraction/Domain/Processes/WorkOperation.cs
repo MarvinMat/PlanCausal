@@ -1,20 +1,22 @@
-﻿namespace Core.Abstraction.Domain.Processes
+﻿using Core.Abstraction.Domain.Resources;
+
+namespace Core.Abstraction.Domain.Processes
 {
     public class WorkOperation
     {
-        public Guid Id { get; init; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public TimeSpan Duration { get; set; }
+        private readonly WorkPlanPosition _workPlanPosition;
 
-        public List<Guid> Resources { get; set; }
-        //TODO: Add type of machines
-        public WorkOperation()
+        public Machine? Machine { get; set; }
+        public DateTime EarliestStart { get; set; }
+        public DateTime EarliestFinish { get; set; }
+        public DateTime LatestStart { get; set; }
+        public DateTime LatestFinish { get; set; }
+
+        public TimeSpan Duration => _workPlanPosition.Duration;
+
+        public WorkOperation(WorkPlanPosition workPlanPosition)
         {
-            Id = Guid.NewGuid();
-            Name = "Unnamed Operation";
-            Description = "No description";
-            Resources = new List<Guid>();
+            _workPlanPosition = workPlanPosition;
         }
     }
 }

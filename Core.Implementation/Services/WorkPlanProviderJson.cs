@@ -1,6 +1,7 @@
-﻿using Core.Abstraction.Domain.Models;
+﻿
+using Core.Abstraction.Domain.Models;
 using Core.Abstraction.Domain.Processes;
-using ProcessSim.Abstraction.Services;
+using Core.Abstraction.Services;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -33,10 +34,10 @@ namespace ProcessSim.Implementation.Services
                 var workPlans = new List<WorkPlan>();
                 workPlanVOs.ForEach(plan =>
                 {
-                    var operations = new List<WorkOperation>();
+                    var operations = new List<WorkPlanPosition>();
                     plan.ForEach(operation =>
                     {
-                        operations.Add(new WorkOperation()
+                        operations.Add(new WorkPlanPosition()
                         {
                             Name = operation.Name,
                             Duration = TimeSpan.FromMinutes(operation.Duration),
@@ -46,7 +47,7 @@ namespace ProcessSim.Implementation.Services
                     workPlans.Add(new WorkPlan()
                     {
                         Name = $"Produkt {workPlanVOs.Count + 1}",
-                        WorkOperations = operations
+                        WorkPlanPositions = operations
                     });
                 });
 

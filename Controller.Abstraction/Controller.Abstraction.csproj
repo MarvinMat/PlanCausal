@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Services\NewFile1.txt" />
+    <Folder Include="Rules\" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
+    <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>

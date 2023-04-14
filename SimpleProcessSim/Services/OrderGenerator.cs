@@ -1,10 +1,9 @@
-﻿using Core.Abstraction.Domain.Processes;
-using Core.Abstraction.Domain.Resources;
+﻿using Core.Abstraction.Domain.Resources;
 using ProcessSim.Implementation.Core.SimulationModels;
 using SimSharp;
 using static SimSharp.Distributions;
 
-namespace ProcessSim.Implementation.Services
+namespace Core.Abstraction.Domain.Processes.Services
 {
     public class OrderGenerator : ActiveObject<Simulation>
     {

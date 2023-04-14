@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ProcessSim.Abstraction.Domain.Interfaces
+﻿namespace ProcessSim.Abstraction.Domain.Interfaces
 {
     public interface ISimulation
     {
-        public void Start();
+        public void Start(TimeSpan duration);
     }
 }

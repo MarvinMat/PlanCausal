@@ -1,14 +1,20 @@
-﻿using Core.Abstraction.Domain.Resources;
-using ProcessSim.Abstraction.Services;
+﻿using Controller.Abstraction;
+using Core.Abstraction.Domain.Resources;
+using Core.Abstraction.Services;
+using Planner.Abstraction;
 
 namespace Planner.Implementation
 {
-    public abstract class PlannerBase
+    public abstract class PlannerBase : IPlanner
     {
 
         protected Queue<ProductionOrder> _productionOrders;
+        protected IEnumerable<Machine> _machines;
+        protected IController? _controller;
+        private IWorkPlanProvider workPlanProvider;
 
-        public PlannerBase(IWorkPlanProvider workPlanProvider)
+
+        protected PlannerBase(IWorkPlanProvider workPlanProvider, IMachineProvider machineProvider)
         {
             //TODO: Clean up 
             var rnd = new Random();
@@ -33,8 +39,10 @@ namespace Planner.Implementation
                 },
             };
             _productionOrders = new Queue<ProductionOrder>(productionOrders);
-        }
 
+            _machines = machineProvider.Load();
+
+        }
         public abstract void Plan();
     }
 }
