@@ -3,7 +3,7 @@
 **/obj/
 
 # Ignore Rider and Visual Studio directories
-*.idea/
+.idea/
 .vs/
 
 # Ignore user-specific files

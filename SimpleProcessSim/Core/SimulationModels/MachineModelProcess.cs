@@ -1,12 +1,7 @@
-﻿using ProcessSim.Abstraction.Domain.Interfaces;
-using ProcessSimImplementation.Domain;
+﻿using Core.Abstraction.Domain.Processes;
+using Core.Abstraction.Domain.Resources;
 using SimSharp;
 using static SimSharp.Distributions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
@@ -24,7 +19,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
         private Process Process;
         private Queue<WorkOperation> operationQueue;
-        
+
         public MachineModelProcess(Simulation environment, string name, string description) : base(environment)
         {
             Machine = new Machine()
@@ -41,7 +36,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         public void QueueOperation(WorkOperation op)
         {
             operationQueue.Enqueue(op);
-            if(!IsWorking)
+            if (!IsWorking)
                 Process.Interrupt();
         }
 
@@ -49,7 +44,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         {
             while (true)
             {
-                
+
                 yield return Environment.Timeout(TimeSpan.FromDays(1000));
                 if (Environment.ActiveProcess.HandleFault())
                 {

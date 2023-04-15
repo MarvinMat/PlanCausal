@@ -15,10 +15,21 @@
           }
         }
       },
+      "Core.Abstraction/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "compile": {
+          "bin/placeholder/Core.Abstraction.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Core.Abstraction.dll": {}
+        }
+      },
       "ProcessSim.Abstraction/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
+          "Core.Abstraction": "1.0.0",
           "SimSharp": "3.4.1"
         },
         "compile": {
@@ -32,6 +43,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
+          "Core.Abstraction": "1.0.0",
           "ProcessSim.Abstraction": "1.0.0",
           "SimSharp": "3.4.1"
         },
@@ -60,6 +72,11 @@
         "simsharp.3.4.1.nupkg.sha512",
         "simsharp.nuspec"
       ]
+    },
+    "Core.Abstraction/1.0.0": {
+      "type": "project",
+      "path": "../Core.Abstraction/Core.Abstraction.csproj",
+      "msbuildProject": "../Core.Abstraction/Core.Abstraction.csproj"
     },
     "ProcessSim.Abstraction/1.0.0": {
       "type": "project",

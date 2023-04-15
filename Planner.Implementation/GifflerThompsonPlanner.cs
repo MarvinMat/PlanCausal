@@ -6,7 +6,6 @@ namespace Planner.Implementation
 {
     public class GifflerThompsonPlanner : PlannerBase
     {
-        //TODO: You might wanna look into this mess if you come back :)
         public GifflerThompsonPlanner(IWorkPlanProvider workPlanProvider, IMachineProvider machineProvider) : base(workPlanProvider, machineProvider)
         {
         }
@@ -39,7 +38,7 @@ namespace Planner.Implementation
             workOperation.EarliestStart = DateTime.Now;
             workOperation.EarliestFinish = DateTime.Now + workOperation.Duration;
             workOperation.LatestStart = DateTime.Now;
-            workOperation.LatestFinish = DateTime.Now;
+            workOperation.LatestFinish = DateTime.Now + workOperation.Duration;
         }
     }
 }
