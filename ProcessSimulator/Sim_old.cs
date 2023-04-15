@@ -1,17 +1,17 @@
-﻿using Core.Abstraction.Domain.Processes;
-using ProcessSim.Implementation.Core.SimulationModels;
-using ProcessSim.Implementation.Services;
-using SimSharp;
+﻿//using Core.Abstraction.Domain.Processes;
+//using ProcessSim.Implementation.Core.SimulationModels;
+//using ProcessSim.Implementation.Services;
+//using SimSharp;
 
-var start = DateTime.Now;
+//var start = DateTime.Now;
 
-var simulation = new Simulation(start);
+//var simulation = new Simulation(start);
 
-var workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
-var workPlanVOs = workPlanProvider.Load();
+//var workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
+//var workPlanVOs = workPlanProvider.Load();
 
-var machinesById = new Dictionary<int, MachineModel>();
-var workPlans = new List<WorkPlan>();
+//var machinesById = new Dictionary<int, MachineModel>();
+//var workPlans = new List<WorkPlan>();
 //workPlanVOs.ForEach(plan =>
 //{
 //    var operations = new List<WorkPlanPosition>();
@@ -40,24 +40,24 @@ var workPlans = new List<WorkPlan>();
 //    });
 //});
 
-var gen = new OrderGenerator(simulation)
-{
-    WorkPlans = workPlans
-};
+//var gen = new OrderGenerator(simulation)
+//{
+//    WorkPlans = workPlans
+//};
 
 
-simulation.Run(TimeSpan.FromHours(24));
+//simulation.Run(TimeSpan.FromHours(24));
 
 
 
-machinesById.ToList().ForEach(machine =>
-{
-    machine.Value.Monitors.ForEach(monitor =>
-    {
-        //simulation.Log(monitor.Summarize());
+//machinesById.ToList().ForEach(machine =>
+//{
+//    machine.Value.Monitors.ForEach(monitor =>
+//    {
+//        //simulation.Log(monitor.Summarize());
 
-        File.AppendAllText("../../../../MachineOutput.log", monitor.Summarize());
+//        File.AppendAllText("../../../../MachineOutput.log", monitor.Summarize());
 
-    });
+//    });
 
-});
+//});

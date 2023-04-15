@@ -3,11 +3,11 @@ using SimSharp;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
-    internal class WorkOrderModel : ActiveObject<Simulation>
+    internal class WorkOrderModel : ActiveObject<Simulator>
     {
         public WorkPlan WorkPlan { get; init; }
         public Store _store;
-        public WorkOrderModel(Simulation environment, Store store) : base(environment)
+        public WorkOrderModel(Simulator environment, Store store) : base(environment)
         {
             WorkPlan = new WorkPlan();
             _store = store;

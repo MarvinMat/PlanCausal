@@ -9,11 +9,8 @@ namespace Planner.Implementation
     {
 
         protected Queue<ProductionOrder> _productionOrders;
-        protected IEnumerable<Machine> _machines;
+        protected List<Machine> _machines;
         protected IController? _controller;
-        private IWorkPlanProvider workPlanProvider;
-
-
         protected PlannerBase(IWorkPlanProvider workPlanProvider, IMachineProvider machineProvider)
         {
             //TODO: Clean up 
@@ -40,9 +37,10 @@ namespace Planner.Implementation
             };
             _productionOrders = new Queue<ProductionOrder>(productionOrders);
 
-            _machines = machineProvider.Load();
+            _machines = machineProvider.Load().ToList();
 
         }
         public abstract void Plan();
+        protected abstract void SubscribeToControllerEvents(IController controller);
     }
 }

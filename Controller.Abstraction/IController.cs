@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Core.Abstraction.Domain.Processes;
-
-namespace Controller.Abstraction
+﻿namespace Controller.Abstraction
 {
     public interface IController
     {
-        void Execute();
+        public event EventHandler RescheduleEvent;
+
+        void Execute(TimeSpan duration);
     }
 }

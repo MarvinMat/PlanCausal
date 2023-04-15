@@ -14,8 +14,6 @@ namespace Core.Implementation.Services
         {
             _path = path;
         }
-
-
         public IEnumerable<Machine> Load()
         {
             try

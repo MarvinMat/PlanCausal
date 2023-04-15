@@ -5,7 +5,7 @@ using static SimSharp.Distributions;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
-    public class MachineModelProcess : ActiveObject<Simulation>
+    public class MachineModelProcess : ActiveObject<Simulator>
     {
 
         private Machine Machine { get; init; }
@@ -20,7 +20,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         private Process Process;
         private Queue<WorkOperation> operationQueue;
 
-        public MachineModelProcess(Simulation environment, string name, string description) : base(environment)
+        public MachineModelProcess(Simulator environment, string name, string description) : base(environment)
         {
             Machine = new Machine()
             {

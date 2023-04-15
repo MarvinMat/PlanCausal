@@ -15,6 +15,19 @@
           }
         }
       },
+      "Controller.Abstraction/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "ProcessSim.Abstraction": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Controller.Abstraction.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Controller.Abstraction.dll": {}
+        }
+      },
       "Core.Abstraction/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -23,6 +36,19 @@
         },
         "runtime": {
           "bin/placeholder/Core.Abstraction.dll": {}
+        }
+      },
+      "Core.Implementation/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "Controller.Abstraction": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Core.Implementation.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Core.Implementation.dll": {}
         }
       },
       "ProcessSim.Abstraction/1.0.0": {
@@ -44,6 +70,7 @@
         "framework": ".NETCoreApp,Version=v6.0",
         "dependencies": {
           "Core.Abstraction": "1.0.0",
+          "Core.Implementation": "1.0.0",
           "ProcessSim.Abstraction": "1.0.0",
           "SimSharp": "3.4.1"
         },
@@ -73,10 +100,20 @@
         "simsharp.nuspec"
       ]
     },
+    "Controller.Abstraction/1.0.0": {
+      "type": "project",
+      "path": "../Controller.Abstraction/Controller.Abstraction.csproj",
+      "msbuildProject": "../Controller.Abstraction/Controller.Abstraction.csproj"
+    },
     "Core.Abstraction/1.0.0": {
       "type": "project",
       "path": "../Core.Abstraction/Core.Abstraction.csproj",
       "msbuildProject": "../Core.Abstraction/Core.Abstraction.csproj"
+    },
+    "Core.Implementation/1.0.0": {
+      "type": "project",
+      "path": "../Core.Implementation/Core.Implementation.csproj",
+      "msbuildProject": "../Core.Implementation/Core.Implementation.csproj"
     },
     "ProcessSim.Abstraction/1.0.0": {
       "type": "project",

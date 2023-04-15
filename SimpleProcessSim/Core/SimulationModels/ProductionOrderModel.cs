@@ -4,9 +4,9 @@ using SimSharp;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
-    public class ProductionOrderModel : ActiveObject<Simulation>
+    public class ProductionOrderModel : ActiveObject<Simulator>
     {
-        public ProductionOrderModel(Simulation environment, ProductionOrder order) : base(environment)
+        public ProductionOrderModel(Simulator environment, ProductionOrder order) : base(environment)
         {
             Order = order;
             Environment.Process(Producing());
