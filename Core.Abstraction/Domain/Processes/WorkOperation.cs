@@ -1,4 +1,5 @@
-﻿using Core.Abstraction.Domain.Resources;
+﻿using Core.Abstraction.Domain.Enums;
+using Core.Abstraction.Domain.Resources;
 
 namespace Core.Abstraction.Domain.Processes
 {
@@ -12,6 +13,8 @@ namespace Core.Abstraction.Domain.Processes
         public DateTime LatestFinish { get; set; }
         public TimeSpan Duration => _workPlanPosition.Duration;
         public WorkOperation? Successor { get; set; }
+        public WorkOperation? Predecessor { get; set; }
+        public OperationState State { get; set; }
         public WorkOperation(WorkPlanPosition workPlanPosition)
         {
             _workPlanPosition = workPlanPosition;

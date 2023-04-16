@@ -1,5 +1,6 @@
 ﻿using Controller.Abstraction;
 using Controller.Implementation;
+using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Services;
 
@@ -43,10 +44,12 @@ namespace Planner.Implementation
                     var workOperation = new WorkOperation(operation);
                     var matchingMachines = _machines.Where(machine => machine.MachineType == operation.MachineType).ToArray();
                     workOperation.Machine = matchingMachines[rnd.Next(0, matchingMachines.Length)];
+                    workOperation.State = OperationState.Created;
 
                     if (prevOperation is not null)
                     {
                         prevOperation.Successor = workOperation;
+                        workOperation.Predecessor = prevOperation;
                     }
                     prevOperation = workOperation;
 

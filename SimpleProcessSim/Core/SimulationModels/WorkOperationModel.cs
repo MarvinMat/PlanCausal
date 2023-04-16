@@ -5,7 +5,7 @@ using static SimSharp.Distributions;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
-    internal class WorkOperationModel : ActiveObject<Simulator>
+    internal class WorkOperationModel : ActiveObject<Simulation>
     {
         private readonly WorkOperation _operation;
         private Store _store;

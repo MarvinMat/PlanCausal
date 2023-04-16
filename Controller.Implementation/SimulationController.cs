@@ -24,8 +24,8 @@ public class SimulationController : IController
         FinishedOperations = new List<WorkOperation>();
         _machines = machines;
         _simulation = new Simulator(42, DateTime.Now);
-        _simulation.CreateSimulationResources(machines);
         _simulation.InterruptEvent += InterruptHandler;
+        _simulation.CreateSimulationResources(machines);
     }
 
     public void Execute(TimeSpan duration)
@@ -61,6 +61,7 @@ public class SimulationController : IController
             }
 
             PlannedOperations.Remove(operationCompletedEvent.CompletedOperation);
+            _simulation.Continue();
         }
     }
     /// <summary>

@@ -1,52 +1,75 @@
-﻿using Core.Abstraction.Domain.Processes;
+﻿using Core.Abstraction.Domain.Enums;
+using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
+using Core.Implementation.Events;
 using SimSharp;
+using static SimSharp.Distributions;
 
 namespace ProcessSim.Implementation.Core.SimulationModels
 {
     public class MachineModel : ActiveObject<Simulation>
     {
         private readonly Machine _machine;
-        //public PreemptiveResource simMachine;
+        private readonly Process _process;
+        private Queue<WorkOperation> _queue;
+        private readonly ManualResetEventSlim _planChangedEvent;
+
         public Guid Id => _machine.Id;
         public string Name => _machine.Name;
         public int PartsMade => _machine.PartsMade;
         public int Capacity { get; set; } = 1;
-        //public List<IMonitor> Monitors { get; set; }
         public event EventHandler? InterruptEvent;
-        public Queue<WorkOperation> Queue { get; set; } = new();
-
-        public MachineModel(Simulation environment, Machine machine) : base(environment)
+        public MachineModel(Simulation environment, Machine machine, ManualResetEventSlim planChangedEvent) : base(environment)
         {
             _machine = machine;
-            environment.Process(Work());
+            _process = environment.Process(Work());
+            _queue = new();
+            _planChangedEvent = planChangedEvent;
+        }
 
-            //Monitors = new List<IMonitor>();
-            //var utilization = new TimeSeriesMonitor(environment, name: "Utilization", collect: true);
-            //var queueLength = new TimeSeriesMonitor(environment, name: "Queue Length", collect: true);
-            //Monitors.Add(utilization);
-            //Monitors.Add(queueLength);
+        public void EnqueueOperation(WorkOperation operation)
+        {
+            var prevQueueCount = _queue.Count;
+            _queue.Enqueue(operation);
 
-            //simMachine = new PreemptiveResource(environment, Capacity)
-            //{
-            //    Utilization = utilization,
-            //    QueueLength = queueLength
-
-            //};
+            if (prevQueueCount == 0)
+            {
+                // machine is either idle or new 
+                _process.Interrupt();
+            }
         }
 
         private IEnumerable<Event> Work()
         {
             while (true)
             {
-                //TODO: Implementent idle time
+                while (_queue.Count == 0)
+                {
+                    yield return Environment.Timeout(TimeSpan.FromDays(1000));
+                    Environment.ActiveProcess.HandleFault();
+                }
 
-                var order = Queue.Dequeue();
-                yield return Environment.Timeout(order.Duration);
+                var currentOperation = _queue.Peek();
 
+                var waitTime = currentOperation.EarliestStart - Environment.Now;
 
+                while (waitTime > TimeSpan.Zero)
+                {
+                    yield return Environment.Timeout(waitTime);
+                    waitTime = currentOperation.EarliestStart - Environment.Now;
+                }
 
+                currentOperation.State = OperationState.InProgress;
+                var durationDistribution = N(currentOperation.Duration, TimeSpan.FromMinutes(5));
+                var doneIn = Environment.Rand(POS(durationDistribution));
+                yield return Environment.Timeout(doneIn);
 
+                currentOperation.State = OperationState.Completed;
+                _queue.Dequeue();
+
+                InterruptEvent?.Invoke(this, new OperationCompletedEvent(Environment.Now, currentOperation));
+                _planChangedEvent.Wait();
+                _planChangedEvent.Reset();
             }
         }
     }

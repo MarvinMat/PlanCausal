@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Domain\Enums\OrderState.cs" />
     <Compile Remove="Domain\Models\MachineVO.cs" />
   </ItemGroup>
 

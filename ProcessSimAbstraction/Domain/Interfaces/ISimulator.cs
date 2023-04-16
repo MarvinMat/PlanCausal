@@ -8,5 +8,6 @@ namespace ProcessSim.Abstraction.Domain.Interfaces
         public void CreateSimulationResource(IResource resource);
         public void CreateSimulationResources(IEnumerable<IResource> resources);
         public void Start(TimeSpan duration);
+        public void Continue();
     }
 }
