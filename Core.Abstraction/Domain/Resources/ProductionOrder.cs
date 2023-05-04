@@ -14,7 +14,7 @@ namespace Core.Abstraction.Domain.Resources
         public string Name { get; set; }
         public int Quantity { get; set; }
         public DateTime DeliveryDate { get; set; }
-        public DateTime DateOfProductionStart { get; set; }
+        public DateTime ProductionStart { get; set; }
 
         public OrderState State { get; set; }
 

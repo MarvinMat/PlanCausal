@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Text.Json;
 
 
-namespace ProcessSim.Implementation.Services
+namespace Core.Implementation.Services
 {
     public class WorkPlanProviderJson : IWorkPlanProvider
     {
@@ -27,8 +27,7 @@ namespace ProcessSim.Implementation.Services
 
                 if (workPlanVOs == null)
                 {
-                    Debug.WriteLine("Empty Workplan list");
-                    return new List<WorkPlan>();
+                    throw new Exception($"Deserialization returned null.");
                 }
 
                 var workPlans = new List<WorkPlan>();
@@ -41,6 +40,7 @@ namespace ProcessSim.Implementation.Services
                         {
                             Name = operation.Name,
                             Duration = TimeSpan.FromMinutes(operation.Duration),
+                            MachineType = operation.MachineId,
                         });
                     });
 

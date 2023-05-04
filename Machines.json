@@ -1,0 +1,27 @@
+[
+  {
+    "typeId": 1,
+    "count": 1,
+    "name": "Machine 1"
+  },
+  {
+    "typeId": 2,
+    "count": 1,
+    "name": "Machine 2"
+  },
+  {
+    "typeId": 3,
+    "count": 1,
+    "name": "Machine 3"
+  },
+  {
+    "typeId": 4,
+    "count": 1,
+    "name": "Machine 4"
+  },
+  {
+    "typeId": 5,
+    "count": 1,
+    "name": "Machine 5"
+  }
+]

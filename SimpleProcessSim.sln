@@ -32,9 +32,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controller.Implementation",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{313CDF63-CEA8-4BF5-93C3-DD54441B31DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Abstraction", "Core.Abstraction\Core.Abstraction.csproj", "{B8127E12-B880-49F4-AE14-DEC3D0F1BECF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Abstraction", "Core.Abstraction\Core.Abstraction.csproj", "{B8127E12-B880-49F4-AE14-DEC3D0F1BECF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Implementation", "Core.Implementation\Core.Implementation.csproj", "{A6C1F399-0094-46AF-B787-738E3196CBC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Implementation", "Core.Implementation\Core.Implementation.csproj", "{A6C1F399-0094-46AF-B787-738E3196CBC6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Machines", "Machines", "{C603CB41-01D4-4941-9D85-983B4B41BBD0}"
+	ProjectSection(SolutionItems) = preProject
+		Machines.json = Machines.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +102,7 @@ Global
 		{313CDF63-CEA8-4BF5-93C3-DD54441B31DB} = {122A80E2-8AFB-4659-9F37-CBBB3CAA4FBD}
 		{B8127E12-B880-49F4-AE14-DEC3D0F1BECF} = {313CDF63-CEA8-4BF5-93C3-DD54441B31DB}
 		{A6C1F399-0094-46AF-B787-738E3196CBC6} = {313CDF63-CEA8-4BF5-93C3-DD54441B31DB}
+		{C603CB41-01D4-4941-9D85-983B4B41BBD0} = {122A80E2-8AFB-4659-9F37-CBBB3CAA4FBD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CC055ABA-6F11-41FF-984E-9076C26DA000}

@@ -65,11 +65,12 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 yield return Environment.Timeout(doneIn);
 
                 currentOperation.State = OperationState.Completed;
-                _queue.Dequeue();
 
                 InterruptEvent?.Invoke(this, new OperationCompletedEvent(Environment.Now, currentOperation));
                 _planChangedEvent.Wait();
                 _planChangedEvent.Reset();
+
+                _queue.Dequeue();
             }
         }
     }

@@ -6,12 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.Abstraction.Domain.Enums
 {
-
-    public enum OperationState
+    public enum OrderState
     {
         Created,
-        Scheduled,
-        Pending,
         InProgress,
         Completed,
         //Cancelled

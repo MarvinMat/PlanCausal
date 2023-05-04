@@ -9,9 +9,9 @@
 
         public int MachineType { get; set; }
 
-        public double Cost { get; set; }
+        //public double Cost { get; set; }
 
-        public double ProbabilityToBreak { get; set; }
+        //public double ProbabilityToBreak { get; set; }
 
         public Machine()
         {
@@ -19,8 +19,8 @@
             Name = "Unnamed Machine";
             Description = "No Description";
             PartsMade = 0;
-            Cost = 0;
-            ProbabilityToBreak = 0.05;
+            //Cost = 0;
+            //ProbabilityToBreak = 0.05;
 
         }
 

@@ -7,25 +7,24 @@ using System.Text.Json;
 
 namespace Core.Implementation.Services
 {
-    public class MachinProviderJson : IMachineProvider
+    public class MachineProviderJson : IMachineProvider
     {
         private readonly string _path;
-        public MachinProviderJson(string path)
+        public MachineProviderJson(string path)
         {
             _path = path;
         }
-        public IEnumerable<Machine> Load()
+        public List<Machine> Load()
         {
             try
             {
                 string json = File.ReadAllText(_path);
 
-                var machineTypes = JsonSerializer.Deserialize<IEnumerable<MachineTypeVO>>(json);
+                var machineTypes = JsonSerializer.Deserialize<List<MachineTypeVO>>(json);
 
                 if (machineTypes == null)
                 {
-                    Debug.WriteLine("Empty machine list");
-                    return new List<Machine>();
+                    throw new Exception($"Deserialization returned null.");
                 }
 
                 var machines = new List<Machine>();

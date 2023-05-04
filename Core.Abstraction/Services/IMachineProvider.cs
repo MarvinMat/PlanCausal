@@ -5,6 +5,6 @@ namespace Core.Abstraction.Services
 {
     public interface IMachineProvider
     {
-        IEnumerable<Machine> Load();
+        List<Machine> Load();
     }
 }

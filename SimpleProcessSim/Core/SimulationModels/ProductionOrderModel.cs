@@ -23,7 +23,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         {
             var models = new List<WorkOrderModel>();
             Order.State = OrderState.InProgress;
-            Order.DateOfProductionStart = Environment.Now;
+            Order.ProductionStart = Environment.Now;
 
             var store = new Store(Environment, Quantity);
             for (int i = 0; i < Quantity; i++)
@@ -32,7 +32,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             yield return store.WhenFull();
 
             Order.State = OrderState.Completed;
-            Environment.Log($"Completed an order with ID {Order.Id} for product {Order.WorkPlan.Name} with quantity {Order.Quantity} at {Environment.Now} and lasted {Environment.Now - Order.DateOfProductionStart}");
+            Environment.Log($"Completed an order with ID {Order.Id} for product {Order.WorkPlan.Name} with quantity {Order.Quantity} at {Environment.Now} and lasted {Environment.Now - Order.ProductionStart}");
         }
     }
 }
