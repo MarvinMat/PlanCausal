@@ -46,7 +46,7 @@ namespace Core.Implementation.Services
 
                     workPlans.Add(new WorkPlan()
                     {
-                        Name = $"Produkt {workPlanVOs.Count + 1}",
+                        Name = $"Produkt {workPlans.Count + 1}",
                         WorkPlanPositions = operations
                     });
                 });

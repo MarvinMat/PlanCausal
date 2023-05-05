@@ -18,10 +18,16 @@ namespace Core.Abstraction.Domain.Processes
         public WorkOperation? Successor { get; set; }
         public WorkOperation? Predecessor { get; set; }
         public OperationState State { get; set; }
-        public WorkOperation(WorkPlanPosition workPlanPosition)
+        public readonly WorkOrder WorkOrder;
+        public WorkOperation(WorkPlanPosition workPlanPosition, WorkOrder workOrder)
         {
             WorkPlanPosition = workPlanPosition;
+            WorkOrder = workOrder;
             State = OperationState.Created;
+            EarliestStart = DateTime.MinValue;
+            LatestStart = DateTime.MinValue;
+            EarliestFinish = DateTime.MinValue;
+            LatestFinish = DateTime.MinValue;
         }
     }
 }
