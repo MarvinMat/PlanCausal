@@ -17,26 +17,11 @@ namespace ProcessSim.Implementation
         private ManualResetEventSlim _currentPlanChangedEvent = new(false);
         public event EventHandler? InterruptEvent;
 
-        public List<WorkOperation> CurrentPlan
-        {
-            get { return _currentPlan; }
-            set
-            {
-                _currentPlan = value;
-                // set the plan, start all operations that can be started and notify the simulation thread to continue
-                _currentPlan.Where(operation =>
-                {
-                    var isNotStarted = operation.State.Equals(OperationState.Created);
-                    var hasPredecessor = operation.Predecessor is not null;
-                    var isPredecessorCompleted = operation.Predecessor is not null && operation.Predecessor.State.Equals(OperationState.Completed);
-
-                    return isNotStarted && (!hasPredecessor || isPredecessorCompleted);
-                }).ToList().ForEach(operation => ExecuteOperation(operation));
-
-                //notifiy the simulation thread to continue
-                Continue();
-            }
-        }
+        /// <summary>
+        /// Construct a new SimSharp simulation environment with the given seed and start date.
+        /// </summary>
+        /// <param name="seed">The seed for the generation of random numbers during the simulation.</param>
+        /// <param name="initialDateTime">The starting time of the simulation.</param>
         public Simulator(int seed, DateTime initialDateTime)
         {
             _sim = new Simulation(randomSeed: seed, initialDateTime: initialDateTime);
@@ -44,15 +29,16 @@ namespace ProcessSim.Implementation
             _currentPlan = new();
 
         }
+
         public void Start(TimeSpan duration)
         {
             _sim.Process(Replanning());
 
-            _currentPlanChangedEvent.Wait();
             _currentPlanChangedEvent.Reset();
 
             _sim.Run(duration);
         }
+
         public void CreateSimulationResources(IEnumerable<IResource> resources)
         {
             foreach (var resource in resources)
@@ -63,6 +49,7 @@ namespace ProcessSim.Implementation
                 }
             }
         }
+
         public void CreateSimulationResource(IResource resource)
         {
             if (resource is Machine machine)
@@ -70,7 +57,7 @@ namespace ProcessSim.Implementation
                 var model = new MachineModel(_sim, machine, _currentPlanChangedEvent);
                 model.InterruptEvent += InterruptHandler;
 
-                if (_simResources.TryAdd(resource, model))
+                if (!_simResources.TryAdd(resource, model))
                     Debug.WriteLine($"Machine {machine.Name} with ID {machine.Id} already added.");
             }
         }
@@ -105,7 +92,6 @@ namespace ProcessSim.Implementation
 
         public void Continue()
         {
-            //potential issues
             _currentPlanChangedEvent.Set();
         }
 
@@ -120,6 +106,20 @@ namespace ProcessSim.Implementation
                 }
             }
             InterruptEvent?.Invoke(sender, e);
+        }
+
+        public void SetCurrentPlan(List<WorkOperation> modifiedPlan)
+        {
+            _currentPlan = modifiedPlan;
+            // set the plan and start all operations that can be started
+            _currentPlan.Where(operation =>
+            {
+                var isNotStarted = operation.State.Equals(OperationState.Scheduled);
+                var hasPredecessor = operation.Predecessor is not null;
+                var isPredecessorCompleted = operation.Predecessor is not null && operation.Predecessor.State.Equals(OperationState.Completed);
+
+                return isNotStarted && (!hasPredecessor || isPredecessorCompleted);
+            }).ToList().ForEach(operation => ExecuteOperation(operation));
         }
     }
 }

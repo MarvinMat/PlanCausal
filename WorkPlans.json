@@ -3,12 +3,12 @@
     {
       "machineId": 1,
       "duration": 15,
-      "name": "Tischbein s�gen"
+      "name": "Tischbein sägen"
     },
     {
       "machineId": 2,
-      "duration": 10,
-      "name": "Tischplatte s�gen"
+      "duration": 11,
+      "name": "Tischplatte sägen"
     },
     {
       "machineId": 3,
@@ -28,14 +28,14 @@
       "name": "Mit der kleinen Kurbel ganz nach oben drehen"
     },
     {
-      "machineId": 5,
-      "duration": 2,
-      "name": "Auf den Pfeil dr�cken"
+      "machineId": 3,
+      "duration": 12,
+      "name": "Auf den Pfeil drücken"
     },
     {
       "machineId": 1,
       "duration": 18,
-      "name": "Tube �ffnen"
+      "name": "Tube öffnen"
     }
   ]
 ] 

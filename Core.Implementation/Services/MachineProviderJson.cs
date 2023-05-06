@@ -2,6 +2,7 @@
 using Core.Abstraction.Domain.Resources;
 using Core.Abstraction.Services;
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 
 
@@ -18,7 +19,7 @@ namespace Core.Implementation.Services
         {
             try
             {
-                string json = File.ReadAllText(_path);
+                string json = File.ReadAllText(_path, Encoding.UTF8);
 
                 var machineTypes = JsonSerializer.Deserialize<List<MachineTypeVO>>(json);
 
