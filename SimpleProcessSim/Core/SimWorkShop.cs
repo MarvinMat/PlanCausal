@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace ProcessSim.Implementation.Core
 {
+    ///  <summary>
+    /// deprecated
+    /// </summary>
     public sealed class SimWorkShop
     {
         private static readonly Lazy<SimWorkShop> lazy = new Lazy<SimWorkShop>(() => new SimWorkShop());
