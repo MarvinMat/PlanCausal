@@ -7,10 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Controller.Implementation\Controller.Implementation.csproj" />
     <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
     <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
-    <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>

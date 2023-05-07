@@ -5,14 +5,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Events\NewFile1.txt" />
-    <None Remove="Services\NewFile1.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
+	
+  
+	<ItemGroup>
+    <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>

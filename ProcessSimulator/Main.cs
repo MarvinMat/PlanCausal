@@ -6,6 +6,8 @@ using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSim.Implementation;
+using Controller.Abstraction;
+using Controller.Implementation;
 
 IPlanner planner = new GifflerThompsonPlanner();
 
@@ -18,7 +20,7 @@ var rnd = new Random();
 var orders = plans.Select(plan => new ProductionOrder()
 {
     Name = $"Order {plan.Name}",
-    Quantity = 3,
+    Quantity = 1,
     WorkPlan = plan,
 }).ToList();
 //var orders = new List<ProductionOrder>();
@@ -60,57 +62,59 @@ orders.ForEach(productionOrder =>
     }
 });
 
-var plan = planner.Schedule(operations, machines, DateTime.Now);
+IController controller = new SimulationController(operations, machines, planner, new Simulator(123, DateTime.Now));
+controller.Execute(TimeSpan.FromDays(7));
 
-Console.WriteLine(plan.ToString());
+//var plan = planner.Schedule(operations, machines, DateTime.Now);
 
-var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
-foreach (var machineGroup in operationsByMachine)
-{
-    var operationsOnMachine = machineGroup.OrderBy(o => o.EarliestStart).ToList();
+//Console.WriteLine(plan.ToString());
 
-    for (int i = 0; i < operationsOnMachine.Count; i++)
-    {
-        for (int j = i + 1; j < operationsOnMachine.Count; j++)
-        {
-            var operation1 = operationsOnMachine[i];
-            var operation2 = operationsOnMachine[j];
+//var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
+//foreach (var machineGroup in operationsByMachine)
+//{
+//    var operationsOnMachine = machineGroup.OrderBy(o => o.EarliestStart).ToList();
 
-            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
-            {
-                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
-            }
-        }
-    }
-}
+//    for (int i = 0; i < operationsOnMachine.Count; i++)
+//    {
+//        for (int j = i + 1; j < operationsOnMachine.Count; j++)
+//        {
+//            var operation1 = operationsOnMachine[i];
+//            var operation2 = operationsOnMachine[j];
 
-var operationsByOrder = plan.Operations.GroupBy(o => o.WorkOrder);
-foreach (var orderGroup in operationsByOrder)
-{
-    var operationsOfOrder = orderGroup.OrderBy(o => o.EarliestStart).ToList();
+//            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+//            {
+//                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
+//            }
+//        }
+//    }
+//}
 
-    for (int i = 0; i < operationsOfOrder.Count; i++)
-    {
-        for (int j = i + 1; j < operationsOfOrder.Count; j++)
-        {
-            var operation1 = operationsOfOrder[i];
-            var operation2 = operationsOfOrder[j];
+//var operationsByOrder = plan.Operations.GroupBy(o => o.WorkOrder);
+//foreach (var orderGroup in operationsByOrder)
+//{
+//    var operationsOfOrder = orderGroup.OrderBy(o => o.EarliestStart).ToList();
 
-            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
-            {
-                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
-            }
-        }
-    }
-}
+//    for (int i = 0; i < operationsOfOrder.Count; i++)
+//    {
+//        for (int j = i + 1; j < operationsOfOrder.Count; j++)
+//        {
+//            var operation1 = operationsOfOrder[i];
+//            var operation2 = operationsOfOrder[j];
+
+//            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+//            {
+//                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
+//            }
+//        }
+//    }
+//}
 
 
-
-ISimulator simulator = new Simulator(rnd.Next(1, 1000000), DateTime.Now);
-simulator.CreateSimulationResources(machines);
-simulator.SetCurrentPlan(plan.Operations);
-simulator.InterruptEvent += (sender, args) =>
-{
-    simulator.Continue();
-};
-simulator.Start(TimeSpan.FromDays(7));
+//ISimulator simulator = new Simulator(rnd.Next(1, 1000000), DateTime.Now);
+//simulator.CreateSimulationResources(machines);
+//simulator.SetCurrentPlan(plan.Operations);
+//simulator.InterruptEvent += (sender, args) =>
+//{
+//    simulator.Continue();
+//};
+//simulator.Start(TimeSpan.FromDays(7));

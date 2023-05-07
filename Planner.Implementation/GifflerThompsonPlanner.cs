@@ -1,6 +1,4 @@
-﻿using Controller.Abstraction;
-using Controller.Implementation;
-using Core.Abstraction.Domain.Enums;
+﻿using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using Core.Abstraction.Services;

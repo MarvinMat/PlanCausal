@@ -7,14 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Rules\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
+    <ProjectReference Include="..\Core.Implementation\Core.Implementation.csproj" />
     <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
     <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
-    <ProjectReference Include="..\SimpleProcessSim\ProcessSim.Implementation.csproj" />
   </ItemGroup>
 
 </Project>
