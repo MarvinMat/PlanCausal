@@ -103,9 +103,9 @@ public class SimulationController : IController
     {
         if (successor == null) return;
 
-        var delay = successor.EarliestStart - operation.LatestFinish;
+        var delay =  operation.LatestFinish - successor.EarliestStart;
 
-        if (delay < TimeSpan.Zero)
+        if (delay > TimeSpan.Zero)
         {
             successor.EarliestStart = successor.EarliestStart.Add(delay);
             successor.LatestStart = successor.LatestStart.Add(delay);

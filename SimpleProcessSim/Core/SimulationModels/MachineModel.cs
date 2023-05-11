@@ -11,7 +11,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
     {
         private readonly Machine _machine;
         private readonly Process _process;
-        private Queue<WorkOperation> _queue;
+        private List<WorkOperation> _operationQueue;
         private readonly ManualResetEventSlim _planChangedEvent;
 
         public Guid Id => _machine.Id;
@@ -20,45 +20,51 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         public int Capacity { get; set; } = 1;
         public event EventHandler? InterruptEvent;
         private bool isWorking;
+        private bool isProcessRunning;
         public MachineModel(Simulation environment, Machine machine, ManualResetEventSlim planChangedEvent) : base(environment)
         {
             _machine = machine;
             _process = environment.Process(Work());
-            _queue = new();
+			_operationQueue = new();
             _planChangedEvent = planChangedEvent;
             isWorking = false;
+            isProcessRunning = false;
         }
 
         public void EnqueueOperation(WorkOperation operation)
         {
-            var prevQueueCount = _queue.Count;
-            _queue.Enqueue(operation);
+            _operationQueue.Add(operation);
+            _operationQueue.Sort((a,b) => a.EarliestStart.CompareTo(b.EarliestStart));
 
-            if (prevQueueCount == 0 && isWorking)
+            if (isProcessRunning && !isWorking)
             {
-                // machine is either idle or new 
+                // machine is idle or new
                 _process.Interrupt();
             }
         }
 
         private IEnumerable<Event> Work()
         {
-            isWorking = true;
+            isProcessRunning = true;
             while (true)
             {
-                while (_queue.Count == 0)
+                while (_operationQueue.Count == 0)
                 {
                     yield return Environment.Timeout(TimeSpan.FromDays(1000));
                     Environment.ActiveProcess.HandleFault();
                 }
 
-                var currentOperation = _queue.Peek();
+                var currentOperation = _operationQueue.First();
 
                 var waitTime = currentOperation.EarliestStart - Environment.Now;
 
                 while (waitTime > TimeSpan.Zero)
                 {
                     yield return Environment.Timeout(waitTime);
+                    if (Environment.ActiveProcess.HandleFault() )
+                    {
+                        currentOperation = _operationQueue.First();
+					}
                     waitTime = currentOperation.EarliestStart - Environment.Now;
                 }
 
@@ -67,15 +73,17 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 var doneIn = Environment.Rand(POS(durationDistribution));
                 var startTime = Environment.Now;
                 Console.WriteLine($"Started {currentOperation.WorkPlanPosition.Name} on machine {_machine.Id} at {startTime}.");
-                yield return Environment.Timeout(doneIn);
+				isWorking = true;
+				yield return Environment.Timeout(doneIn);
 
+                isWorking = false;
                 currentOperation.State = OperationState.Completed;
                 Console.WriteLine($"Completed {currentOperation.WorkPlanPosition.Name} at {Environment.Now} (lasted {Environment.Now - startTime}).");
                 InterruptEvent?.Invoke(this, new OperationCompletedEvent(Environment.Now, currentOperation));
                 _planChangedEvent.Wait();
                 _planChangedEvent.Reset();
 
-                _queue.Dequeue();
+                _operationQueue.Remove(currentOperation);
             }
         }
     }

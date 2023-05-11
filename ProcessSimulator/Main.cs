@@ -69,6 +69,15 @@ controller.Execute(TimeSpan.FromDays(7));
 
 //Console.WriteLine(plan.ToString());
 
+//ISimulator simulator = new Simulator(123, DateTime.Now);
+//simulator.CreateSimulationResources(machines);
+//simulator.SetCurrentPlan(plan.Operations);
+//simulator.InterruptEvent += (sender, args) =>
+//{
+//    simulator.Continue();
+//};
+//simulator.Start(TimeSpan.FromDays(7));
+
 //var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
 //foreach (var machineGroup in operationsByMachine)
 //{
@@ -109,12 +118,3 @@ controller.Execute(TimeSpan.FromDays(7));
 //    }
 //}
 
-
-//ISimulator simulator = new Simulator(rnd.Next(1, 1000000), DateTime.Now);
-//simulator.CreateSimulationResources(machines);
-//simulator.SetCurrentPlan(plan.Operations);
-//simulator.InterruptEvent += (sender, args) =>
-//{
-//    simulator.Continue();
-//};
-//simulator.Start(TimeSpan.FromDays(7));

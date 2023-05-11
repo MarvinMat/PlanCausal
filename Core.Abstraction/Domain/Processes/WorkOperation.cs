@@ -1,11 +1,13 @@
 ﻿using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Resources;
+using System.Diagnostics;
 
 namespace Core.Abstraction.Domain.Processes
 {
     /// <summary>
     /// A concrete, scheduled instance of a workplan position.
     /// </summary>
+    [DebuggerDisplay("{WorkPlanPosition.Name}")]
     public class WorkOperation
     {
         public readonly WorkPlanPosition WorkPlanPosition;
