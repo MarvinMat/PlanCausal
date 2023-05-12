@@ -66,7 +66,7 @@ namespace ProcessSim.Implementation
             while (true)
             {
                 yield return _sim.Timeout(TimeSpan.FromHours(8));
-                OnInterrupt(new ReplanningEvent());
+                OnInterrupt(new ReplanningEvent(_sim.Now));
 
                 _currentPlanChangedEvent.Wait();
                 _currentPlanChangedEvent.Reset();

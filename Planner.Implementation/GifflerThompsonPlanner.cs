@@ -213,5 +213,46 @@ namespace Planner.Implementation
             operations.Sort(ShortestProcessingTimeFirst());
             return operations.First();
         }
+
+        // Code for validating a plan
+        //var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
+        //foreach (var machineGroup in operationsByMachine)
+        //{
+        //    var operationsOnMachine = machineGroup.OrderBy(o => o.EarliestStart).ToList();
+
+        //    for (int i = 0; i < operationsOnMachine.Count; i++)
+        //    {
+        //        for (int j = i + 1; j < operationsOnMachine.Count; j++)
+        //        {
+        //            var operation1 = operationsOnMachine[i];
+        //            var operation2 = operationsOnMachine[j];
+
+        //            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+        //            {
+        //                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
+        //            }
+        //        }
+        //    }
+        //}
+
+        //var operationsByOrder = plan.Operations.GroupBy(o => o.WorkOrder);
+        //foreach (var orderGroup in operationsByOrder)
+        //{
+        //    var operationsOfOrder = orderGroup.OrderBy(o => o.EarliestStart).ToList();
+
+        //    for (int i = 0; i < operationsOfOrder.Count; i++)
+        //    {
+        //        for (int j = i + 1; j < operationsOfOrder.Count; j++)
+        //        {
+        //            var operation1 = operationsOfOrder[i];
+        //            var operation2 = operationsOfOrder[j];
+
+        //            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+        //            {
+        //                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
+        //            }
+        //        }
+        //    }
+        //}
     }
 }

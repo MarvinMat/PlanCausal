@@ -2,8 +2,10 @@
 {
     public class ReplanningEvent : EventArgs
     {
-        public ReplanningEvent()
+        public DateTime CurrentDate { get; }
+        public ReplanningEvent(DateTime currentDate)
         {
+            CurrentDate = currentDate;
         }
     }
 }
