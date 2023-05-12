@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Core.Abstraction.Domain.Processes
 {
@@ -23,7 +19,7 @@ namespace Core.Abstraction.Domain.Processes
             var machines = Operations.Select(op => op.Machine).Distinct().ToList();
             var sb = new StringBuilder();
             sb.AppendLine("Plan:");
-            foreach (var machine in machines) 
+            foreach (var machine in machines)
             {
                 sb.AppendLine();
                 sb.AppendLine($"\tMachine: {machine?.Name} ({machine?.Id})");

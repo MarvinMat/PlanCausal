@@ -1,7 +1,6 @@
 ﻿using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
-using Core.Abstraction.Services;
 
 namespace Planner.Implementation
 {

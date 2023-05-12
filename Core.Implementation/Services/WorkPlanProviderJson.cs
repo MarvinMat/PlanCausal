@@ -2,7 +2,6 @@
 using Core.Abstraction.Domain.Models;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Services;
-using System.Diagnostics;
 using System.Text.Json;
 
 
@@ -15,7 +14,6 @@ namespace Core.Implementation.Services
         {
             _path = path;
         }
-
 
         public List<WorkPlan> Load()
         {

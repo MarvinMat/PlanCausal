@@ -1,5 +1,4 @@
 ﻿using Core.Abstraction.Domain.Enums;
-using Core.Abstraction.Domain.Resources;
 
 namespace Core.Abstraction.Domain.Processes
 {

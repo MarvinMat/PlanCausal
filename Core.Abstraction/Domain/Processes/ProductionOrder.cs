@@ -1,12 +1,6 @@
 ﻿using Core.Abstraction.Domain.Enums;
-using Core.Abstraction.Domain.Processes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Core.Abstraction.Domain.Resources
+namespace Core.Abstraction.Domain.Processes
 {
     public class ProductionOrder
     {
@@ -15,10 +9,10 @@ namespace Core.Abstraction.Domain.Resources
         public int Quantity { get; set; }
         public DateTime DeliveryDate { get; set; }
         public DateTime ProductionStart { get; set; }
-
         public OrderState State { get; set; }
 
         public WorkPlan WorkPlan { get; init; }
+        public List<WorkOrder> WorkOrders { get; set; }
 
         public ProductionOrder()
         {
@@ -27,6 +21,7 @@ namespace Core.Abstraction.Domain.Resources
             Quantity = 0;
             State = OrderState.Created;
             WorkPlan = new WorkPlan();
+            WorkOrders = new List<WorkOrder>();
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using Core.Abstraction.Domain.Processes;
-using Planner.Abstraction;
-using ProcessSim.Abstraction.Domain.Interfaces;
-
-namespace Controller.Abstraction
+﻿namespace Controller.Abstraction
 {
     public interface IController
     {

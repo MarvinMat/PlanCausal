@@ -69,6 +69,9 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 }
 
                 currentOperation.State = OperationState.InProgress;
+                currentOperation.WorkOrder.State = OrderState.InProgress;
+                currentOperation.WorkOrder.ProductionOrder.State = OrderState.InProgress;
+
                 var durationDistribution = N(currentOperation.Duration, TimeSpan.FromMinutes(0.1 * currentOperation.Duration.TotalMinutes));
                 var doneIn = Environment.Rand(POS(durationDistribution));
                 var startTime = Environment.Now;

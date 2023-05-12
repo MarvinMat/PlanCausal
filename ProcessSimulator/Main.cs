@@ -38,6 +38,7 @@ var operations = new List<WorkOperation>();
 
 orders.ForEach(productionOrder =>
 {
+    var workOrders = new List<WorkOrder>();
     for (var i = 0; i < productionOrder.Quantity; i++)
     {
         var workOrder = new WorkOrder(productionOrder);
@@ -58,7 +59,10 @@ orders.ForEach(productionOrder =>
             workOrderOperations.Add(workOperation);
         });
         workOrder.WorkOperations = workOrderOperations;
+
+        workOrders.Add(workOrder);
     }
+    productionOrder.WorkOrders = workOrders;
 });
 
 

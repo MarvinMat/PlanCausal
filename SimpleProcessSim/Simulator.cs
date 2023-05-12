@@ -99,10 +99,17 @@ namespace ProcessSim.Implementation
         {
             if (e is OperationCompletedEvent operationCompletedEvent)
             {
-                var successor = operationCompletedEvent.CompletedOperation.Successor;
+                var completedOperation = operationCompletedEvent.CompletedOperation;
+                var successor = completedOperation.Successor;
                 if (successor is not null)
                 {
                     ExecuteOperation(successor);
+                }
+                else
+                {
+                    completedOperation.WorkOrder.State = OrderState.Completed;
+                    if (completedOperation.WorkOrder.ProductionOrder.WorkOrders.All(workOrder => workOrder.State.Equals(OrderState.Completed)))
+                        completedOperation.WorkOrder.ProductionOrder.State = OrderState.Completed;
                 }
             }
             InterruptEvent?.Invoke(sender, e);
