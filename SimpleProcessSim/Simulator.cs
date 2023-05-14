@@ -27,7 +27,6 @@ namespace ProcessSim.Implementation
             _sim = new Simulation(randomSeed: seed, initialDateTime: initialDateTime);
             _simResources = new();
             _currentPlan = new();
-
         }
 
         public void Start(TimeSpan duration)
@@ -66,7 +65,7 @@ namespace ProcessSim.Implementation
             while (true)
             {
                 yield return _sim.Timeout(TimeSpan.FromHours(8));
-                OnInterrupt(new ReplanningEvent(_sim.Now));
+                InterruptHandler(this, new ReplanningEvent(_sim.Now));
 
                 _currentPlanChangedEvent.Wait();
                 _currentPlanChangedEvent.Reset();
@@ -82,12 +81,6 @@ namespace ProcessSim.Implementation
                 operation.State = OperationState.Pending;
                 machineModel.EnqueueOperation(operation);
             }
-
-        }
-
-        protected virtual void OnInterrupt(EventArgs e)
-        {
-            InterruptEvent?.Invoke(this, e);
         }
 
         public void Continue()
@@ -104,12 +97,6 @@ namespace ProcessSim.Implementation
                 if (successor is not null)
                 {
                     ExecuteOperation(successor);
-                }
-                else
-                {
-                    completedOperation.WorkOrder.State = OrderState.Completed;
-                    if (completedOperation.WorkOrder.ProductionOrder.WorkOrders.All(workOrder => workOrder.State.Equals(OrderState.Completed)))
-                        completedOperation.WorkOrder.ProductionOrder.State = OrderState.Completed;
                 }
             }
             InterruptEvent?.Invoke(sender, e);

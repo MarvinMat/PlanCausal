@@ -4,81 +4,14 @@ using Core.Abstraction.Domain.Resources;
 
 namespace Planner.Implementation
 {
-    public class GifflerThompsonPlanner : PlannerBase
+    public class GifflerThompsonPlanner : Abstraction.Planner
     {
-
         public GifflerThompsonPlanner() : base()
         {
         }
 
-        //public void Plan()
-        //{
-        //    List<WorkOperation> plan = InitializePlan();
-
-        //    _controller = new SimulationController(plan, _machines);
-        //    SubscribeToControllerEvents(_controller);
-        //    _controller.Execute(TimeSpan.FromDays(1));
-        //}
-
-        //private List<WorkOperation> InitializePlan(IEnumerable<WorkOperation>? workOperations = null)
-        //{
-        //    var rnd = new Random();
-        //    List<WorkOperation> plan;
-
-        //    if (workOperations is null)
-        //    {
-        //        plan = new List<WorkOperation>();
-        //    }
-        //    else
-        //    {
-        //        plan = workOperations.ToList();
-        //    }
-
-        //    _productionOrders.ToList().ForEach(order =>
-        //    {
-        //        WorkOperation? prevOperation = null;
-        //        order.WorkPlan.WorkPlanPositions.ForEach(operation =>
-        //        {
-        //            var workOperation = new WorkOperation(operation);
-        //            var matchingMachines = _machines.Where(machine => machine.MachineType == operation.MachineType).ToArray();
-        //            workOperation.Machine = matchingMachines[rnd.Next(0, matchingMachines.Length)];
-        //            workOperation.State = OperationState.Created;
-
-        //            if (prevOperation is not null)
-        //            {
-        //                prevOperation.Successor = workOperation;
-        //                workOperation.Predecessor = prevOperation;
-        //            }
-        //            prevOperation = workOperation;
-
-        //            Schedule(workOperation);
-        //            plan.Add(workOperation);
-        //        });
-        //    });
-        //    return plan;
-        //}
-
-        //private static void Schedule(WorkOperation workOperation)
-        //{
-        //    //TODO: Rework - Context of all Work Operations and resources needed
-        //    workOperation.EarliestStart = DateTime.Now;
-        //    workOperation.EarliestFinish = DateTime.Now + workOperation.Duration;
-        //    workOperation.LatestStart = DateTime.Now;
-        //    workOperation.LatestFinish = DateTime.Now + workOperation.Duration;
-        //}
-
-        //protected override void SubscribeToControllerEvents(IController controller)
-        //{
-        //    controller.RescheduleEvent += RescheduleHandler;
-        //}
-
-        //private void RescheduleHandler(object? sender, EventArgs e)
-        //{
-        //    InitializePlan();
-        //}
-
         // see https://docplayer.org/docview/24/2940604/#file=/storage/24/2940604/2940604.pdf
-        public override Plan Schedule(List<WorkOperation> workOperations, List<Machine> machines, DateTime currentTime)
+        protected override Plan ScheduleInternal(List<WorkOperation> workOperations, List<Machine> machines, DateTime currentTime)
         {
             var plan = new Plan(workOperations);
 
@@ -212,46 +145,5 @@ namespace Planner.Implementation
             operations.Sort(ShortestProcessingTimeFirst());
             return operations.First();
         }
-
-        // Code for validating a plan
-        //var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
-        //foreach (var machineGroup in operationsByMachine)
-        //{
-        //    var operationsOnMachine = machineGroup.OrderBy(o => o.EarliestStart).ToList();
-
-        //    for (int i = 0; i < operationsOnMachine.Count; i++)
-        //    {
-        //        for (int j = i + 1; j < operationsOnMachine.Count; j++)
-        //        {
-        //            var operation1 = operationsOnMachine[i];
-        //            var operation2 = operationsOnMachine[j];
-
-        //            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
-        //            {
-        //                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
-        //            }
-        //        }
-        //    }
-        //}
-
-        //var operationsByOrder = plan.Operations.GroupBy(o => o.WorkOrder);
-        //foreach (var orderGroup in operationsByOrder)
-        //{
-        //    var operationsOfOrder = orderGroup.OrderBy(o => o.EarliestStart).ToList();
-
-        //    for (int i = 0; i < operationsOfOrder.Count; i++)
-        //    {
-        //        for (int j = i + 1; j < operationsOfOrder.Count; j++)
-        //        {
-        //            var operation1 = operationsOfOrder[i];
-        //            var operation2 = operationsOfOrder[j];
-
-        //            if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
-        //            {
-        //                throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
-        //            }
-        //        }
-        //    }
-        //}
     }
 }
