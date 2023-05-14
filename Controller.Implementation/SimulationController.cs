@@ -1,7 +1,6 @@
 ﻿using Controller.Abstraction;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
-using Planner.Abstraction;
 using ProcessSim.Abstraction.Domain.Interfaces;
 
 namespace Controller.Implementation;
@@ -9,19 +8,19 @@ namespace Controller.Implementation;
 public class SimulationController : IController
 {
     private readonly ISimulator _simulation;
-    private readonly IPlanner _planner;
+    private readonly Planner.Abstraction.Planner _planner;
     private readonly List<Machine> _machines;
     public List<WorkOperation> OperationsToSimulate { get; set; }
     public List<WorkOperation> FinishedOperations { get; set; }
     public Plan CurrentPlan { get; set; }
 
-    public delegate void HandleInterruptEvent(EventArgs e, IPlanner planner, ISimulator simulator, Plan currentPlan, List<WorkOperation> OperationsToSimulate, List<WorkOperation> FinishedOperations);
+    public delegate void HandleInterruptEvent(EventArgs e, Planner.Abstraction.Planner planner, ISimulator simulator, Plan currentPlan, List<WorkOperation> OperationsToSimulate, List<WorkOperation> FinishedOperations);
     public HandleInterruptEvent? HandleEvent { get; set; }
 
     public SimulationController(
         List<WorkOperation> operationsToSimulate,
         List<Machine> machines,
-        IPlanner planner,
+        Planner.Abstraction.Planner planner,
         ISimulator simulator
         )
     {

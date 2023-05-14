@@ -1,22 +1,25 @@
 ﻿using Controller.Implementation;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Services;
+using Core.Implementation.Domain;
 using Core.Implementation.Events;
 using Core.Implementation.Services;
-using Planner.Abstraction;
 using Planner.Implementation;
 using ProcessSim.Implementation;
 
-IPlanner planner = new GifflerThompsonPlanner();
+var rnd = new Random();
 
-IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
+Planner.Abstraction.Planner planner = new GifflerThompsonPlanner();
+
 IMachineProvider machineProvider = new MachineProviderJson("../../../../Machines.json");
-ToolProviderJson toolProvider = new ToolProviderJson("../../../../Tools.json");
+var machines = machineProvider.Load();
 
+ToolProviderJson toolProvider = new ToolProviderJson("../../../../Tools.json");
 var tools = toolProvider.Load();
 
+IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
 var plans = workPlanProvider.Load();
-var rnd = new Random();
+
 // create 1 order for each plan
 var orders = plans.Select(plan => new ProductionOrder()
 {
@@ -24,49 +27,10 @@ var orders = plans.Select(plan => new ProductionOrder()
     Quantity = 1,
     WorkPlan = plan,
 }).ToList();
-//var orders = new List<ProductionOrder>();
-//orders.Add(new ProductionOrder()
-//{
-//    Name = $"Order {plans[0].Name}",
-//    Quantity = 1,
-//    WorkPlan = plans[0],
-//});
 
 //orders.ForEach(order => Console.WriteLine($"{order.Name} for {order.Quantity} of {order.WorkPlan.Name}"));
 
-var machines = machineProvider.Load();
-
-var operations = new List<WorkOperation>();
-
-orders.ForEach(productionOrder =>
-{
-    var workOrders = new List<WorkOrder>();
-    for (var i = 0; i < productionOrder.Quantity; i++)
-    {
-        var workOrder = new WorkOrder(productionOrder);
-        var workOrderOperations = new List<WorkOperation>();
-
-        WorkOperation? prevOperation = null;
-        productionOrder.WorkPlan.WorkPlanPositions.ForEach(planPosition =>
-        {
-            var workOperation = new WorkOperation(planPosition, workOrder);
-
-            if (prevOperation is not null)
-            {
-                prevOperation.Successor = workOperation;
-                workOperation.Predecessor = prevOperation;
-            }
-            prevOperation = workOperation;
-            operations.Add(workOperation);
-            workOrderOperations.Add(workOperation);
-        });
-        workOrder.WorkOperations = workOrderOperations;
-
-        workOrders.Add(workOrder);
-    }
-    productionOrder.WorkOrders = workOrders;
-});
-
+var operations = ModelUtil.GetWorkOperationsFromOrders(orders);
 
 
 /// <summary>
@@ -75,12 +39,12 @@ orders.ForEach(productionOrder =>
 /// <param name="operation">The WorkOperation whose successors' times need to be adjusted.</param>
 void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operationsToSimulate)
 {
-    var QueuedOperationsOnDelayedMachine = Enumerable.OrderBy(operationsToSimulate, op => op.Machine == operation.Machine).OrderBy(op => op.EarliestStart).ToList();
+    var QueuedOperationsOnDelayedMachine = operationsToSimulate.Where(op => op.Machine == operation.Machine).OrderBy(op => op.EarliestStart).ToList();
     // Skip list till you find the current delayed operation, go one further and get the successor
     var successorOnMachine = QueuedOperationsOnDelayedMachine.SkipWhile(op => !op.Equals(operation)).Skip(1).FirstOrDefault();
 
-    UpdateSuccessorTimes(operation, successorOnMachine);
-    UpdateSuccessorTimes(operation, operation.Successor);
+    UpdateSuccessorTimes(operation, successorOnMachine, operationsToSimulate);
+    UpdateSuccessorTimes(operation, operation.Successor, operationsToSimulate);
 }
 
 /// <summary>
@@ -88,7 +52,7 @@ void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operation
 /// </summary>
 /// <param name="operation">The current operation which has just been completed.</param>
 /// <param name="successor">The successor operation which is dependent on the completion of the current operation.</param>
-void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor)
+void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, List<WorkOperation> operationsToSimulate)
 {
     if (successor == null) return;
 
@@ -101,7 +65,7 @@ void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor)
         successor.EarliestFinish = successor.EarliestFinish.Add(delay);
         successor.LatestFinish = successor.LatestFinish.Add(delay);
 
-        RightShiftSuccessors(successor, operations);
+        RightShiftSuccessors(successor, operationsToSimulate);
     }
 }
 
