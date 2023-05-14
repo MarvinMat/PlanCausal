@@ -8,6 +8,7 @@
         public string Description { get; set; }
         public TimeSpan Duration { get; set; }
 
+        public int ToolId { get; set; }
         public int MachineType { get; set; }
 
         public WorkPlanPosition()

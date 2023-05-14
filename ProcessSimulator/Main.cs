@@ -1,6 +1,5 @@
 ﻿using Controller.Implementation;
 using Core.Abstraction.Domain.Processes;
-using Core.Abstraction.Domain.Resources;
 using Core.Abstraction.Services;
 using Core.Implementation.Domain;
 using Core.Implementation.Events;
@@ -14,6 +13,9 @@ Planner.Abstraction.Planner planner = new GifflerThompsonPlanner();
 
 IMachineProvider machineProvider = new MachineProviderJson("../../../../Machines.json");
 var machines = machineProvider.Load();
+
+ToolProviderJson toolProvider = new ToolProviderJson("../../../../Tools.json");
+var tools = toolProvider.Load();
 
 IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
 var plans = workPlanProvider.Load();
@@ -68,7 +70,7 @@ void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, Lis
 }
 
 
-var controller = new SimulationController(operations, machines, planner, new Simulator(123, DateTime.Now));
+var controller = new SimulationController(operations, machines, planner, new Simulator(rnd.Next(), DateTime.Now));
 
 SimulationController.HandleInterruptEvent eHandler = (e,
                                                       planner,

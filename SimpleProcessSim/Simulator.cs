@@ -105,7 +105,24 @@ namespace ProcessSim.Implementation
         public void SetCurrentPlan(List<WorkOperation> modifiedPlan)
         {
             _currentPlan = modifiedPlan;
-            // set the plan and start all operations that can be started
+
+            // if the machine of any operation (that is already queued) changed, remove that operation from that machine and enqueue it on the new machine
+            var queuedOperations = modifiedPlan.Where(op => op.State.Equals(OperationState.Pending));
+            queuedOperations.ToList().ForEach(op =>
+            {
+                _simResources.ToList().ForEach(resource =>
+                {
+                    if (resource.Value is MachineModel machineModel &&
+                    machineModel.IsQueued(op) &&
+                    op.Machine != resource.Key)
+                    {
+                        machineModel.RemoveOperation(op);
+                        ExecuteOperation(op);
+                    }
+                });
+            });
+
+            // start all operations that can be started
             _currentPlan.Where(operation =>
             {
                 var isNotStarted = operation.State.Equals(OperationState.Scheduled);

@@ -39,6 +39,7 @@ namespace Core.Implementation.Services
                             Name = operation.Name,
                             Duration = TimeSpan.FromMinutes(operation.Duration),
                             MachineType = operation.MachineId,
+                            ToolId = operation.ToolId,
                         });
                     });
 

@@ -32,7 +32,19 @@ namespace Core.Implementation.Services
                 {
                     for (var i = 0; i < machineType.Count; i++)
                     {
-                        machines.Add(new Machine { Name = machineType.Name, MachineType = machineType.MachineTypeId });
+                        if (machineType.AllowedToolIds.Length != machineType.ChangeoverTimes.Length ||
+                            machineType.ChangeoverTimes.Any(row => row.Length != machineType.AllowedToolIds.Length))
+                        {
+                            Console.WriteLine($"Provided matrix and allowed Tools for machine type {machineType.Name} do not match in dimension.");
+                            throw new JsonException();
+                        }
+                        machines.Add(new Machine
+                        {
+                            Name = machineType.Name,
+                            MachineType = machineType.TypeId,
+                            AllowedToolIds = machineType.AllowedToolIds,
+                            ChangeoverTimes = machineType.ChangeoverTimes
+                        });
                     }
                 });
 
