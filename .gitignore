@@ -1,0 +1,13 @@
+# Ignore bin and obj directories
+**/bin/
+**/obj/
+
+# Ignore Rider and Visual Studio directories
+.idea/
+.vs/
+
+# Ignore user-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates

@@ -3,39 +3,46 @@
     {
       "machineId": 1,
       "duration": 15,
-      "name": "Tischbein sägen"
+      "name": "Tischbein sÃ¤gen",
+      "toolId": 2
     },
     {
       "machineId": 2,
-      "duration": 10,
-      "name": "Tischplatte sägen"
+      "duration": 11,
+      "name": "Tischplatte sÃ¤gen",
+      "toolId": 3
     },
     {
       "machineId": 3,
       "duration": 100,
-      "name": "Lackieren"
+      "name": "Lackieren",
+      "toolId": 1
     }
   ],
   [
     {
       "machineId": 2,
       "duration": 5,
-      "name": "Nippel durch die Lasche ziehen"
-    },
+      "name": "Nippel durch die Lasche ziehen",
+      "toolId": 1
+     },
     {
       "machineId": 4,
       "duration": 25,
-      "name": "Mit der kleinen Kurbel ganz nach oben drehen"
+      "name": "Mit der kleinen Kurbel ganz nach oben drehen",
+      "toolId": 4
     },
     {
-      "machineId": 5,
-      "duration": 2,
-      "name": "Auf den Pfeil drücken"
+      "machineId": 3,
+      "duration": 12,
+      "name": "Auf den Pfeil drÃ¼cken",
+      "toolId": 2
     },
     {
       "machineId": 1,
       "duration": 18,
-      "name": "Tube öffnen"
+      "name": "Tube Ã¶ffnen",
+      "toolId": 3
     }
   ]
-]
+] 

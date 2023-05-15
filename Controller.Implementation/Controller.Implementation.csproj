@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -7,17 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimSharp" Version="3.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
+    <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
     <ProjectReference Include="..\Core.Implementation\Core.Implementation.csproj" />
+    <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
     <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

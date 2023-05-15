@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
+    <ProjectReference Include="..\Controller.Implementation\Controller.Implementation.csproj" />
+    <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
+    <ProjectReference Include="..\Planner.Implementation\Planner.Implementation.csproj" />
     <ProjectReference Include="..\SimpleProcessSim\ProcessSim.Implementation.csproj" />
   </ItemGroup>
 

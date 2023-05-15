@@ -1,16 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SimSharp" Version="3.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
+	
+  
+	<ItemGroup>
     <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
   </ItemGroup>
 

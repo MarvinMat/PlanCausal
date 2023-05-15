@@ -7,11 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SimSharp" Version="3.4.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
+    <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
+    <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>

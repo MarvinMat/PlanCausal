@@ -1,0 +1,46 @@
+[
+  {
+    "typeId": 1,
+    "count": 1,
+    "name": "Machine 1",
+    "allowedToolIds" : [1,2,3],
+    "changeoverTimes": [
+        [0.0, 5.0, 12.5],
+        [5.0, 0.0, 10.0],
+        [12.5, 10.0, 0.0]      
+        ]
+    },
+	  
+  {
+    "typeId": 2,
+    "count": 1,
+    "name": "Machine 2",
+    "allowedToolIds" : [1,3],
+    "changeoverTimes": [
+        [0.0, 5.0],
+        [5.0, 0.0]
+        ]
+  },
+  {
+    "typeId": 3,
+    "count": 1,
+    "name": "Machine 3",
+    "allowedToolIds" : [1,2,3,4],
+    "changeoverTimes": [
+        [0.0, 5.0, 12.5, 5.0],
+        [5.0, 0.0, 10.0, 5.0],
+        [12.5, 10.0, 0.0, 10.0],
+        [5.0, 5.0, 10.0, 0.0]
+    ]
+        
+  },
+  {
+    "typeId": 4,
+    "count": 1,
+    "name": "Machine 4",
+    "allowedToolIds" : [4],
+    "changeoverTimes": [
+        [0.0]
+    ]
+  }
+]
