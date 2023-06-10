@@ -1,11 +1,17 @@
 ﻿using Controller.Implementation;
+using Core.Abstraction.Domain;
+using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
+using Core.Abstraction.Domain.Resources;
 using Core.Abstraction.Services;
 using Core.Implementation.Domain;
 using Core.Implementation.Events;
 using Core.Implementation.Services;
 using Planner.Implementation;
 using ProcessSim.Implementation;
+using ProcessSim.Implementation.Core.SimulationModels;
+using SimSharp;
+using static SimSharp.Distributions;
 
 var rnd = new Random();
 
@@ -14,7 +20,7 @@ Planner.Abstraction.Planner planner = new GifflerThompsonPlanner();
 IMachineProvider machineProvider = new MachineProviderJson("../../../../Machines.json");
 var machines = machineProvider.Load();
 
-ToolProviderJson toolProvider = new ToolProviderJson("../../../../Tools.json");
+IToolProvider toolProvider = new ToolProviderJson("../../../../Tools.json");
 var tools = toolProvider.Load();
 
 IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
@@ -24,19 +30,45 @@ var plans = workPlanProvider.Load();
 var orders = plans.Select(plan => new ProductionOrder()
 {
     Name = $"Order {plan.Name}",
-    Quantity = 1,
+    Quantity = 10,
     WorkPlan = plan,
 }).ToList();
 
-//orders.ForEach(order => Console.WriteLine($"{order.Name} for {order.Quantity} of {order.WorkPlan.Name}"));
-
 var operations = ModelUtil.GetWorkOperationsFromOrders(orders);
+
+
+var simulator = new Simulator(rnd.Next(), DateTime.Now);
+
+IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
+{
+    if (simProcess is MachineModel machineModel)
+    {
+        var waitFor = 2;
+        var start = simulator.CurrentSimulationTime;
+        Console.WriteLine($"Interrupted machine {machineModel.Id} at {simulator.CurrentSimulationTime}: Waiting {waitFor} hours");
+        yield return simulator.Timeout(TimeSpan.FromHours(waitFor));
+        Console.WriteLine($"Machine {machineModel.Id} waited {simulator.CurrentSimulationTime - start} hours (done at {simulator.CurrentSimulationTime}).");
+    }
+}
+
+simulator.AddInterrupt(
+  predicate: (process) =>
+  {
+      return true;
+      //return process._machine.typeId == 2
+  },
+distribution: EXP(TimeSpan.FromHours(5)),
+interruptAction: InterruptAction
+);
+
+var controller = new SimulationController(operations, machines, planner, simulator);
 
 
 /// <summary>
 /// Shifts the start and finish times of the given operation's successors on the same machine and in the global sequence to the right.
 /// </summary>
 /// <param name="operation">The WorkOperation whose successors' times need to be adjusted.</param>
+/// <param name="operationsToSimulate">The list of all WorkOperations that are yet to be simulated.</param>
 void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operationsToSimulate)
 {
     var QueuedOperationsOnDelayedMachine = operationsToSimulate.Where(op => op.Machine == operation.Machine).OrderBy(op => op.EarliestStart).ToList();
@@ -52,6 +84,7 @@ void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operation
 /// </summary>
 /// <param name="operation">The current operation which has just been completed.</param>
 /// <param name="successor">The successor operation which is dependent on the completion of the current operation.</param>
+/// <param name="operationsToSimulate">The list of all WorkOperations that are yet to be simulated.</param>
 void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, List<WorkOperation> operationsToSimulate)
 {
     if (successor == null) return;
@@ -69,19 +102,22 @@ void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, Lis
     }
 }
 
-
-var controller = new SimulationController(operations, machines, planner, new Simulator(rnd.Next(), DateTime.Now));
-
-SimulationController.HandleInterruptEvent eHandler = (e,
+SimulationController.HandleSimulationEvent eHandler = (e,
                                                       planner,
                                                       simulation,
                                                       currentPlan,
                                                       operationsToSimulate,
                                                       finishedOperations) =>
 {
-    if (e is ReplanningEvent replanningEvent)
+    if (e is ReplanningEvent replanningEvent && operationsToSimulate.Any())
     {
-        var newPlan = planner.Schedule(operationsToSimulate, machines, replanningEvent.CurrentDate);
+        Console.WriteLine($"Replanning started at: {replanningEvent.CurrentDate}");
+        var newPlan = planner.Schedule(operationsToSimulate
+            .Where(op => !op.State.Equals(OperationState.InProgress)
+                         && !op.State.Equals(OperationState.Completed))
+            .ToList(),
+            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+            replanningEvent.CurrentDate);
         controller.CurrentPlan = newPlan;
         simulation.SetCurrentPlan(newPlan.Operations);
     }
@@ -96,31 +132,56 @@ SimulationController.HandleInterruptEvent eHandler = (e,
             completedOperation.LatestFinish = operationCompletedEvent.CurrentDate;
             RightShiftSuccessors(completedOperation, operationsToSimulate);
         }
-
         if (!operationsToSimulate.Remove(completedOperation))
             throw new Exception($"Operation {completedOperation.WorkPlanPosition.Name} ({completedOperation.WorkOrder.Name}) " +
                 $"was just completed but not found in the list of operations to simulate. This should not happen.");
-
-        controller.OperationsToSimulate = operationsToSimulate;
-
         finishedOperations.Add(completedOperation);
         controller.FinishedOperations = finishedOperations;
     }
+    if (e is InterruptionEvent interruptionEvent)
+    {
+        // replan without the machine that just got interrupted
+		var newPlan = planner.Schedule(operationsToSimulate
+			.Where(op => !op.State.Equals(OperationState.InProgress)
+						 && !op.State.Equals(OperationState.Completed))
+			.ToList(),
+            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+            interruptionEvent.CurrentDate);
+		controller.CurrentPlan = newPlan;
+		simulation.SetCurrentPlan(newPlan.Operations);
+	}
+    if (e is InterruptionHandledEvent interruptionHandledEvent)
+    {
+        // replan with the machine included that just finished its interruption
+		var newPlan = planner.Schedule(operationsToSimulate
+			.Where(op => !op.State.Equals(OperationState.InProgress)
+						 && !op.State.Equals(OperationState.Completed))
+			.ToList(),
+			machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+            interruptionHandledEvent.CurrentDate);
+		controller.CurrentPlan = newPlan;
+		simulation.SetCurrentPlan(newPlan.Operations);
+	}
 };
 
 controller.HandleEvent = eHandler;
 controller.Execute(TimeSpan.FromDays(7));
+Console.WriteLine(simulator.GetResourceSummary());
 
-//var plan = planner.Schedule(operations, machines, DateTime.Now);
+var incompleteOps = operations.Where(op => !op.State.Equals(OperationState.Completed)).ToList().Count;
+var incompleteOrders = orders.Where(order => !order.State.Equals(OrderState.Completed)).ToList().Count;
+Console.WriteLine($"{incompleteOps} operations were not completed.");
+Console.WriteLine($"{incompleteOrders} orders were not completed.");
 
-//Console.WriteLine(plan.ToString());
-
-//ISimulator simulator = new Simulator(123, DateTime.Now);
-//simulator.CreateSimulationResources(machines);
-//simulator.SetCurrentPlan(plan.Operations);
-//simulator.InterruptEvent += (sender, args) =>
-//{
-//    simulator.Continue();
-//};
-//simulator.Start(TimeSpan.FromDays(7));
+controller.Feedbacks
+    .OfType<ProductionFeedback>()
+    .ToList()
+    .ForEach(feedback => Console.WriteLine(
+        $"Feedback for Work Order: {feedback.Id} - Created at: {feedback.CreatedAt}\n" +
+        $"Updated at: {feedback.UpdatedAt}\n" +
+        $"Resources: {string.Join(", ", feedback.Resources.Select(r => r.Name))}\n" +
+        $"Is Finished: {feedback.IsFinished}\n" +
+        $"Produced Parts Count: {feedback.ProducedPartsCount}\n" +
+        $"Associated Work Order: {feedback.WorkOperation.WorkOrder.Name}\n" +
+        $"Associated Production Order State: {feedback.WorkOperation.WorkOrder.ProductionOrder.State}") );
 

@@ -1,48 +1,58 @@
 [
-  [
-    {
-      "machineId": 1,
-      "duration": 15,
-      "name": "Tischbein sägen",
-      "toolId": 2
-    },
-    {
-      "machineId": 2,
-      "duration": 11,
-      "name": "Tischplatte sägen",
-      "toolId": 3
-    },
-    {
-      "machineId": 3,
-      "duration": 100,
-      "name": "Lackieren",
-      "toolId": 1
-    }
-  ],
-  [
-    {
-      "machineId": 2,
-      "duration": 5,
-      "name": "Nippel durch die Lasche ziehen",
-      "toolId": 1
-     },
-    {
-      "machineId": 4,
-      "duration": 25,
-      "name": "Mit der kleinen Kurbel ganz nach oben drehen",
-      "toolId": 4
-    },
-    {
-      "machineId": 3,
-      "duration": 12,
-      "name": "Auf den Pfeil drücken",
-      "toolId": 2
-    },
-    {
-      "machineId": 1,
-      "duration": 18,
-      "name": "Tube öffnen",
-      "toolId": 3
-    }
-  ]
-] 
+  {
+    "workPlanId": 1,
+    "name": "Tisch",
+    "description": "Ein Tisch mit 4 Beinen und einer Platte",
+    "operations": [
+      {
+        "machineId": 1,
+        "duration": 15,
+        "name": "Tischbeine sägen",
+        "toolId": 2
+      },
+      {
+        "machineId": 2,
+        "duration": 11,
+        "name": "Tischplatte sägen",
+        "toolId": 3
+      },
+      {
+        "machineId": 3,
+        "duration": 100,
+        "name": "Lackieren",
+        "toolId": 1
+      }
+    ]
+  },
+  {
+    "workPlanId": 2,
+    "name": "Testprodukt 2",
+    "description": "Ein Testprodukt mit 4 Operationen",
+    "operations": [
+      {
+        "machineId": 2,
+        "duration": 5,
+        "name": "Nippel durch die Lasche ziehen",
+        "toolId": 1
+      },
+      {
+        "machineId": 4,
+        "duration": 25,
+        "name": "Mit der kleinen Kurbel ganz nach oben drehen",
+        "toolId": 4
+      },
+      {
+        "machineId": 3,
+        "duration": 12,
+        "name": "Auf den Pfeil drücken",
+        "toolId": 2
+      },
+      {
+        "machineId": 1,
+        "duration": 18,
+        "name": "Tube öffnen",
+        "toolId": 3
+      }
+    ]
+  }
+]

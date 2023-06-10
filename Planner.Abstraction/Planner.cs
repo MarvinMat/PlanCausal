@@ -1,6 +1,5 @@
 ﻿using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
-using System.Numerics;
 
 namespace Planner.Abstraction
 {
@@ -17,6 +16,7 @@ namespace Planner.Abstraction
         public Plan Schedule(List<WorkOperation> workOperations, List<Machine> machines, DateTime currentTime)
         {
             var plan = ScheduleInternal(workOperations, machines, currentTime);
+
             ValidatePlan(plan);
             return plan;
         }

@@ -5,7 +5,7 @@ namespace ProcessSim.Abstraction.Domain.Interfaces
 {
     public interface ISimulator
     {
-        public event EventHandler InterruptEvent;
+        public event EventHandler SimulationEventHandler;
 
         /// <summary>
         /// Set the plan to be simulated.

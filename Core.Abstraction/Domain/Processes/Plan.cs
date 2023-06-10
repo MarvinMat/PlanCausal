@@ -8,10 +8,12 @@ namespace Core.Abstraction.Domain.Processes
     public class Plan
     {
         public List<WorkOperation> Operations { get; }
+        public bool IsComplete { get; set; }
 
-        public Plan(List<WorkOperation> operations)
+        public Plan(List<WorkOperation> operations, bool isComplete)
         {
             Operations = operations;
+            IsComplete = isComplete;
         }
 
         public override string ToString()

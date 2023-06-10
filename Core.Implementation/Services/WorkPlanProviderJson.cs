@@ -21,7 +21,7 @@ namespace Core.Implementation.Services
             {
                 string json = File.ReadAllText(_path);
 
-                var workPlanVOs = JsonSerializer.Deserialize<List<List<WorkOperationVO>>>(json);
+                var workPlanVOs = JsonSerializer.Deserialize<List<WorkPlanVO>>(json);
 
                 if (workPlanVOs == null)
                 {
@@ -30,27 +30,22 @@ namespace Core.Implementation.Services
 
                 var workPlans = new List<WorkPlan>();
                 workPlanVOs.ForEach(plan =>
-                {
-                    var operations = new List<WorkPlanPosition>();
-                    plan.ForEach(operation =>
+                {   
+                    var Workplan = new WorkPlan()
                     {
-                        operations.Add(new WorkPlanPosition()
+                        Name = plan.Name,
+                        Description = plan.Description,
+                        WorkPlanPositions = plan.Operations.Select(operation => new WorkPlanPosition()
                         {
                             Name = operation.Name,
                             Duration = TimeSpan.FromMinutes(operation.Duration),
                             MachineType = operation.MachineId,
                             ToolId = operation.ToolId,
-                        });
-                    });
-
-                    workPlans.Add(new WorkPlan()
-                    {
-                        Name = $"Produkt {workPlans.Count + 1}",
-                        WorkPlanPositions = operations
-                    });
+                        }).ToList()
+                        
+                    };
+                    workPlans.Add(Workplan);
                 });
-
-
                 return workPlans;
             }
             catch (Exception ex)

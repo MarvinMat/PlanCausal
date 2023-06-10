@@ -34,8 +34,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{1CF39A6A-FA4B-40C3-868E-8D33F51D2D4F}"
 	ProjectSection(SolutionItems) = preProject
 		Machines.json = Machines.json
-		WorkPlans.json = WorkPlans.json
 		Tools.json = Tools.json
+		WorkPlans.json = WorkPlans.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5368DECF-E5ED-48B9-B288-F9B982B5AD7B}"
+	ProjectSection(SolutionItems) = preProject
+		readme.md = readme.md
+		doc\Diagramme\Sequenzdiagramm.svg = doc\Diagramme\Sequenzdiagramm.svg
 	EndProjectSection
 EndProject
 Global

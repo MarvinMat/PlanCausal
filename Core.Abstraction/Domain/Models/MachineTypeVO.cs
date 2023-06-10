@@ -13,7 +13,7 @@ namespace Core.Abstraction.Domain.Models
     
     public record Tool(
         [property: JsonPropertyName("typeId")] int TypeId,
-        [property: JsonPropertyName("size")] string Size,
-        [property: JsonPropertyName("name")] string Name
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("description")] string description
     );
 }
