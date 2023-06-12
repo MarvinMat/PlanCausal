@@ -21,6 +21,7 @@ namespace Core.Abstraction.Domain.Processes
         public WorkOperation? Predecessor { get; set; }
         public OperationState State { get; set; }
         public readonly WorkOrder WorkOrder;
+        public List<IFeedback> Feedbacks { get; set; } = new List<IFeedback>();
         public WorkOperation(WorkPlanPosition workPlanPosition, WorkOrder workOrder)
         {
             WorkPlanPosition = workPlanPosition;

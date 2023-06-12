@@ -6,21 +6,19 @@ namespace Core.Abstraction.Domain;
 public class ProductionFeedback : IFeedback
 {
     public Guid Id { get; init; }
-    public List<IResource> Resources { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public bool IsFinished { get; set; }
-    public int ProducedPartsCount { get; set; }
-    public WorkOperation WorkOperation { get; set; }
-    
+    public List<IResource> Resources { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public bool IsFinished { get; init; }
+    public int DoneTotal { get; init; }
+    public WorkOperation WorkOperation { get; init; }
+    public TimeSpan LeadTime => CreatedAt - WorkOperation.EarliestStart;
+    //TODO: implement done as a computed property - calculated by the parts manufactured divided by the total part count
+    public double DoneInPercent { get; init; } = 0.0;
     public ProductionFeedback(WorkOperation workOperation)
     {
         Id = Guid.NewGuid();
         Resources = new List<IResource>();
         CreatedAt = DateTime.Now;
-        UpdatedAt = DateTime.Now;
-        IsFinished = false;
-        ProducedPartsCount = 0;
         WorkOperation = workOperation;
     }
 }

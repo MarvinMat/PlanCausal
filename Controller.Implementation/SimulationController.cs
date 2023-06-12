@@ -61,11 +61,13 @@ public class SimulationController : IController
             var productionFeedback = new ProductionFeedback(operationCompletedEvent.CompletedOperation)
             {
                 CreatedAt = operationCompletedEvent.CurrentDate,
-                UpdatedAt = operationCompletedEvent.CurrentDate,
                 IsFinished = true,
-                ProducedPartsCount = 1,
-                Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ?? throw new NullReferenceException("Machine is null.")},
+                DoneTotal = 1,
+                DoneInPercent = 1,
+                Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ?? 
+                                                  throw new NullReferenceException("Machine is null.")},
             };
+            operationCompletedEvent.CompletedOperation.Feedbacks.Add(productionFeedback);
             Feedbacks.Add(productionFeedback);
             //Console.WriteLine($"The production order (ID: {productionFeedback.Id}) {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.Name} is now: {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.State}");
         }
