@@ -7,6 +7,7 @@ using Core.Abstraction.Services;
 using Core.Implementation.Domain;
 using Core.Implementation.Events;
 using Core.Implementation.Services;
+using Core.Implementation.Services.Reporting;
 using Planner.Implementation;
 using ProcessSim.Implementation;
 using ProcessSim.Implementation.Core.SimulationModels;
@@ -194,7 +195,9 @@ controller.Feedbacks
         $"Produced Parts Count: {feedback.DoneTotal}\n" +
         $"Associated Work Order: {feedback.WorkOperation.WorkOrder.Name}\n" +
         $"Associated Production Order State: {feedback.WorkOperation.WorkOrder.ProductionOrder.State}"));
+
 Console.WriteLine("===================================================");
+
 controller.FinishedOperations.ForEach(operation =>
 {
     Console.WriteLine($"Operation: {operation.WorkPlanPosition.Name}");
@@ -208,3 +211,11 @@ controller.FinishedOperations.ForEach(operation =>
                           $"\tLead time: {productionFeedback.LeadTime.TotalMinutes:##.##} minutes");
     });
 });
+
+var stats = new ProductionStats(controller.Feedbacks);
+
+var meanLeadTime = stats.CalculateMeanLeadTimeInMinutes();
+Console.WriteLine($"Mean lead time: {meanLeadTime:##.##} minutes");
+
+var meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1);
+Console.WriteLine($"Mean lead time of machine 1: {meanLeadTimeMachine1:##.##} minutes");
