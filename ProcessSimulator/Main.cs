@@ -30,14 +30,15 @@ var plans = workPlanProvider.Load();
 var orders = plans.Select(plan => new ProductionOrder()
 {
     Name = $"Order {plan.Name}",
-    Quantity = 10,
+    Quantity = 50,
     WorkPlan = plan,
 }).ToList();
 
 var operations = ModelUtil.GetWorkOperationsFromOrders(orders);
 
-
-var simulator = new Simulator(rnd.Next(), DateTime.Now);
+var seed = rnd.Next();
+Console.WriteLine($"Seed: {seed}");
+var simulator = new Simulator(seed, DateTime.Now);
 
 IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
 {
@@ -45,9 +46,9 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
     {
         var waitFor = 2;
         var start = simulator.CurrentSimulationTime;
-        Console.WriteLine($"Interrupted machine {machineModel.Id} at {simulator.CurrentSimulationTime}: Waiting {waitFor} hours");
+        Console.WriteLine($"Interrupted machine {machineModel.Machine.Description} at {simulator.CurrentSimulationTime}: Waiting {waitFor} hours");
         yield return simulator.Timeout(TimeSpan.FromHours(waitFor));
-        Console.WriteLine($"Machine {machineModel.Id} waited {simulator.CurrentSimulationTime - start} hours (done at {simulator.CurrentSimulationTime}).");
+        Console.WriteLine($"Machine {machineModel.Machine.Description} waited {simulator.CurrentSimulationTime - start:hh\\:mm\\:ss} hours (done at {simulator.CurrentSimulationTime}).");
     }
 }
 
@@ -140,7 +141,7 @@ SimulationController.HandleSimulationEvent eHandler = (e,
     }
     if (e is InterruptionEvent interruptionEvent)
     {
-        // replan without the machine that just got interrupted
+        // replan without the machines that just got interrupted
 		var newPlan = planner.Schedule(operationsToSimulate
 			.Where(op => !op.State.Equals(OperationState.InProgress)
 						 && !op.State.Equals(OperationState.Completed))

@@ -5,11 +5,11 @@ namespace Core.Implementation.Events
     public class InterruptionEvent : EventArgs
     {
         public DateTime CurrentDate { get; }
-        public IResource AffectedResource { get; }
-        public InterruptionEvent(DateTime currentDate, IResource affectedResource)
+        public List<IResource> AffectedResources { get; }
+        public InterruptionEvent(DateTime currentDate, List<IResource> affectedResources)
         {
             CurrentDate = currentDate;
-            AffectedResource = affectedResource;
+            AffectedResources = affectedResources;
         }
     }
 }

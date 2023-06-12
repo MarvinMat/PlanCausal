@@ -36,7 +36,7 @@ namespace ProcessSim.Implementation
             _sim.Process(Replanning());
 
             _currentPlanChangedEvent.Reset();
-
+            
             _sim.Run(duration);
         }
 
@@ -54,14 +54,14 @@ namespace ProcessSim.Implementation
             {
                 var model = new MachineModel(_sim, machine, _currentPlanChangedEvent)
                 {
-                    WaitingTime = new SampleMonitor($"WaitingTime of Machine {machine.Name}", true),
-                    LeadTime = new SampleMonitor($"LeadTime of Machine {machine.Name}", true),
-                    QueueLength = new TimeSeriesMonitor(_sim, $"QueueLength of Machine {machine.Name}", true)
+                    WaitingTime = new SampleMonitor($"WaitingTime of Machine {machine.Description}", true),
+                    LeadTime = new SampleMonitor($"LeadTime of Machine {machine.Description}", true),
+                    QueueLength = new TimeSeriesMonitor(_sim, $"QueueLength of Machine {machine.Description}", true)
                 };
                 model.SimulationEventHandler += InvokeSimulationEvent;
 
                 if (!_simResources.TryAdd(resource, model))
-                    Debug.WriteLine($"Machine {machine.Name} with ID {machine.Id} already added.");
+                    Debug.WriteLine($"Machine {machine.Description} with ID {machine.Id} already added.");
             }
         }
         private IEnumerable<Event> Replanning()
@@ -113,6 +113,7 @@ namespace ProcessSim.Implementation
             _currentPlan = modifiedPlan;
 
             MoveQueuedOperationsToNewMachine(modifiedPlan);
+            RemoveOperationsNotInNewPlan(modifiedPlan);
 
             // start all operations that can be started
             _currentPlan.Where(operation =>
@@ -123,6 +124,29 @@ namespace ProcessSim.Implementation
 
                 return isNotStarted && (!hasPredecessor || isPredecessorCompleted);
             }).ToList().ForEach(ExecuteOperation);
+        }
+
+        private void RemoveOperationsNotInNewPlan(List<WorkOperation> modifiedPlan)
+        {
+            // if any operation that is already queued on a machine, is not in the new plan, remove it from the machine
+             _simResources.ToList().ForEach(resource =>
+             {
+                if (resource.Value is MachineModel machineModel)
+                {
+                     var operationsToRemove = new List<WorkOperation>();
+                     machineModel.OperationQueue.Where(operation => operation.State.Equals(OperationState.Pending))
+                     .ToList().ForEach(operation =>
+                     {
+                         if (!modifiedPlan.Contains(operation))
+                             operationsToRemove.Add(operation);
+                     });
+                     operationsToRemove.ForEach(operation =>
+                     {
+                         machineModel.RemoveOperation(operation);
+                         operation.State = OperationState.Scheduled;
+                     });
+                }
+            });
         }
 
         private void MoveQueuedOperationsToNewMachine(IEnumerable<WorkOperation> modifiedPlan)
@@ -162,8 +186,7 @@ namespace ProcessSim.Implementation
             while (true)
             {
                 yield return _sim.Timeout(interruptTime);
-                var resourcesToInterrupt = _simResources.Where(resource =>
-                {
+                var resourcesToInterrupt = _simResources.Where(resource => {
                     return predicate.Invoke(resource.Value);
                 }).ToList();
 
@@ -173,10 +196,16 @@ namespace ProcessSim.Implementation
                     if (resource.Value is MachineModel machineModel)
                         if (!machineModel.State.Equals(MachineState.Interrupted))
                         {
+                            machineModel.Machine.State = MachineState.Interrupted;
                             machineModel.Process.Interrupt(interruptAction);
                             interruptedResources.Add(resource.Key);
                         }
                 });
+
+                InvokeSimulationEvent(this, new InterruptionEvent(_sim.Now, interruptedResources));
+
+                _currentPlanChangedEvent.Wait();
+                _currentPlanChangedEvent.Reset();
             }
         }
         public SimSharp.Timeout Timeout(Distribution<TimeSpan> distribution) => _sim.Timeout(distribution);

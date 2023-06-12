@@ -67,7 +67,7 @@ public class SimulationController : IController
                 Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ?? throw new NullReferenceException("Machine is null.")},
             };
             Feedbacks.Add(productionFeedback);
-            Console.WriteLine($"The production order (ID: {productionFeedback.Id}) {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.Name} is now: {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.State}");
+            //Console.WriteLine($"The production order (ID: {productionFeedback.Id}) {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.Name} is now: {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.State}");
         }
         HandleEvent?.Invoke(e, _planner, _simulation, CurrentPlan, OperationsToSimulate, FinishedOperations);
         

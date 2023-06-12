@@ -24,7 +24,7 @@ namespace Core.Abstraction.Domain.Processes
             foreach (var machine in machines)
             {
                 sb.AppendLine();
-                sb.AppendLine($"\tMachine: {machine?.Name} ({machine?.Id})");
+                sb.AppendLine($"\tMachine: {machine?.Description} ({machine?.Id})");
                 sb.AppendLine();
                 var operations = Operations.Where(op => op.Machine == machine).OrderBy(op => op.EarliestStart).ToList();
                 operations.ForEach(operation =>
