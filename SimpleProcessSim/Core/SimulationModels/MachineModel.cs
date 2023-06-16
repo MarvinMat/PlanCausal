@@ -135,9 +135,13 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         private IEnumerable<Event> ProcessOrder()
         {
             _currentOperation.State = OperationState.InProgress;
+            if (_currentOperation.WorkOrder.State.Equals(OrderState.Created))
+                _currentOperation.WorkOrder.StartTime = Environment.Now;
             _currentOperation.WorkOrder.State = OrderState.InProgress;
+            if (_currentOperation.WorkOrder.ProductionOrder.State.Equals(OrderState.Created))
+                _currentOperation.WorkOrder.ProductionOrder.StartedDate = Environment.Now;
             _currentOperation.WorkOrder.ProductionOrder.State = OrderState.InProgress;
-
+            
             _machine.State = MachineState.Working;
 
             var durationDistribution = N(_currentOperation.Duration,
@@ -180,10 +184,12 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             if (_currentOperation?.Successor is not null) return;
 
             _currentOperation.WorkOrder.State = OrderState.Completed;
+            _currentOperation.WorkOrder.EndTime = Environment.Now;
 
             if (_currentOperation.WorkOrder.ProductionOrder.WorkOrders.All(workOrder =>
                     workOrder.State.Equals(OrderState.Completed)))
                 _currentOperation.WorkOrder.ProductionOrder.State = OrderState.Completed;
+            _currentOperation.WorkOrder.ProductionOrder.CompletedDate = Environment.Now;
         }
 
         private IEnumerable<Event> Changeover()

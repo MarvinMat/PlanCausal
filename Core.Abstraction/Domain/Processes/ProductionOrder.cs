@@ -8,7 +8,8 @@ namespace Core.Abstraction.Domain.Processes
         public string Name { get; set; }
         public int Quantity { get; set; }
         public DateTime DeliveryDate { get; set; }
-        public DateTime ProductionStart { get; set; }
+        public DateTime StartedDate { get; set; }
+        public DateTime CompletedDate { get; set; }
         public OrderState State { get; set; }
 
         public WorkPlan WorkPlan { get; init; }

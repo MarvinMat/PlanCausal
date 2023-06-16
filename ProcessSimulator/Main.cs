@@ -212,7 +212,7 @@ controller.FinishedOperations.ForEach(operation =>
     });
 });
 
-var stats = new ProductionStats(controller.Feedbacks);
+var stats = new ProductionStats(orders, controller.Feedbacks);
 
 var meanLeadTime = stats.CalculateMeanLeadTimeInMinutes();
 Console.WriteLine($"Mean lead time: {meanLeadTime:##.##} minutes");
