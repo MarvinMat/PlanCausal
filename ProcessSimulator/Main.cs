@@ -136,6 +136,7 @@ SimulationController.HandleSimulationEvent eHandler = (e,
             replanningEvent.CurrentDate);
           controller.CurrentPlan = newPlan;
           simulation.SetCurrentPlan(newPlan.Operations);
+          break;
         }
         case OperationCompletedEvent operationCompletedEvent:
         {
