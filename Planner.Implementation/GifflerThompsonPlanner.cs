@@ -120,11 +120,24 @@ namespace Planner.Implementation
                     earliestStartTimeByMachineType[selectedMachineType] = newEarliestStartTimeOfMachineType;
 
                     // update the start time of all other operations on this machine type
-                    var otherOperationsOnSelectedMachineType = workOperations.Where(op =>
-                        op.WorkPlanPosition.MachineType == selectedMachineType &&
-                        !plannedOperations.Contains(op)
-                        ).ToList();
-                    otherOperationsOnSelectedMachineType.ForEach(op =>
+                    // var otherOperationsOnSelectedMachineType = workOperations.Where(op =>
+                    //     op.WorkPlanPosition.MachineType == selectedMachineType &&
+                    //     !plannedOperations.Contains(op)
+                    //     ).ToList();
+                    // otherOperationsOnSelectedMachineType.ForEach(op =>
+                    // {
+                    //     if (newEarliestStartTimeOfMachineType > op.EarliestStart)
+                    //         op.EarliestStart = newEarliestStartTimeOfMachineType;
+                    //
+                    //     if (newEarliestStartTimeOfMachineType > op.LatestStart)
+                    //         op.LatestStart = newEarliestStartTimeOfMachineType;
+                    // });
+                    
+                    var otherOperationsOnSelectedMachineType = workOperations
+                        .Where(op => op.WorkPlanPosition.MachineType == selectedMachineType && !plannedOperations.Contains(op))
+                        .ToList();
+
+                    Parallel.ForEach(otherOperationsOnSelectedMachineType, op =>
                     {
                         if (newEarliestStartTimeOfMachineType > op.EarliestStart)
                             op.EarliestStart = newEarliestStartTimeOfMachineType;
@@ -132,6 +145,7 @@ namespace Planner.Implementation
                         if (newEarliestStartTimeOfMachineType > op.LatestStart)
                             op.LatestStart = newEarliestStartTimeOfMachineType;
                     });
+
 
                     // 2.2.4 update the start time of the successor of the scheduled operation and add it to S (the operations to schedule next)
                     var successor = operationToSchedule.Successor;
