@@ -46,12 +46,12 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
 {
     if (simProcess is MachineModel machineModel)
     {
-        var waitFor = 2;
+        var waitFor = POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
         var start = simulator.CurrentSimulationTime;
 
-        Log.Logger.Information("Interrupted machine {Machine} at {Time}: Waiting {WaitFor} hours",
+        Log.Logger.Information("Interrupted machine {Machine} at {Time}",
             machineModel.Machine.Description, simulator.CurrentSimulationTime, waitFor);
-        yield return simulator.Timeout(TimeSpan.FromHours(waitFor));
+        yield return simulator.Timeout(waitFor);
         Log.Logger.Information("Machine {Machine} waited {Waited} hours (done at {Time})",
             machineModel.Machine.Description, simulator.CurrentSimulationTime - start, simulator.CurrentSimulationTime);
     }
