@@ -1,58 +1,184 @@
 [
   {
-    "workPlanId": 1,
     "name": "Tisch",
-    "description": "Ein Tisch mit 4 Beinen und einer Platte",
+    "description": "Ein klassischer Holztisch mit vier Beinen und einer Tischplatte",
     "operations": [
       {
+        "name": "Tischplatte zurecht sägen",
+        "duration": 10,
         "machineId": 1,
-        "duration": 15,
-        "name": "Tischbeine sägen",
         "toolId": 2
       },
       {
-        "machineId": 2,
-        "duration": 11,
-        "name": "Tischplatte sägen",
-        "toolId": 3
-      },
-      {
+        "name": "Tischplatte schleifen",
+        "duration": 15,
         "machineId": 3,
-        "duration": 100,
-        "name": "Lackieren",
-        "toolId": 1
-      }
-    ]
-  },
-  {
-    "workPlanId": 2,
-    "name": "Testprodukt 2",
-    "description": "Ein Testprodukt mit 4 Operationen",
-    "operations": [
+        "toolId": 5
+      },
       {
-        "machineId": 2,
-        "duration": 5,
-        "name": "Nippel durch die Lasche ziehen",
+        "name": "Tischbein zurecht sägen",
+        "duration": 2,
+        "machineId": 1,
         "toolId": 1
       },
       {
-        "machineId": 4,
-        "duration": 25,
-        "name": "Mit der kleinen Kurbel ganz nach oben drehen",
+        "name": "Tischbein zurecht sägen",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 1
+      },
+      {
+        "name": "Tischbein zurecht sägen",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 1
+      },
+      {
+        "name": "Tischbein zurecht sägen",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 1
+      },
+      {
+        "name": "Tischbein schleifen",
+        "duration": 12,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Tischbein schleifen",
+        "duration": 12,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Tischbein schleifen",
+        "duration": 12,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Tischbein schleifen",
+        "duration": 12,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Tischbeine mit Tisch verkleben",
+        "duration": 30,
+        "machineId": 2,
+        "toolId": 6
+      },
+      {
+        "name": "Tisch schleifen",
+        "duration": 45,
+        "machineId": 3,
         "toolId": 4
       },
       {
-        "machineId": 3,
-        "duration": 12,
-        "name": "Auf den Pfeil drücken",
+        "name": "Tisch lackieren",
+        "duration": 125,
+        "machineId": 2,
+        "toolId": 3
+      }
+    ],
+    "workPlanId": 1
+  },
+  {
+    "name": "Stuhl",
+    "description": "Ein klassischer Holzstuhl mit Lehne.",
+    "operations": [
+      {
+        "name": "Sitzfläche zurechtschneiden",
+        "duration": 2,
+        "machineId": 1,
         "toolId": 2
       },
       {
+        "name": "Sitzfläche schleifen",
+        "duration": 13,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Lehne zurechtschneiden",
+        "duration": 4,
         "machineId": 1,
-        "duration": 18,
-        "name": "Tube öffnen",
+        "toolId": 2
+      },
+      {
+        "name": "Lehne schleifen",
+        "duration": 15,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhlbein zurechtschneiden",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 2
+      },
+      {
+        "name": "Stuhlbein zurechtschneiden",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 2
+      },
+      {
+        "name": "Stuhlbein zurechtschneiden",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 2
+      },
+      {
+        "name": "Stuhlbein zurechtschneiden",
+        "duration": 2,
+        "machineId": 1,
+        "toolId": 2
+      },
+      {
+        "name": "Stuhlbein schleifen",
+        "duration": 7,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhlbein schleifen",
+        "duration": 7,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhlbein schleifen",
+        "duration": 7,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhlbein schleifen",
+        "duration": 7,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhlbein schleifen",
+        "duration": 7,
+        "machineId": 3,
+        "toolId": 5
+      },
+      {
+        "name": "Stuhl vollständig verkleben",
+        "duration": 25,
+        "machineId": 2,
+        "toolId": 6
+      },
+      {
+        "name": "Stuhl vollständig lackieren",
+        "duration": 145,
+        "machineId": 2,
         "toolId": 3
       }
-    ]
+    ],
+    "workPlanId": 2
   }
 ]

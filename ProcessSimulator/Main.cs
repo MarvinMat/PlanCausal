@@ -29,12 +29,29 @@ IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkP
 var plans = workPlanProvider.Load();
 
 // create 1 order for each plan
-var orders = plans.Select(plan => new ProductionOrder()
+// var orders = plans.Select(plan => new ProductionOrder()
+// {
+//     Name = $"Order {plan.Name}",
+//     Quantity = 20,
+//     WorkPlan = plan,
+// }).ToList();
+
+var orders = new List<ProductionOrder>()
 {
-    Name = $"Order {plan.Name}",
-    Quantity = 2,
-    WorkPlan = plan,
-}).ToList();
+    new ()
+    {
+        Name = "Order: Tisch bauen",
+        Quantity = 20,
+        WorkPlan = plans[0]
+    },
+    new ()
+    {
+        Name = "Order: Stuhl bauen",
+        Quantity = 80,
+        WorkPlan = plans[1]
+
+    }
+};
 
 var operations = ModelUtil.GetWorkOperationsFromOrders(orders);
 
@@ -49,20 +66,16 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
         var waitFor = POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
         var start = simulator.CurrentSimulationTime;
 
-        Log.Logger.Information("Interrupted machine {Machine} at {Time}",
-            machineModel.Machine.Description, simulator.CurrentSimulationTime, waitFor);
+        Log.Logger.Information("Interrupted {Machine} at {Time}",
+            machineModel.Machine.Description, simulator.CurrentSimulationTime);
         yield return simulator.Timeout(waitFor);
-        Log.Logger.Information("Machine {Machine} waited {Waited} hours (done at {Time})",
+        Log.Logger.Information("{Machine} waited {Waited} hours (done at {Time})",
             machineModel.Machine.Description, simulator.CurrentSimulationTime - start, simulator.CurrentSimulationTime);
     }
 }
 
 simulator.AddInterrupt(
-    predicate: (process) =>
-    {
-        return true;
-        //return process._machine.typeId == 2
-    },
+    predicate: (process) => ((MachineModel)process).Machine.MachineType == 1,
     distribution: EXP(TimeSpan.FromHours(5)),
     interruptAction: InterruptAction
 );
@@ -189,7 +202,7 @@ SimulationController.HandleSimulationEvent eHandler = (e,
 
 controller.HandleEvent = eHandler;
 
-controller.Execute(TimeSpan.FromDays(7));
+controller.Execute(TimeSpan.FromDays(30));
 
 // Console.WriteLine(simulator.GetResourceSummary());
 //
@@ -226,16 +239,20 @@ controller.Execute(TimeSpan.FromDays(7));
 //     });
 // });
 
+Log.Logger.Information("Simulation finished at: {SimulationFinishedAt}", DateTime.Now);
+Log.Logger.Information("Generated {FeedbacksCount} Feedbacks", controller.Feedbacks.Count);
 var stats = new ProductionStats(orders, controller.Feedbacks);
 
 var meanLeadTime = stats.CalculateMeanLeadTimeInMinutes();
 Log.Logger.Information("Mean lead time: {MeanLeadTime} minutes", meanLeadTime);
 
 var meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1);
-Log.Logger.Information("Mean lead time of machine 1: {MeanLeadTimeMachine1} minutes", meanLeadTimeMachine1);
+Log.Logger.Information("Mean lead time of {MachineDescription}: {MeanLeadTimeMachine1} minutes", machines[0].Description, meanLeadTimeMachine1);
 
 Log.CloseAndFlush();
 
+
+//TODO: refactor this to a separate class and file
 var writer = new FeedbackWriter();
 await writer.WriteFeedbackToJsonAsync(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), "feedbacks.json");
 

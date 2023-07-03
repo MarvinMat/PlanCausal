@@ -8,7 +8,7 @@ namespace Core.Abstraction.Domain.Resources
     {
         public Guid Id { get; init; }
         public string Name { get; init; }
-        public string Description => $"Machine {MachineType}.{Id.ToString()[..3]}";
+        public string Description => $"{Name}.{Id.ToString()[..3]}";
         public MachineState State { get; set; }
 
         public int MachineType { get; init; }

@@ -1,22 +1,32 @@
-﻿[
-   {
-    "typeId": 1,
-    "name": "Tool 1",
-    "description": "Tool 1"
-   },
+[
   {
-    "typeId": 2,
-    "name": "Tool 2",
-    "description": "Tool 2"
+    "name": "Sägeblatt fein",
+    "description": "3mm - 80 Zähne",
+    "typeId": 1
   },
   {
-    "typeId": 3,
-    "name": "Tool 3",
-    "description": "Tool 3"
+    "name": "Sägeblatt grob",
+    "description": "3mm - 40 Zähne",
+    "typeId": 2
   },
   {
-    "typeId": 4,
-    "name": "Tool 4",
-    "description": "Tool 4"
+    "name": "Lackierpistole",
+    "description": "für Lackierarbeiten geeignet",
+    "typeId": 3
+  },
+  {
+    "name": "Schleifpapier fein",
+    "description": "1000er ",
+    "typeId": 4
+  },
+  {
+    "name": "Schleifpapier grob",
+    "description": "80er",
+    "typeId": 5
+  },
+  {
+    "name": "Holzleim",
+    "description": "klebt Holz zusammen",
+    "typeId": 6
   }
 ]

@@ -11,10 +11,10 @@ Log.Logger = new LoggerConfiguration()
  .CreateLogger();
 
  
- var productionScenario = new ProductionScenario(550, 
+ var productionScenario = new ProductionScenario(100, 
      new MachineProviderJson($"../../../../Machines.json").Load(),
      new WorkPlanProviderJson($"../../../../WorkPlans.json").Load());
- productionScenario.Run(TimeSpan.FromDays(90));
+ productionScenario.Run(TimeSpan.FromDays(30));
 //var benchmark = BenchmarkRunner.Run<StatsBenchmark>();
 
 Log.CloseAndFlush();
