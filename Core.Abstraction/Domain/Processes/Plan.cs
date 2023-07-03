@@ -32,7 +32,7 @@ namespace Core.Abstraction.Domain.Processes
                     sb.AppendLine($"Operation: {operation.WorkPlanPosition.Name}");
                     sb.AppendLine($"Earliest Start: {operation.EarliestStart}");
                     sb.AppendLine($"Earliest Finish: {operation.EarliestFinish}");
-                    sb.AppendLine($"Duration: {operation.Duration}");
+                    sb.AppendLine($"Duration: {operation.MeanDuration}");
                     sb.AppendLine();
                 });
             }

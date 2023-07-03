@@ -16,7 +16,8 @@ namespace Core.Abstraction.Domain.Processes
         public DateTime EarliestFinish { get; set; }
         public DateTime LatestStart { get; set; }
         public DateTime LatestFinish { get; set; }
-        public TimeSpan Duration => WorkPlanPosition.Duration;
+        public DateTime ActualStart { get; set; }
+        public TimeSpan MeanDuration => WorkPlanPosition.Duration;
         public WorkOperation? Successor { get; set; }
         public WorkOperation? Predecessor { get; set; }
         public OperationState State { get; set; }

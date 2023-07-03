@@ -1,10 +1,10 @@
 ﻿using Controller.Abstraction;
+using Core.Abstraction.Domain;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
+using Core.Implementation.Events;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using System.Text;
-using Core.Abstraction.Domain;
-using Core.Implementation.Events;
 
 namespace Controller.Implementation;
 
@@ -13,7 +13,7 @@ public class SimulationController : IController
     private readonly ISimulator _simulation;
     private readonly Planner.Abstraction.Planner _planner;
     private readonly List<Machine> _machines;
-    public List <IFeedback> Feedbacks { get; set; }
+    public List<IFeedback> Feedbacks { get; set; }
     private List<WorkOperation> OperationsToSimulate { get; set; }
     public List<WorkOperation> FinishedOperations { get; set; }
     public Plan CurrentPlan { get; set; }
@@ -63,8 +63,8 @@ public class SimulationController : IController
                 CreatedAt = operationCompletedEvent.CurrentDate,
                 IsFinished = true,
                 DoneTotal = 1,
-                DoneInPercent = 1,
-                Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ?? 
+                DoneInPercent = 100,
+                Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ??
                                                   throw new NullReferenceException("Machine is null.")},
             };
             operationCompletedEvent.CompletedOperation.Feedbacks.Add(productionFeedback);
@@ -72,7 +72,7 @@ public class SimulationController : IController
             //Console.WriteLine($"The production order (ID: {productionFeedback.Id}) {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.Name} is now: {productionFeedback.WorkOperation.WorkOrder.ProductionOrder.State}");
         }
         HandleEvent?.Invoke(e, _planner, _simulation, CurrentPlan, OperationsToSimulate, FinishedOperations);
-        
+
         _simulation.Continue();
     }
 

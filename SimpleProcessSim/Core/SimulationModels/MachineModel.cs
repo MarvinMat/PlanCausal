@@ -14,7 +14,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         private readonly List<WorkOperation> _operationQueue;
         private readonly ManualResetEventSlim _continueEvent;
         private readonly ILogger _logger;
-        
+
         private WorkOperation? _currentOperation;
         private bool _isProcessRunning;
         private bool _isProcessInterrupted;
@@ -77,11 +77,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _operationQueue.Sort((a, b) => a.EarliestStart.CompareTo(b.EarliestStart));
 
             // interrupt if current operation has changed
-            if (_isProcessRunning && 
+            if (_isProcessRunning &&
                 !_isProcessInterrupted &&
-                Process != Environment.ActiveProcess && 
-                State.Equals(MachineState.Idle) && 
-                (_operationQueue.Count == 0 ||  _operationQueue.First() != previousFirstOperation))
+                Process != Environment.ActiveProcess &&
+                State.Equals(MachineState.Idle) &&
+                (_operationQueue.Count == 0 || _operationQueue.First() != previousFirstOperation))
             {
                 Process.Interrupt("Removed operation");
                 _isProcessInterrupted = true;
@@ -110,7 +110,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 foreach (var waitingOrChangeoverEvent in Changeover())
                 {
                     yield return waitingOrChangeoverEvent;
-				}
+                }
 
                 if (_currentOperation == null)
                 {
@@ -122,11 +122,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 foreach (var processingEvent in ProcessOrder())
                 {
                     yield return processingEvent;
-				}
+                }
 
                 AssessOrderCompletion();
                 SimulationEventHandler?.Invoke(this, new OperationCompletedEvent(Environment.Now, _currentOperation));
-                
+
                 _continueEvent.Wait();
                 _continueEvent.Reset();
 
@@ -145,17 +145,19 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             if (_currentOperation.WorkOrder.ProductionOrder.State.Equals(OrderState.Created))
                 _currentOperation.WorkOrder.ProductionOrder.StartedDate = Environment.Now;
             _currentOperation.WorkOrder.ProductionOrder.State = OrderState.InProgress;
-            
+
             _machine.State = MachineState.Working;
 
-            var durationDistribution = N(_currentOperation.Duration,
-                TimeSpan.FromMinutes(0.1 * _currentOperation.Duration.TotalMinutes));
+            var durationDistribution = N(_currentOperation.MeanDuration,
+                TimeSpan.FromMinutes(0.1 * _currentOperation.MeanDuration.TotalMinutes));
             var processingDuration = Environment.Rand(POS(durationDistribution));
 
             var startTime = Environment.Now;
-            
+            _currentOperation.ActualStart = startTime;
+
+
             _logger.Information("On Machine {MachineDescription}: Started {Name} at {StartTime} (should have been at {CurrentOperationEarliestStart}). ETA is {ProcessingDuration}", _machine.Description, _currentOperation.WorkPlanPosition.Name, startTime, _currentOperation.EarliestStart, startTime + processingDuration);
-            
+
             var processingTimeDone = TimeSpan.Zero;
             while (processingDuration - processingTimeDone > TimeSpan.Zero)
             {
@@ -179,7 +181,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
             _logger.Information("On Machine {MachineDescription}: Completed {Name} at {EndTime} (lasted {Duration} - supposed to {SupposedDuration} - mean is {MeanDuration})",
                 _machine.Description, _currentOperation.WorkPlanPosition.Name, Environment.Now, Environment.Now - startTime, processingDuration, _currentOperation.WorkPlanPosition.Duration);
-            
+
             _currentOperation.State = OperationState.Completed;
         }
 
@@ -198,11 +200,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
         private IEnumerable<Event> Changeover()
         {
-            
+
             var changeoverTime = GenerateChangeoverTime(_currentOperation.WorkPlanPosition.ToolId);
             var waitTime = _currentOperation.EarliestStart - Environment.Now - changeoverTime;
             if (waitTime < TimeSpan.Zero) waitTime = TimeSpan.Zero;
-            
+
             _logger.Information("On Machine {MachineDescription}: Starting preparation at {StartTime} for next operation scheduled at {CurrentOperationEarliestStart}, taking {WaitTime} to wait and {ChangeoverTime} to changeover",
                 _machine.Description, Environment.Now, _currentOperation.EarliestStart, waitTime, changeoverTime);
 
@@ -280,7 +282,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                                 //changeover target tool is now a different one, so restart the changeover completely
                                 changeoverTime = GenerateChangeoverTime(_operationQueue.First().WorkPlanPosition.ToolId);
                                 changeoverTimeDone = TimeSpan.Zero;
-                                
+
                                 _logger.Information("On Machine {MachineDescription}: Got new operation to process at {StartTime} ,scheduled at {CurrentOperationEarliestStart}, reset changeover progress, now taking {ChangeoverTime} to changeover",
                                     _machine.Description, Environment.Now, _operationQueue.First().EarliestStart, changeoverTime);
                             }
@@ -290,7 +292,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                         {
                             _logger.Information("On Machine {MachineDescription}: Got no operation to process anymore, at {StartTime}, leaving changeover state",
                                 _machine.Description, Environment.Now);
-                            
+
                             _currentOperation = null;
                             yield break;
                         }
@@ -334,17 +336,17 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             while (_operationQueue.Count == 0)
             {
                 yield return Environment.Timeout(TimeSpan.FromDays(1000));
-               
+
                 if (Environment.ActiveProcess.HandleFault())
                 {
                     _isProcessInterrupted = false;
 
                     if (Environment.ActiveProcess.Value is Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
                     {
-                       foreach (var interruptEvent in HandleInterrupt(interruptAction))
+                        foreach (var interruptEvent in HandleInterrupt(interruptAction))
                             yield return interruptEvent;
 
-                       _machine.State = MachineState.Idle;
+                        _machine.State = MachineState.Idle;
                     }
                 }
             }

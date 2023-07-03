@@ -60,8 +60,8 @@ namespace Planner.Implementation
             while (S.Count > 0)
             {
                 // 2.1 find the operation(s) in S that have the earliest finish time considering their current start and their duration
-                var earliestFinishOfS = S.Select(o => o.EarliestStart + o.Duration).Min();
-                var O = S.Where(o => earliestFinishOfS.Equals(o.EarliestStart + o.Duration));
+                var earliestFinishOfS = S.Select(o => o.EarliestStart + o.MeanDuration).Min();
+                var O = S.Where(o => earliestFinishOfS.Equals(o.EarliestStart + o.MeanDuration));
 
                 // put all needed machine types of these operations O into R together with the operation
                 foreach (var op in O)
@@ -83,36 +83,36 @@ namespace Planner.Implementation
 
                     // 2.2.2 find an operation to schedule on the selected machine type by using some priority rule
                     var operationsOnMachineType = S.Where(o => o.WorkPlanPosition.MachineType == selectedMachineType);
-                    var validOperationsToSchedule = operationsOnMachineType.Where(o => o.EarliestStart < OpR.EarliestStart + OpR.Duration).ToList();
+                    var validOperationsToSchedule = operationsOnMachineType.Where(o => o.EarliestStart < OpR.EarliestStart + OpR.MeanDuration).ToList();
                     var operationToSchedule = SelectOperationToSchedule(validOperationsToSchedule);
 
-					// 2.2.3 schedule the selected operation on a machine of the selected machine type
+                    // 2.2.3 schedule the selected operation on a machine of the selected machine type
 
-					S.Remove(operationToSchedule);
+                    S.Remove(operationToSchedule);
 
-					// select the machine with the earliest possible start time
-					var areMachinesOfTypeAvailable = machinesByType.TryGetValue(selectedMachineType, out var machinesOfSelectedType);
-					if (!areMachinesOfTypeAvailable)
-					{
-						isPlanComplete = false;
-						continue;
-					}
-					var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
-					earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
-					var machineToSchedule = earliestStartTimeByMachineOfSelectedType.First();
+                    // select the machine with the earliest possible start time
+                    var areMachinesOfTypeAvailable = machinesByType.TryGetValue(selectedMachineType, out var machinesOfSelectedType);
+                    if (!areMachinesOfTypeAvailable)
+                    {
+                        isPlanComplete = false;
+                        continue;
+                    }
+                    var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
+                    earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
+                    var machineToSchedule = earliestStartTimeByMachineOfSelectedType.First();
 
                     // schedule the operation
-                    operationToSchedule.EarliestFinish = operationToSchedule.EarliestStart + operationToSchedule.Duration;
-                    operationToSchedule.LatestFinish = operationToSchedule.LatestStart + operationToSchedule.Duration;
+                    operationToSchedule.EarliestFinish = operationToSchedule.EarliestStart + operationToSchedule.MeanDuration;
+                    operationToSchedule.LatestFinish = operationToSchedule.LatestStart + operationToSchedule.MeanDuration;
                     if (operationToSchedule.State.Equals(OperationState.Created)) // don't change the state if the operation is already pending on a machine
-                        operationToSchedule.State =  OperationState.Scheduled;
+                        operationToSchedule.State = OperationState.Scheduled;
                     plannedOperations.Add(operationToSchedule);
 
                     // schedule the operation on the machine
                     operationToSchedule.Machine = machineToSchedule.Key;
 
                     // set the earliest start time of the machine to the finish time of the scheduled operation and update the earliest start time of the machine type
-                    earliestStartTimeByMachine[machineToSchedule.Key] = operationToSchedule.EarliestStart + operationToSchedule.Duration;
+                    earliestStartTimeByMachine[machineToSchedule.Key] = operationToSchedule.EarliestStart + operationToSchedule.MeanDuration;
 
                     earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
                     earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
@@ -132,7 +132,7 @@ namespace Planner.Implementation
                     //     if (newEarliestStartTimeOfMachineType > op.LatestStart)
                     //         op.LatestStart = newEarliestStartTimeOfMachineType;
                     // });
-                    
+
                     var otherOperationsOnSelectedMachineType = workOperations
                         .Where(op => op.WorkPlanPosition.MachineType == selectedMachineType && !plannedOperations.Contains(op))
                         .ToList();
@@ -162,7 +162,7 @@ namespace Planner.Implementation
                 }
             }
 
-			return new Plan(plannedOperations, isPlanComplete);
+            return new Plan(plannedOperations, isPlanComplete);
         }
 
         private WorkOperation SelectOperationToSchedule(List<WorkOperation> operations)

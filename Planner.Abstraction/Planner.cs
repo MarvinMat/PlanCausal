@@ -79,7 +79,7 @@ namespace Planner.Abstraction
         /// <returns></returns>
         protected static Comparison<WorkOperation> ShortestProcessingTimeFirst()
         {
-            return (a, b) => a.Duration.CompareTo(b.Duration);
+            return (a, b) => a.MeanDuration.CompareTo(b.MeanDuration);
         }
     }
 }

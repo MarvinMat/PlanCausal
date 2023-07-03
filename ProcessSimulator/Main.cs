@@ -2,7 +2,6 @@
 using Core.Abstraction.Domain;
 using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
-using Core.Abstraction.Domain.Resources;
 using Core.Abstraction.Services;
 using Core.Implementation.Domain;
 using Core.Implementation.Events;
@@ -13,6 +12,7 @@ using ProcessSim.Implementation;
 using ProcessSim.Implementation.Core.SimulationModels;
 using Serilog;
 using SimSharp;
+using System.Text.Json;
 using static SimSharp.Distributions;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Information().CreateLogger();
@@ -32,7 +32,7 @@ var plans = workPlanProvider.Load();
 var orders = plans.Select(plan => new ProductionOrder()
 {
     Name = $"Order {plan.Name}",
-    Quantity = 50,
+    Quantity = 2,
     WorkPlan = plan,
 }).ToList();
 
@@ -126,64 +126,64 @@ SimulationController.HandleSimulationEvent eHandler = (e,
     switch (e)
     {
         case ReplanningEvent replanningEvent when operationsToSimulate.Any():
-        {
-            Log.Logger.Information("Replanning started at: {CurrentDate}", replanningEvent.CurrentDate);
-            var newPlan = planner.Schedule(operationsToSimulate
-                .Where(op => !op.State.Equals(OperationState.InProgress)
-                             && !op.State.Equals(OperationState.Completed))
-                .ToList(),
-            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-            replanningEvent.CurrentDate);
-          controller.CurrentPlan = newPlan;
-          simulation.SetCurrentPlan(newPlan.Operations);
-          break;
-        }
-        case OperationCompletedEvent operationCompletedEvent:
-        {
-            var completedOperation = operationCompletedEvent.CompletedOperation;
-
-            // if it is too late, reschedule the current plan (right shift)
-            var late = operationCompletedEvent.CurrentDate - completedOperation.LatestFinish;
-            if (late > TimeSpan.Zero)
             {
-                completedOperation.LatestFinish = operationCompletedEvent.CurrentDate;
-                RightShiftSuccessors(completedOperation, operationsToSimulate);
+                Log.Logger.Information("Replanning started at: {CurrentDate}", replanningEvent.CurrentDate);
+                var newPlan = planner.Schedule(operationsToSimulate
+                    .Where(op => !op.State.Equals(OperationState.InProgress)
+                                 && !op.State.Equals(OperationState.Completed))
+                    .ToList(),
+                machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+                replanningEvent.CurrentDate);
+                controller.CurrentPlan = newPlan;
+                simulation.SetCurrentPlan(newPlan.Operations);
+                break;
             }
+        case OperationCompletedEvent operationCompletedEvent:
+            {
+                var completedOperation = operationCompletedEvent.CompletedOperation;
 
-            if (!operationsToSimulate.Remove(completedOperation))
-                throw new Exception(
-                    $"Operation {completedOperation.WorkPlanPosition.Name} ({completedOperation.WorkOrder.Name}) " +
-                    $"was just completed but not found in the list of operations to simulate. This should not happen.");
-            finishedOperations.Add(completedOperation);
-            controller.FinishedOperations = finishedOperations;
-            break;
-        }
+                // if it is too late, reschedule the current plan (right shift)
+                var late = operationCompletedEvent.CurrentDate - completedOperation.LatestFinish;
+                if (late > TimeSpan.Zero)
+                {
+                    completedOperation.LatestFinish = operationCompletedEvent.CurrentDate;
+                    RightShiftSuccessors(completedOperation, operationsToSimulate);
+                }
+
+                if (!operationsToSimulate.Remove(completedOperation))
+                    throw new Exception(
+                        $"Operation {completedOperation.WorkPlanPosition.Name} ({completedOperation.WorkOrder.Name}) " +
+                        $"was just completed but not found in the list of operations to simulate. This should not happen.");
+                finishedOperations.Add(completedOperation);
+                controller.FinishedOperations = finishedOperations;
+                break;
+            }
         case InterruptionEvent interruptionEvent:
-        {
-            // replan without the machines that just got interrupted
-            var newPlan = planner.Schedule(operationsToSimulate
-                    .Where(op => !op.State.Equals(OperationState.InProgress)
-                                 && !op.State.Equals(OperationState.Completed))
-                    .ToList(),
-                machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-                interruptionEvent.CurrentDate);
-            controller.CurrentPlan = newPlan;
-            simulation.SetCurrentPlan(newPlan.Operations);
-            break;
-        }
+            {
+                // replan without the machines that just got interrupted
+                var newPlan = planner.Schedule(operationsToSimulate
+                        .Where(op => !op.State.Equals(OperationState.InProgress)
+                                     && !op.State.Equals(OperationState.Completed))
+                        .ToList(),
+                    machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+                    interruptionEvent.CurrentDate);
+                controller.CurrentPlan = newPlan;
+                simulation.SetCurrentPlan(newPlan.Operations);
+                break;
+            }
         case InterruptionHandledEvent interruptionHandledEvent:
-        {
-            // replan with the machine included that just finished its interruption
-            var newPlan = planner.Schedule(operationsToSimulate
-                    .Where(op => !op.State.Equals(OperationState.InProgress)
-                                 && !op.State.Equals(OperationState.Completed))
-                    .ToList(),
-                machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-                interruptionHandledEvent.CurrentDate);
-            controller.CurrentPlan = newPlan;
-            simulation.SetCurrentPlan(newPlan.Operations);
-            break;
-        }
+            {
+                // replan with the machine included that just finished its interruption
+                var newPlan = planner.Schedule(operationsToSimulate
+                        .Where(op => !op.State.Equals(OperationState.InProgress)
+                                     && !op.State.Equals(OperationState.Completed))
+                        .ToList(),
+                    machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+                    interruptionHandledEvent.CurrentDate);
+                controller.CurrentPlan = newPlan;
+                simulation.SetCurrentPlan(newPlan.Operations);
+                break;
+            }
     }
 };
 
@@ -235,3 +235,19 @@ var meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinut
 Log.Logger.Information("Mean lead time of machine 1: {MeanLeadTimeMachine1} minutes", meanLeadTimeMachine1);
 
 Log.CloseAndFlush();
+
+var writer = new FeedbackWriter();
+await writer.WriteFeedbackToJsonAsync(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), "feedbacks.json");
+
+public class FeedbackWriter
+{
+    public async Task WriteFeedbackToJsonAsync(List<ProductionFeedback> feedbackList, string filePath)
+    {
+        string jsonData = JsonSerializer.Serialize(feedbackList, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        await File.WriteAllTextAsync(filePath, jsonData);
+    }
+}

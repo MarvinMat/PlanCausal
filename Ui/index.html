@@ -1,0 +1,78 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { packages: ["timeline"] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function daysToMilliseconds (days) {
+            return days * 24 * 60 * 60 * 1000;
+        }
+
+       
+       function drawChart (data) {
+            var container = document.getElementById('chart_div');
+            var chart = new google.visualization.Timeline(container);
+
+            var dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Machine Name');
+            dataTable.addColumn('string', 'Task Name');
+            dataTable.addColumn('date', 'Start Date');
+            dataTable.addColumn('date', 'End Date');
+         
+            for (var i = 0; i < data.length; i++) {
+               var task = data[i];
+               var machineName = task.Resources[0].Description;
+               var taskName = task.Name;
+               var endDate = new Date(task.CreatedAt);
+               var startDate = new Date(endDate - parseDuration(task.LeadTime));
+
+               dataTable.addRows([[machineName, taskName, startDate, endDate]]);
+           }
+
+            var options = {
+                height: 720,
+                width: 3340,
+                timeline: {
+                    groupByRowLabel: true
+                }            };
+
+
+            chart.draw(dataTable, options);
+        }
+
+        // Helper function to parse duration in the format "hh:mm:ss.sss"
+        function parseDuration (duration) {
+            var parts = duration.split(":");
+            var hours = parseInt(parts[0]);
+            var minutes = parseInt(parts[1]);
+            var seconds = parseFloat(parts[2].split(".")[0]);
+            return (hours * 60 * 60 + minutes * 60 + seconds) * 1000;
+        }
+
+        function loadJSONFile () {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.addEventListener('change', function (e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var contents = e.target.result;
+                    var data = JSON.parse(contents);
+                    drawChart(data);
+                };
+                reader.readAsText(file);
+            });
+            input.click();
+        }
+    </script>
+</head>
+
+<body>
+    <div id="chart_div"></div>
+    <button onclick="loadJSONFile()">Load JSON File</button>
+</body>
+
+</html>
