@@ -59,6 +59,8 @@ var seed = rnd.Next();
 Log.Logger.Information("Seed: {Seed}", seed);
 var simulator = new Simulator(seed, DateTime.Now);
 
+simulator.ReplanningInterval = TimeSpan.FromHours(8);
+
 IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
 {
     if (simProcess is MachineModel machineModel)

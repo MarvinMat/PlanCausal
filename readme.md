@@ -176,7 +176,7 @@ Nachdem die Ressourcen geladen wurden, wird für jeden Arbeitsplan (also jedes Pr
 var orders = plans.Select(plan => new ProductionOrder()
 {
     Name = $"Order {plan.Name}",
-    Quantity = 60,
+    Quantity = 50,
     WorkPlan = plan,
 }).ToList();
 ```
@@ -195,6 +195,13 @@ Als nächstes wird ein Simulator erstellt, der einen Seed für die Zufallszahlenge
 var seed = rnd.Next();
 Console.WriteLine($"Seed: {seed}");
 var simulator = new Simulator(seed, DateTime.Now);
+```
+
+Mit Hilfe der Setter-Methode des ```ReplanningInterval``` wird nun festgelegt, wie oft die Produktionsplanung neu berechnet werden soll. Konkret gibt das Intervall an, wie oft ein ```ReplanningEvent``` von der Simulation ausgelöst wird, worauf dann von der Steuerung beliebig reagiert werden kann.
+In diesem Beispiel soll die Planung alle 8 Stunden neu berechnet werden und da das Intervall standardmäßig auf 12 Stunden eingestellt ist, muss dieses noch angepasst werden.
+
+```csharp
+simulator.ReplanningInterval = TimeSpan.FromHours(8);
 ```
 
 Für die Simulation der Produktion wird im nächsten Schritt eine zufällige Unterbrechung hinzugefügt. Beispielhaft wird hier ein Stromausfall modelliert, der Vorgänge auf allen Maschinen unterbricht.
@@ -502,18 +509,20 @@ orders = List[ProductionOrder]()
 for plan in plans:
     order = ProductionOrder()
     order.Name = f"Order {plan.Name}"
-    order.Quantity = 4
+    order.Quantity = 50
     order.WorkPlan = plan
     orders.Add(order)
 
 operations = ModelUtil.GetWorkOperationsFromOrders(orders)
 ```
 
-Nun wird die Simulation mit einem zufälligen Seed initialisiert.
+Nun wird die Simulation mit einem zufälligen Seed initialisiert und das Replanning-Intervall auf 8 Stunden gesetzt.
 ```python
 seed = random.randint(1, 10000000)
 print(f"Seed: {seed}")
 simulator = Simulator(seed, DateTime.Now)
+
+simulator.ReplanningInterval = TimeSpan.FromHours(8)
 ```
 
 Danach wird der Stromausfall (die Unterbrechung) im Simulator registriert. Dafür wird eine Python-Generator-Funktion verwendet. Da diese aber anders funktioniert als in .NET, müssen hier noch eigene Klassen verwendet werden, die die gleiche Funktionalität ermöglichen.

@@ -14,7 +14,7 @@ namespace ProcessSim.Implementation
     {
         private readonly Simulation _sim;
         private readonly Dictionary<IResource, ActiveObject<Simulation>> _simResources;
-        private const int _replanningInterval = 10;
+        public TimeSpan ReplanningInterval { get; set; }
         private List<WorkOperation> _currentPlan;
         private ManualResetEventSlim _currentPlanChangedEvent = new(false);
         public DateTime CurrentSimulationTime => _sim.Now;
@@ -30,6 +30,7 @@ namespace ProcessSim.Implementation
             _sim = new Simulation(randomSeed: seed, initialDateTime: initialDateTime);
             _simResources = new();
             _currentPlan = new();
+            ReplanningInterval = TimeSpan.FromHours(12);
         }
 
         public void Start(TimeSpan duration)
@@ -69,7 +70,7 @@ namespace ProcessSim.Implementation
         {
             while (true)
             {
-                yield return _sim.Timeout(TimeSpan.FromDays(_replanningInterval));
+                yield return _sim.Timeout(ReplanningInterval);
 
                 InvokeSimulationEvent(this, new ReplanningEvent(_sim.Now));
 

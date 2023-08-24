@@ -75,7 +75,7 @@ orders = List[ProductionOrder]()
 for plan in plans:
     order = ProductionOrder()
     order.Name = f"Order {plan.Name}"
-    order.Quantity = 4
+    order.Quantity = 50
     order.WorkPlan = plan
     orders.Add(order)
 
@@ -84,6 +84,8 @@ operations = ModelUtil.GetWorkOperationsFromOrders(orders)
 seed = random.randint(1, 10000000)
 print(f"Seed: {seed}")
 simulator = Simulator(seed, DateTime.Now)
+
+simulator.ReplanningInterval = TimeSpan.FromHours(1)
 
 def interrupt_action(sim_process):
     if isinstance(sim_process, MachineModel):
