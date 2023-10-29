@@ -52,7 +52,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             var previousFirstOperation = _operationQueue.FirstOrDefault();
             _operationQueue.Add(operation);
             QueueLength?.UpdateTo(_operationQueue.Count);
-            _operationQueue.Sort((a, b) => a.EarliestStart.CompareTo(b.EarliestStart));
+            _operationQueue.Sort((a, b) => a.PlannedStart.CompareTo(b.PlannedStart));
 
             if (_isProcessRunning && // don't interrupt if the process is not even running yet
                 !_isProcessInterrupted &&  // don't interrupt if the process has already been interrupted
@@ -74,7 +74,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                     $"{_machine.Description} queue, but was not found.");
             }
             QueueLength?.UpdateTo(_operationQueue.Count);
-            _operationQueue.Sort((a, b) => a.EarliestStart.CompareTo(b.EarliestStart));
+            _operationQueue.Sort((a, b) => a.PlannedStart.CompareTo(b.PlannedStart));
 
             // interrupt if current operation has changed
             if (_isProcessRunning &&
@@ -105,7 +105,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 }
 
                 if (Environment.Now - idleTime > TimeSpan.Zero)
-                    WaitingTime?.Add((Environment.Now - idleTime).TotalMinutes);
+                    WaitingTime?.Add((Environment.Now - idleTime).TotalSeconds);
 
                 foreach (var waitingOrChangeoverEvent in Changeover())
                 {
@@ -149,16 +149,16 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _machine.State = MachineState.Working;
 
             var durationDistribution = N(_currentOperation.MeanDuration,
-                TimeSpan.FromMinutes(0.1 * _currentOperation.MeanDuration.TotalMinutes));
+                TimeSpan.FromMinutes(_currentOperation.VariationCoefficient * _currentOperation.MeanDuration.TotalMinutes));
             var processingDuration = Environment.Rand(POS(durationDistribution));
 
             var startTime = Environment.Now;
             _currentOperation.ActualStart = startTime;
 
 
-            _logger.Information("On {MachineDescription}: Started {Name} at {StartTime} (should have been at {CurrentOperationEarliestStart}). " +
+            _logger.Debug("On {MachineDescription}: Started {Name} at {StartTime} (should have been at {CurrentOperationPlannedStart}). " +
                                 "ETA is {ProcessingDuration}", 
-                _machine.Description, _currentOperation.WorkPlanPosition.Name, startTime, _currentOperation.EarliestStart, startTime + processingDuration);
+                _machine.Description, _currentOperation.WorkPlanPosition.Name, startTime, _currentOperation.PlannedStart, startTime + processingDuration);
 
             var processingTimeDone = TimeSpan.Zero;
             while (processingDuration - processingTimeDone > TimeSpan.Zero)
@@ -181,9 +181,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 }
             }
 
-            _logger.Information("On {MachineDescription}: Completed {Name} at {EndTime} (lasted {Duration} - supposed to {SupposedDuration} - mean is {MeanDuration})",
+            _logger.Debug("On {MachineDescription}: Completed {Name} at {EndTime} (lasted {Duration} - supposed to {SupposedDuration} - mean is {MeanDuration})",
                 _machine.Description, _currentOperation.WorkPlanPosition.Name, Environment.Now, Environment.Now - startTime, processingDuration, _currentOperation.WorkPlanPosition.Duration);
 
+            var endTime = Environment.Now;
+            _currentOperation.ActualFinish = endTime;
             _currentOperation.State = OperationState.Completed;
         }
 
@@ -204,11 +206,11 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         {
 
             var changeoverTime = GenerateChangeoverTime(_currentOperation.WorkPlanPosition.ToolId);
-            var waitTime = _currentOperation.EarliestStart - Environment.Now - changeoverTime;
+            var waitTime = _currentOperation.PlannedStart - Environment.Now - changeoverTime;
             if (waitTime < TimeSpan.Zero) waitTime = TimeSpan.Zero;
 
-            _logger.Information("On {MachineDescription}: Starting preparation at {StartTime} for next operation scheduled at {CurrentOperationEarliestStart}, taking {WaitTime} to wait and {ChangeoverTime} to changeover",
-                _machine.Description, Environment.Now, _currentOperation.EarliestStart, waitTime, changeoverTime);
+            _logger.Debug("On {MachineDescription}: Starting preparation at {StartTime} for next operation scheduled at {CurrentOperationPlannedStart}, taking {WaitTime} to wait and {ChangeoverTime} to changeover",
+                _machine.Description, Environment.Now, _currentOperation.PlannedStart, waitTime, changeoverTime);
 
             while (waitTime + changeoverTime > TimeSpan.Zero)
             {
@@ -233,27 +235,27 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                             {
                                 changeoverTime = GenerateChangeoverTime(_operationQueue.First().WorkPlanPosition.ToolId);
 
-                                _logger.Information("On {MachineDescription}: Got new operation to process at {StartTime} ,scheduled at {CurrentOperationEarliestStart}, taking {ChangeoverTime} to changeover",
-                                    _machine.Description, Environment.Now, _operationQueue.First().EarliestStart, changeoverTime);
+                                _logger.Debug("On {MachineDescription}: Got new operation to process at {StartTime} ,scheduled at {CurrentOperationPlannedStart}, taking {ChangeoverTime} to changeover",
+                                    _machine.Description, Environment.Now, _operationQueue.First().PlannedStart, changeoverTime);
                             }
                             _currentOperation = _operationQueue.First();
                         }
                         else
                         {
-                            _logger.Information("On {MachineDescription}: Got no operation to process anymore, at {StartTime}, leaving waiting state",
+                            _logger.Debug("On {MachineDescription}: Got no operation to process anymore, at {StartTime}, leaving waiting state",
                                 _machine.Description, Environment.Now);
 
                             _currentOperation = null;
                             yield break;
                         }
                     }
-                    waitTime = _currentOperation.EarliestStart - Environment.Now - changeoverTime;
+                    waitTime = _currentOperation.PlannedStart - Environment.Now - changeoverTime;
                 }
 
                 var changeoverTimeDone = TimeSpan.Zero;
                 if (changeoverTime > TimeSpan.Zero)
                 {
-                    _logger.Information("On {MachineDescription}: Changing from Tool Id {CurrentToolId} to {NewToolId} at {StartTime}, taking {ChangeoverTime}",
+                    _logger.Debug("On {MachineDescription}: Changing from Tool Id {CurrentToolId} to {NewToolId} at {StartTime}, taking {ChangeoverTime}",
                         _machine.Description, CurrentToolId, _currentOperation.WorkPlanPosition.ToolId, Environment.Now, changeoverTime);
                 }
                 while (changeoverTime - changeoverTimeDone > TimeSpan.Zero)
@@ -285,14 +287,14 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                                 changeoverTime = GenerateChangeoverTime(_operationQueue.First().WorkPlanPosition.ToolId);
                                 changeoverTimeDone = TimeSpan.Zero;
 
-                                _logger.Information("On {MachineDescription}: Got new operation to process at {StartTime} ,scheduled at {CurrentOperationEarliestStart}, reset changeover progress, now taking {ChangeoverTime} to changeover",
-                                    _machine.Description, Environment.Now, _operationQueue.First().EarliestStart, changeoverTime);
+                                _logger.Debug("On {MachineDescription}: Got new operation to process at {StartTime} ,scheduled at {CurrentOperationPlannedStart}, reset changeover progress, now taking {ChangeoverTime} to changeover",
+                                    _machine.Description, Environment.Now, _operationQueue.First().PlannedStart, changeoverTime);
                             }
                             _currentOperation = _operationQueue.First();
                         }
                         else
                         {
-                            _logger.Information("On {MachineDescription}: Got no operation to process anymore, at {StartTime}, leaving changeover state",
+                            _logger.Debug("On {MachineDescription}: Got no operation to process anymore, at {StartTime}, leaving changeover state",
                                 _machine.Description, Environment.Now);
 
                             _currentOperation = null;
@@ -304,7 +306,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                         if (changeoverTime - changeoverTimeDone > TimeSpan.Zero)
                             throw new Exception("Completed changeover without being interrupted but there is still time left. This should not happen.");
 
-                        _logger.Information("On {MachineDescription}: Done changing from Tool Id {CurrentToolId} to {NewToolId} at {StartTime}",
+                        _logger.Debug("On {MachineDescription}: Done changing from Tool Id {CurrentToolId} to {NewToolId} at {StartTime}",
                             _machine.Description, CurrentToolId, _currentOperation.WorkPlanPosition.ToolId, Environment.Now);
 
                         CurrentToolId = _currentOperation.WorkPlanPosition.ToolId;
@@ -312,7 +314,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                     }
                 }
 
-                waitTime = _currentOperation.EarliestStart - Environment.Now - changeoverTime;
+                waitTime = _currentOperation.PlannedStart - Environment.Now - changeoverTime;
             }
         }
 

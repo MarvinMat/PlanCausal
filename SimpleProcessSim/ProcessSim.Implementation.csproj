@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
     <ProjectReference Include="..\Core.Implementation\Core.Implementation.csproj" />
+    <ProjectReference Include="..\Generators.Abstraction\Generators.Abstraction.csproj" />
     <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 

@@ -17,20 +17,21 @@ public class StatsBenchmark
     private ProductionScenario? _productionScenario50;
     private ProductionScenario? _productionScenario100;
     private ProductionScenario? _productionScenario200;
+    private int _quantity = 50;
     //private ProductionScenario? _productionScenario500;
 
     
     [GlobalSetup]
     public void Init()
     {
-        _logger.Information($"Starting benchmark...");
-        _machines = new MachineProviderJson($"../../../../../../../../Machines.json").Load();
-        _workPlans = new WorkPlanProviderJson($"../../../../../../../../WorkPlans.json").Load();
-        _productionScenario50 = new(50, _machines, _workPlans);
+        _logger.Information("Starting benchmark...");
+        _machines = new MachineProviderJson("../../../../../../../../Machines.json").Load();
+        _workPlans = new WorkPlanProviderJson("../../../../../../../../WorkPlans.json").Load();
+        _productionScenario50 = new(_machines, _workPlans);
         _productionScenario50.Run(TimeSpan.FromDays(DaysToSimulate));
-        _productionScenario100 = new(100, _machines, _workPlans);
+        _productionScenario100 = new(_machines, _workPlans);
         _productionScenario100.Run(TimeSpan.FromDays(DaysToSimulate));
-        _productionScenario200 = new(200, _machines, _workPlans);
+        _productionScenario200 = new( _machines, _workPlans);
         _productionScenario200.Run(TimeSpan.FromDays(DaysToSimulate));
         // _productionScenario500 = new(500, _machines, _workPlans);
         // _productionScenario500.Run(TimeSpan.FromDays(DaysToSimulate));
@@ -39,15 +40,7 @@ public class StatsBenchmark
     //[Benchmark]
     public void BenchMeanLeadTimeForTwoProductsForNinetyDaysQuantityFifty()
     {
-        _productionScenario = new ProductionScenario(50, _machines, _workPlans);
-        _productionScenario.Run(TimeSpan.FromDays(90));
-        _productionScenario.CollectStats();
-    }
-    
-    //[Benchmark]
-    public void BenchMeanLeadTimeForTwoProductsForNinetyDaysQuantityOneHundred()
-    {
-        _productionScenario = new ProductionScenario(100, _machines, _workPlans);
+        _productionScenario = new ProductionScenario( _machines, _workPlans);
         _productionScenario.Run(TimeSpan.FromDays(90));
         _productionScenario.CollectStats();
     }
@@ -55,7 +48,7 @@ public class StatsBenchmark
     //[Benchmark]
     public void BenchMeanLeadTimeForTwoProductsForNinetyDaysQuantityTwoHundred()
     {
-        _productionScenario = new ProductionScenario(200, _machines, _workPlans);
+        _productionScenario = new ProductionScenario( _machines, _workPlans);
         _productionScenario.Run(TimeSpan.FromDays(90));
         _productionScenario.CollectStats();
     }

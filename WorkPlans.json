@@ -6,78 +6,91 @@
       {
         "name": "Tischplatte zurecht sägen",
         "duration": 10,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Tischplatte schleifen",
         "duration": 15,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Tischbein zurecht sägen",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 1
       },
       {
         "name": "Tischbein zurecht sägen",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 1
       },
       {
         "name": "Tischbein zurecht sägen",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 1
       },
       {
         "name": "Tischbein zurecht sägen",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 1
       },
       {
         "name": "Tischbein schleifen",
         "duration": 12,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Tischbein schleifen",
         "duration": 12,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Tischbein schleifen",
         "duration": 12,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Tischbein schleifen",
         "duration": 12,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Tischbeine mit Tisch verkleben",
         "duration": 30,
+        "variationCoefficient": 0.15,
         "machineId": 2,
         "toolId": 6
       },
       {
         "name": "Tisch schleifen",
         "duration": 45,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 4
       },
       {
         "name": "Tisch lackieren",
         "duration": 125,
+        "variationCoefficient": 0.05,
         "machineId": 2,
         "toolId": 3
       }
@@ -91,90 +104,98 @@
       {
         "name": "Sitzfläche zurechtschneiden",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Sitzfläche schleifen",
         "duration": 13,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Lehne zurechtschneiden",
         "duration": 4,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Lehne schleifen",
         "duration": 15,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Stuhlbein zurechtschneiden",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Stuhlbein zurechtschneiden",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Stuhlbein zurechtschneiden",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Stuhlbein zurechtschneiden",
         "duration": 2,
+        "variationCoefficient": 0.1,
         "machineId": 1,
         "toolId": 2
       },
       {
         "name": "Stuhlbein schleifen",
         "duration": 7,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Stuhlbein schleifen",
         "duration": 7,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Stuhlbein schleifen",
         "duration": 7,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Stuhlbein schleifen",
         "duration": 7,
-        "machineId": 3,
-        "toolId": 5
-      },
-      {
-        "name": "Stuhlbein schleifen",
-        "duration": 7,
+        "variationCoefficient": 0.2,
         "machineId": 3,
         "toolId": 5
       },
       {
         "name": "Stuhl vollständig verkleben",
         "duration": 25,
+        "variationCoefficient": 0.15,
         "machineId": 2,
         "toolId": 6
       },
       {
         "name": "Stuhl vollständig lackieren",
         "duration": 145,
+        "variationCoefficient": 0.05,
         "machineId": 2,
         "toolId": 3
       }

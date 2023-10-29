@@ -10,10 +10,5 @@
 	<ItemGroup>
     <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
   </ItemGroup>
-	
-  
-	<ItemGroup>
-	  <Folder Include="Reporting\" />
-	</ItemGroup>
 
 </Project>

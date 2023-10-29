@@ -5,16 +5,18 @@ using Core.Abstraction.Domain.Resources;
 using Core.Implementation.Events;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using System.Text;
+using Serilog;
 
 namespace Controller.Implementation;
 
 public class SimulationController : IController
 {
+    private readonly ILogger _logger;
     private readonly ISimulator _simulation;
     private readonly Planner.Abstraction.Planner _planner;
     private readonly List<Machine> _machines;
     public List<IFeedback> Feedbacks { get; set; }
-    private List<WorkOperation> OperationsToSimulate { get; set; }
+    public List<WorkOperation> OperationsToSimulate { get; set; }
     public List<WorkOperation> FinishedOperations { get; set; }
     public Plan CurrentPlan { get; set; }
 
@@ -28,14 +30,17 @@ public class SimulationController : IController
         ISimulator simulator
         )
     {
+        _logger = Log.ForContext<SimulationController>();
         OperationsToSimulate = operationsToSimulate;
         FinishedOperations = new List<WorkOperation>();
 
         _machines = machines;
-
         _planner = planner;
+        
+        _logger.Information("Scheduling operations...");
         CurrentPlan = _planner.Schedule(OperationsToSimulate, machines, DateTime.Now);
-
+        _logger.Information("Scheduling operations done.");
+        
         _simulation = simulator;
         _simulation.SimulationEventHandler += InterruptHandler;
         _simulation.CreateSimulationResources(machines);
@@ -49,7 +54,7 @@ public class SimulationController : IController
     }
 
     /// <summary>
-    /// Handles events that interrupt the simulation process, such as replanning or completion of an operation.
+    /// Handles events that interrupt the simulation process, such as re-planning or completion of an operation.
     /// </summary>
     /// <param name="sender">The object that raised the event.</param>
     /// <param name="e">The event arguments.</param>

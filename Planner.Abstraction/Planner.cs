@@ -35,7 +35,7 @@ namespace Planner.Abstraction
             var operationsByMachine = plan.Operations.GroupBy(o => o.Machine);
             foreach (var machineGroup in operationsByMachine)
             {
-                var operationsOnMachine = machineGroup.OrderBy(o => o.EarliestStart).ToList();
+                var operationsOnMachine = machineGroup.OrderBy(o => o.PlannedStart).ToList();
 
                 for (int i = 0; i < operationsOnMachine.Count; i++)
                 {
@@ -44,7 +44,7 @@ namespace Planner.Abstraction
                         var operation1 = operationsOnMachine[i];
                         var operation2 = operationsOnMachine[j];
 
-                        if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+                        if (operation1.PlannedFinish > operation2.PlannedStart && operation1.PlannedStart < operation2.PlannedFinish)
                         {
                             throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
                         }
@@ -55,7 +55,7 @@ namespace Planner.Abstraction
             var operationsByOrder = plan.Operations.GroupBy(o => o.WorkOrder);
             foreach (var orderGroup in operationsByOrder)
             {
-                var operationsOfOrder = orderGroup.OrderBy(o => o.EarliestStart).ToList();
+                var operationsOfOrder = orderGroup.OrderBy(o => o.PlannedStart).ToList();
 
                 for (int i = 0; i < operationsOfOrder.Count; i++)
                 {
@@ -64,7 +64,7 @@ namespace Planner.Abstraction
                         var operation1 = operationsOfOrder[i];
                         var operation2 = operationsOfOrder[j];
 
-                        if (operation1.EarliestFinish > operation2.EarliestStart && operation1.EarliestStart < operation2.EarliestFinish)
+                        if (operation1.PlannedFinish > operation2.PlannedStart && operation1.PlannedStart < operation2.PlannedFinish)
                         {
                             throw new Exception($"Operation {operation1} overlaps with operation {operation2}");
                         }

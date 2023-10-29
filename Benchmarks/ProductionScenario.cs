@@ -1,19 +1,18 @@
-using System.ComponentModel;
 using Controller.Implementation;
-using Core.Abstraction.Domain;
 using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using Core.Implementation.Domain;
 using Core.Implementation.Events;
-using Core.Implementation.Services;
 using Core.Implementation.Services.Reporting;
+using Generators.Abstraction;
+using Generators.Implementation;
+using MathNet.Numerics.Distributions;
 using Planner.Implementation;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSim.Implementation;
 using ProcessSim.Implementation.Core.SimulationModels;
 using Serilog;
-using Serilog.Core;
 using SimSharp;
 using static SimSharp.Distributions;
 
@@ -22,69 +21,86 @@ namespace Benchmarks;
 public class ProductionScenario
 {
     private readonly List<Machine> _machines;
-    private readonly SimulationController _controller;
-    private readonly IEnumerable<ProductionOrder>? _orders;
-    private readonly Simulator _simulator;
+    public SimulationController SimulationController { get; set; }
+    private List<ProductionOrder>? _orders;
+    private readonly IDataGenerator<ProductionOrder> _orderGenerator;
     private readonly ILogger _logger;
 
     /// <summary>
     ///     Generates a basic production scenario with a given quantity of products.
     /// </summary>
-    /// <param name="quantity"> The amount of each product to be produced.</param>
-    /// <param name="machines"></param>
-    /// <param name="workPlans"></param>
-    public ProductionScenario(int quantity, List<Machine> machines, IEnumerable<WorkPlan> workPlans)
+    /// <param name="machines">A list of available machines.</param>
+    /// <param name="workPlans">A list of available work plans.</param>
+    /// <param name="handleSimulationEvent">A Delegate of <see cref="SimulationEventHandler"/> that represents the logic for the controller component. Use this handler to react to several events emitted by the simulation. Consider the Core.Implementation.Events namespace for all relevant events. </param>
+    /// <param name="sim">The instance of a simulator.</param>
+    /// <param name="dataGenerator">A generator for data used while the simulation is running.</param>
+    /// <param name="simulationController"></param>
+    public ProductionScenario(List<Machine> machines, IEnumerable<WorkPlan> workPlans,
+        SimulationController.HandleSimulationEvent? handleSimulationEvent = null, Simulator? sim = null,
+        IDataGenerator<ProductionOrder>? dataGenerator = null, SimulationController? simulationController = null)
     {
-        _logger = Log.ForContext<ProductionScenario>();
-        
         var rnd = new Random();
         var seed = rnd.Next();
-        _logger.Information("Seed: {Seed}", seed);
+        _logger = Log.ForContext<ProductionScenario>();
+        _machines = machines;
+        var simulator = sim ?? new Simulator(seed, DateTime.Now);
+
+        WorkPlan ProductDistribution()
+        {
+            var workPlanList = workPlans.ToList();
+            if (workPlanList.Count == 0)
+            {
+                // Handle the case where the list is empty
+                throw new InvalidOperationException("The list of work plans is empty.");
+            }
+
+            return workPlanList[rnd.Next(workPlanList.Count)];
+        }
+
+        _orderGenerator = dataGenerator ?? new OrderGenerator(ProductDistribution, QuantityDistribution);
         
-        _simulator = new Simulator(seed, DateTime.Now);
+        _logger.Information("Seed: {Seed}", seed);
         _logger.Information("Simulation started at: {SimulationStartTime}", DateTime.Now);
         
         var planner = new GifflerThompsonPlanner();
-        _machines = machines;
         
-        _orders = workPlans?.Select(plan => new ProductionOrder()
-        {
-            Name = $"Order {plan.Name}",
-            Quantity = quantity,
-            WorkPlan = plan,
-        }).ToList();
-
         var workOperations = ModelUtil.GetWorkOperationsFromOrders(_orders?.ToList() ?? new List<ProductionOrder>());
         
-        _controller = new SimulationController(workOperations.ToList(), _machines, planner, _simulator);
-        _controller.HandleEvent += SimulationEventHandler;
+        SimulationController = simulationController ?? new SimulationController(workOperations.ToList(), _machines, planner, simulator);
         
-        _simulator.AddInterrupt(
-            predicate: (process) => true,
-            distribution: EXP(TimeSpan.FromHours(5)),
-            interruptAction: InterruptAction
-        );
-        
+        // apply default behaviour
+        if (handleSimulationEvent is null)
+            SimulationController.HandleEvent += SimulationEventHandler;
+        SimulationController.HandleEvent += handleSimulationEvent;
+        return;
+
+        int QuantityDistribution()
+        {
+            var distribution = new Geometric(1.0 / 2.5);
+            return distribution.Sample();
+        }
     }
+
+
     public void Run(TimeSpan simulationDuration)
     {
-        _controller.Execute(simulationDuration);
+        SimulationController.Execute(simulationDuration);
         _logger.Information("Simulation finished at: {SimulationEndTime}", DateTime.Now);
-        _logger.Information(" Generated {FeedbacksCount} feedbacks", _controller.Feedbacks.Count);
+        _logger.Information(" Generated {FeedbacksCount} feedbacks", SimulationController.Feedbacks.Count);
     }
     
     public void CollectStats()
     {
-        if (_orders == null) return;
-        var stats = new ProductionStats(_orders.ToList(), _controller.Feedbacks);
+        // TODO: change parameter
+        var stats = new ProductionStats(new List<ProductionOrder>(), SimulationController.Feedbacks);
 
         var meanLeadTime = stats.CalculateMeanLeadTimeInMinutes();
-        _logger.Information("Mean lead time: {MeanLeadTime} minutes", meanLeadTime);
+        _logger.Information("Mean lead time: {MeanLeadTime:F2} minutes", meanLeadTime);
 
         var meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1);
-        _logger.Information("Mean lead time of machine 1: {MeanLeadTimeMachine1} minutes", meanLeadTimeMachine1);
+        _logger.Information("Mean lead time of machine 1: {MeanLeadTimeMachine1:F2} minutes", meanLeadTimeMachine1);
     }
-
+    
     private void SimulationEventHandler(EventArgs e, 
         Planner.Abstraction.Planner planner, 
         ISimulator simulator, 
@@ -103,7 +119,7 @@ public class ProductionScenario
                         .ToList(),
                     _machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
                     replanningEvent.CurrentDate);
-                _controller.CurrentPlan = newPlan;
+                SimulationController.CurrentPlan = newPlan;
                 simulator.SetCurrentPlan(newPlan.Operations);
                 break;
             }
@@ -111,20 +127,12 @@ public class ProductionScenario
             {
                 var completedOperation = operationCompletedEvent.CompletedOperation;
 
-                // if it is too late, reschedule the current plan (right shift)
-                var late = operationCompletedEvent.CurrentDate - completedOperation.LatestFinish;
-                if (late > TimeSpan.Zero)
-                {
-                    completedOperation.LatestFinish = operationCompletedEvent.CurrentDate;
-                    RightShiftSuccessors(completedOperation, operationsToSimulate);
-                }
-
                 if (!operationsToSimulate.Remove(completedOperation))
                     throw new Exception(
                         $"Operation {completedOperation.WorkPlanPosition.Name} ({completedOperation.WorkOrder.Name}) " +
                         $"was just completed but not found in the list of operations to simulate. This should not happen.");
                 finishedOperations.Add(completedOperation);
-                _controller.FinishedOperations = finishedOperations;
+                SimulationController.FinishedOperations = finishedOperations;
                 break;
             }
             case InterruptionEvent interruptionEvent:
@@ -136,7 +144,7 @@ public class ProductionScenario
                         .ToList(),
                     _machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
                     interruptionEvent.CurrentDate);
-                _controller.CurrentPlan = newPlan;
+                SimulationController.CurrentPlan = newPlan;
                 simulator.SetCurrentPlan(newPlan.Operations);
                 break;
             }
@@ -149,78 +157,31 @@ public class ProductionScenario
                         .ToList(),
                     _machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
                     interruptionHandledEvent.CurrentDate);
-                _controller.CurrentPlan = newPlan;
+                SimulationController.CurrentPlan = newPlan;
+                simulator.SetCurrentPlan(newPlan.Operations);
+                break;
+            }
+            case OrderGenerationEvent orderGenerationEvent:
+            {
+                var newOrder = _orderGenerator.Generate(1);
+                var newOperations = ModelUtil.GetWorkOperationsFromOrders(newOrder);
+                Log.Logger.Information("A new order was generated for {Quantity} of {Product}. It contains {Amount} new operations", newOrder[0].Quantity, newOrder[0].WorkPlan.Name, newOperations.Count);
+                operationsToSimulate.AddRange(newOperations);
+                SimulationController.OperationsToSimulate = operationsToSimulate;
+
+                var newPlan = planner.Schedule(
+                    operationsToSimulate
+                        .Where(op => !op.State.Equals(OperationState.InProgress)
+                                     && !op.State.Equals(OperationState.Completed))
+                        .ToList(),
+                    _machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
+                    orderGenerationEvent.CurrentDate);
+                SimulationController.CurrentPlan = newPlan;
                 simulator.SetCurrentPlan(newPlan.Operations);
                 break;
             }
         }
     }
-    
-    /// <summary>
-    ///     Shifts the start and finish times of the given operation's successors on the same machine and in the global sequence to the right.
-    /// </summary>
-    /// <param name="operation">The WorkOperation whose successors' times need to be adjusted.</param>
-    /// <param name="operationsToSimulate">The list of all WorkOperations that are yet to be simulated.</param>
-    private void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operationsToSimulate)
-    {
-        var queuedOperationsOnDelayedMachine = operationsToSimulate.Where(op => op.Machine == operation.Machine)
-            .OrderBy(op => op.EarliestStart).ToList();
-        // Skip list till you find the current delayed operation, go one further and get the successor
-        // var successorOnMachine = queuedOperationsOnDelayedMachine.SkipWhile(op => !op.Equals(operation)).Skip(1)
-        //    .FirstOrDefault();
-        WorkOperation? successorOnMachine = null;
-        
-        var currentIndex = queuedOperationsOnDelayedMachine.FindIndex(op => op.Equals(operation));
-        if (currentIndex >= 0 && currentIndex + 1 < queuedOperationsOnDelayedMachine.Count)
-        {
-            successorOnMachine = queuedOperationsOnDelayedMachine[currentIndex + 1];
-            UpdateSuccessorTimes(operation, successorOnMachine, operationsToSimulate);
-        }
-
-        if (operation.Successor == null) return;
-        
-        UpdateSuccessorTimes(operation, successorOnMachine, operationsToSimulate);
-        UpdateSuccessorTimes(operation, operation.Successor, operationsToSimulate);
-    }
-
-    /// <summary>
-    ///     Updates the start and finish times of the successor operation based on the delay caused by the completion of the current operation.
-    /// </summary>
-    /// <param name="operation">The current operation which has just been completed.</param>
-    /// <param name="successor">The successor operation which is dependent on the completion of the current operation.</param>
-    /// <param name="operationsToSimulate">The list of all WorkOperations that are yet to be simulated.</param>
-    private void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, List<WorkOperation> operationsToSimulate)
-    {
-        if (successor == null) return;
-
-        var delay = operation.LatestFinish - successor.EarliestStart;
-
-        if (delay <= TimeSpan.Zero) return;
-        successor.EarliestStart = successor.EarliestStart.Add(delay);
-        successor.LatestStart = successor.LatestStart.Add(delay);
-        successor.EarliestFinish = successor.EarliestFinish.Add(delay);
-        successor.LatestFinish = successor.LatestFinish.Add(delay);
-
-        RightShiftSuccessors(successor, operationsToSimulate);
-    }
-    
-    private IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
-    {
-        if (simProcess is MachineModel machineModel)
-        {
-            var waitFor = 2;
-            var start = _simulator.CurrentSimulationTime;
-
-            _logger.Information("Interrupted machine {Machine} at {CurrentSimulationTime}: Waiting {WaitFor} hours",
-                machineModel.Machine.Description, _simulator.CurrentSimulationTime, waitFor);
-            yield return _simulator.Timeout(TimeSpan.FromHours(waitFor));
-
-            _logger.Information(
-                "Machine {Machine} waited {Waited} (done at {CurrentSimulationTime})",
-                machineModel.Machine.Description, _simulator.CurrentSimulationTime - start, _simulator.CurrentSimulationTime);
-        }
-    }
-    
 }
 
 

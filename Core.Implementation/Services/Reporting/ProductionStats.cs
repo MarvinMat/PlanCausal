@@ -27,14 +27,21 @@ public class ProductionStats
 
     public double CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(int machineType)
     {
-        return _feedbacks
+        var feedbacksWithMatchingMachineType = _feedbacks
             .OfType<ProductionFeedback>()
             .Where(feedback => feedback.Resources
                 .OfType<Machine>()
-                .First().MachineType == machineType)
-            .Average(feedback => feedback.LeadTime.TotalMinutes);
-    }
+                .FirstOrDefault()?.MachineType == machineType).ToList();
 
+        return !feedbacksWithMatchingMachineType.Any() ? 0.0 : // Or any other default value
+            feedbacksWithMatchingMachineType.Average(feedback => feedback.LeadTime.TotalMinutes);
+    }
+    
+    public double CalculateMeanUsageOfAllMachines()
+    {
+        return 0.0;
+    }
+    
     public double CalculateVarianceOfLeadTime()
     {
         throw new NotImplementedException();

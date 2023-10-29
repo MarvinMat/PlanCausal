@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace Core.Implementation.Services;
 
-public class ToolProviderJson : IToolProvider
+public class ToolProviderJson : IEntityLoader<Tool>
 {
     private readonly string _path;
     public ToolProviderJson(string path)

@@ -1,0 +1,145 @@
+[
+  {
+    "name": "M1",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 1
+  },
+  {
+    "name": "M2",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 2
+  },
+  {
+    "name": "M3",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 3
+  },
+  {
+    "name": "M4",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 4
+  },
+  {
+    "name": "M5",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 5
+  },
+  {
+    "name": "M6",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 6
+  },
+  {
+    "name": "M7",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 7
+  },
+  {
+    "name": "M8",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 8
+  },
+  {
+    "name": "M9",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 9
+  },
+  {
+    "name": "M10",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 10
+  },
+  {
+    "name": "M11",
+    "allowedToolIds": [
+      1
+    ],
+    "changeoverTimes": [
+      [
+        0
+      ]
+    ],
+    "count": 1,
+    "typeId": 11
+  }
+]

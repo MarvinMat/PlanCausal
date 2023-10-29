@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Core.Implementation.Services
 {
-    public class WorkPlanProviderJson : IWorkPlanProvider
+    public class WorkPlanProviderJson : IEntityLoader<WorkPlan>
     {
         private readonly string _path;
         public WorkPlanProviderJson(string path)
@@ -39,6 +39,7 @@ namespace Core.Implementation.Services
                         {
                             Name = operation.Name,
                             Duration = TimeSpan.FromMinutes(operation.Duration),
+                            VariationCoefficient = operation.VariationCoefficient,
                             MachineType = operation.MachineId,
                             ToolId = operation.ToolId,
                         }).ToList()

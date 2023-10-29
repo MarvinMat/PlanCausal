@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Core.Implementation.Services
 {
-    public class MachineProviderJson : IMachineProvider
+    public class MachineProviderJson : IEntityLoader<Machine>
     {
         private readonly string _path;
         public MachineProviderJson(string path)

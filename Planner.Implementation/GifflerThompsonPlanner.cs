@@ -37,39 +37,34 @@ namespace Planner.Implementation
             }
 
             // find all operations that are first to be scheduled (operations without predecessors or with predecessors already running or completed )
-            var S0 = workOperations.Where(o => o.Predecessor is null || o.Predecessor.State == OperationState.InProgress || o.Predecessor.State == OperationState.Completed).ToList();
+            var S0 = workOperations.AsParallel().Where(o => o.Predecessor is null || o.Predecessor.State == OperationState.InProgress || o.Predecessor.State == OperationState.Completed).ToList();
             var S = new HashSet<WorkOperation>(S0);
 
-            foreach (var op in S)
+            Parallel.ForEach(S, op =>
             {
                 if (op.Predecessor?.State == OperationState.InProgress)
                 {
-                    op.EarliestStart = op.Predecessor.EarliestFinish;
-                    op.LatestStart = op.Predecessor.LatestFinish;
+                    op.PlannedStart = op.Predecessor.PlannedFinish;
                 }
                 else
                 {
-                    op.EarliestStart = currentTime;
-                    op.LatestStart = currentTime;
+                    op.PlannedStart = currentTime;
                 }
-            }
+            });
 
             var R = new Dictionary<int, WorkOperation>();
 
             // 2. run Giffler-Thompson algorithm (schedule every operation)
             while (S.Count > 0)
             {
-                // 2.1 find the operation(s) in S that have the earliest finish time considering their current start and their duration
-                var earliestFinishOfS = S.Select(o => o.EarliestStart + o.MeanDuration).Min();
-                var O = S.Where(o => earliestFinishOfS.Equals(o.EarliestStart + o.MeanDuration));
+                // 2.1 find the operation(s) in S that have the earliest finish time considering their current planned start and their duration
+                var earliestFinishOfS = S.AsParallel().Select(o => o.PlannedStart + o.MeanDuration).Min();
+                var O = S.AsParallel().Where(o => earliestFinishOfS.Equals(o.PlannedStart + o.MeanDuration));
 
                 // put all needed machine types of these operations O into R together with the operation
                 foreach (var op in O)
                 {
-                    if (!R.ContainsKey(op.WorkPlanPosition.MachineType))
-                    {
-                        R.Add(op.WorkPlanPosition.MachineType, op);
-                    }
+                    R.TryAdd(op.WorkPlanPosition.MachineType, op);
                 }
 
                 // 2.2 schedule an operation on each of these machine types
@@ -82,8 +77,8 @@ namespace Planner.Implementation
                     R.Remove(selectedMachineType);
 
                     // 2.2.2 find an operation to schedule on the selected machine type by using some priority rule
-                    var operationsOnMachineType = S.Where(o => o.WorkPlanPosition.MachineType == selectedMachineType);
-                    var validOperationsToSchedule = operationsOnMachineType.Where(o => o.EarliestStart < OpR.EarliestStart + OpR.MeanDuration).ToList();
+                    var operationsOnMachineType = S.AsParallel().Where(o => o.WorkPlanPosition.MachineType == selectedMachineType);
+                    var validOperationsToSchedule = operationsOnMachineType.AsParallel().Where(o => o.PlannedStart < OpR.PlannedStart + OpR.MeanDuration).ToList();
                     var operationToSchedule = SelectOperationToSchedule(validOperationsToSchedule);
 
                     // 2.2.3 schedule the selected operation on a machine of the selected machine type
@@ -97,13 +92,12 @@ namespace Planner.Implementation
                         isPlanComplete = false;
                         continue;
                     }
-                    var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
+                    var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
                     earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
                     var machineToSchedule = earliestStartTimeByMachineOfSelectedType.First();
 
                     // schedule the operation
-                    operationToSchedule.EarliestFinish = operationToSchedule.EarliestStart + operationToSchedule.MeanDuration;
-                    operationToSchedule.LatestFinish = operationToSchedule.LatestStart + operationToSchedule.MeanDuration;
+                    operationToSchedule.PlannedFinish = operationToSchedule.PlannedStart + operationToSchedule.MeanDuration;
                     if (operationToSchedule.State.Equals(OperationState.Created)) // don't change the state if the operation is already pending on a machine
                         operationToSchedule.State = OperationState.Scheduled;
                     plannedOperations.Add(operationToSchedule);
@@ -112,38 +106,23 @@ namespace Planner.Implementation
                     operationToSchedule.Machine = machineToSchedule.Key;
 
                     // set the earliest start time of the machine to the finish time of the scheduled operation and update the earliest start time of the machine type
-                    earliestStartTimeByMachine[machineToSchedule.Key] = operationToSchedule.EarliestStart + operationToSchedule.MeanDuration;
+                    earliestStartTimeByMachine[machineToSchedule.Key] = operationToSchedule.PlannedStart + operationToSchedule.MeanDuration;
 
-                    earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
+                    earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
                     earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
                     var newEarliestStartTimeOfMachineType = earliestStartTimeByMachineOfSelectedType.First().Value;
                     earliestStartTimeByMachineType[selectedMachineType] = newEarliestStartTimeOfMachineType;
 
                     // update the start time of all other operations on this machine type
-                    // var otherOperationsOnSelectedMachineType = workOperations.Where(op =>
-                    //     op.WorkPlanPosition.MachineType == selectedMachineType &&
-                    //     !plannedOperations.Contains(op)
-                    //     ).ToList();
-                    // otherOperationsOnSelectedMachineType.ForEach(op =>
-                    // {
-                    //     if (newEarliestStartTimeOfMachineType > op.EarliestStart)
-                    //         op.EarliestStart = newEarliestStartTimeOfMachineType;
-                    //
-                    //     if (newEarliestStartTimeOfMachineType > op.LatestStart)
-                    //         op.LatestStart = newEarliestStartTimeOfMachineType;
-                    // });
-
                     var otherOperationsOnSelectedMachineType = workOperations
+                        .AsParallel()
                         .Where(op => op.WorkPlanPosition.MachineType == selectedMachineType && !plannedOperations.Contains(op))
                         .ToList();
 
                     Parallel.ForEach(otherOperationsOnSelectedMachineType, op =>
                     {
-                        if (newEarliestStartTimeOfMachineType > op.EarliestStart)
-                            op.EarliestStart = newEarliestStartTimeOfMachineType;
-
-                        if (newEarliestStartTimeOfMachineType > op.LatestStart)
-                            op.LatestStart = newEarliestStartTimeOfMachineType;
+                        if (newEarliestStartTimeOfMachineType > op.PlannedStart)
+                            op.PlannedStart = newEarliestStartTimeOfMachineType;
                     });
 
 
@@ -151,11 +130,8 @@ namespace Planner.Implementation
                     var successor = operationToSchedule.Successor;
                     if (successor != null)
                     {
-                        if (operationToSchedule.EarliestFinish > successor.EarliestStart)
-                            successor.EarliestStart = operationToSchedule.EarliestFinish;
-
-                        if (operationToSchedule.LatestFinish > successor.LatestStart)
-                            successor.LatestStart = operationToSchedule.LatestFinish;
+                        if (operationToSchedule.PlannedFinish > successor.PlannedStart)
+                            successor.PlannedStart = operationToSchedule.PlannedFinish;
 
                         S.Add(successor);
                     }
@@ -165,7 +141,7 @@ namespace Planner.Implementation
             return new Plan(plannedOperations, isPlanComplete);
         }
 
-        private WorkOperation SelectOperationToSchedule(List<WorkOperation> operations)
+        private static WorkOperation SelectOperationToSchedule(List<WorkOperation> operations)
         {
             operations.Sort(ShortestProcessingTimeFirst());
             return operations.First();

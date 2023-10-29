@@ -1,4 +1,5 @@
-﻿using Core.Abstraction.Domain.Enums;
+﻿using CoreAbstraction = Core.Abstraction;
+using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using Core.Implementation.Events;
@@ -16,9 +17,10 @@ namespace ProcessSim.Implementation
         private readonly Dictionary<IResource, ActiveObject<Simulation>> _simResources;
         public TimeSpan ReplanningInterval { get; set; }
         private List<WorkOperation> _currentPlan;
-        private ManualResetEventSlim _currentPlanChangedEvent = new(false);
+        private readonly ManualResetEventSlim _currentPlanChangedEvent = new(false);
         public DateTime CurrentSimulationTime => _sim.Now;
         public event EventHandler? SimulationEventHandler;
+        public int CountOfMachines => _simResources.Keys.OfType<Machine>().Count();
 
         /// <summary>
         /// Construct a new SimSharp simulation environment with the given seed and start date.
@@ -38,7 +40,7 @@ namespace ProcessSim.Implementation
             _sim.Process(Replanning());
 
             _currentPlanChangedEvent.Reset();
-            
+
             _sim.Run(duration);
         }
 
@@ -66,6 +68,7 @@ namespace ProcessSim.Implementation
                     Debug.WriteLine($"Machine {machine.Description} with ID {machine.Id} already added.");
             }
         }
+
         private IEnumerable<Event> Replanning()
         {
             while (true)
@@ -122,7 +125,8 @@ namespace ProcessSim.Implementation
             {
                 var isNotStarted = operation.State.Equals(OperationState.Scheduled);
                 var hasPredecessor = operation.Predecessor is not null;
-                var isPredecessorCompleted = operation.Predecessor is not null && operation.Predecessor.State.Equals(OperationState.Completed);
+                var isPredecessorCompleted = operation.Predecessor is not null &&
+                                             operation.Predecessor.State.Equals(OperationState.Completed);
 
                 return isNotStarted && (!hasPredecessor || isPredecessorCompleted);
             }).ToList().ForEach(ExecuteOperation);
@@ -131,22 +135,22 @@ namespace ProcessSim.Implementation
         private void RemoveOperationsNotInNewPlan(List<WorkOperation> modifiedPlan)
         {
             // if any operation that is already queued on a machine, is not in the new plan, remove it from the machine
-             _simResources.ToList().ForEach(resource =>
-             {
+            _simResources.ToList().ForEach(resource =>
+            {
                 if (resource.Value is MachineModel machineModel)
                 {
-                     var operationsToRemove = new List<WorkOperation>();
-                     machineModel.OperationQueue.Where(operation => operation.State.Equals(OperationState.Pending))
-                     .ToList().ForEach(operation =>
-                     {
-                         if (!modifiedPlan.Contains(operation))
-                             operationsToRemove.Add(operation);
-                     });
-                     operationsToRemove.ForEach(operation =>
-                     {
-                         machineModel.RemoveOperation(operation);
-                         operation.State = OperationState.Scheduled;
-                     });
+                    var operationsToRemove = new List<WorkOperation>();
+                    machineModel.OperationQueue.Where(operation => operation.State.Equals(OperationState.Pending))
+                        .ToList().ForEach(operation =>
+                        {
+                            if (!modifiedPlan.Contains(operation))
+                                operationsToRemove.Add(operation);
+                        });
+                    operationsToRemove.ForEach(operation =>
+                    {
+                        machineModel.RemoveOperation(operation);
+                        operation.State = OperationState.Scheduled;
+                    });
                 }
             });
         }
@@ -178,19 +182,23 @@ namespace ProcessSim.Implementation
         /// <param name="distribution">The distribution of the time between two occurrences of this interrupt.</param>
         /// <param name="interruptAction">The function to be run by each affected process when the interrupt occurs. For example, it can contain handling the interrupt. 
         /// The process will continue execution after this function has run.</param>
-        public void AddInterrupt(Func<ActiveObject<Simulation>, bool> predicate, Distribution<TimeSpan> distribution, Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
+        public void AddInterrupt(Func<ActiveObject<Simulation>, bool> predicate,
+            CoreAbstraction.Distribution<TimeSpan> distribution,
+            Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
         {
             _sim.Process(InterruptProcess(predicate, distribution, interruptAction));
         }
 
-        private IEnumerable<Event> InterruptProcess(Func<ActiveObject<Simulation>, bool> predicate, Distribution<TimeSpan> interruptTime, Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
+        private IEnumerable<Event> InterruptProcess(Func<ActiveObject<Simulation>, bool> predicate,
+            CoreAbstraction.Distribution<TimeSpan> interruptTimeDistribution,
+            Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
         {
             while (true)
             {
+                var interruptTime = interruptTimeDistribution();
                 yield return _sim.Timeout(interruptTime);
-                var resourcesToInterrupt = _simResources.Where(resource => {
-                    return predicate.Invoke(resource.Value);
-                }).ToList();
+                var resourcesToInterrupt = _simResources.Where(resource => { return predicate.Invoke(resource.Value); })
+                    .ToList();
 
                 var interruptedResources = new List<IResource>();
                 resourcesToInterrupt.ForEach(resource =>
@@ -210,8 +218,32 @@ namespace ProcessSim.Implementation
                 _currentPlanChangedEvent.Reset();
             }
         }
+
         public SimSharp.Timeout Timeout(Distribution<TimeSpan> distribution) => _sim.Timeout(distribution);
         public SimSharp.Timeout Timeout(TimeSpan duration) => _sim.Timeout(duration);
+
+        /// <summary>
+        /// Add an order generation process that invokes the <see cref="OrderGenerationEvent"/> regularly, according to the given distribution.
+        /// </summary>
+        /// <param name="orderFrequencyDistribution">The distribution of the time between two occurrences of an order generation event.</param>
+        public void AddOrderGeneration(CoreAbstraction.Distribution<TimeSpan> orderFrequencyDistribution)
+        {
+            _sim.Process(GenerateOrder(orderFrequencyDistribution));
+        }
+
+        private IEnumerable<Event> GenerateOrder(CoreAbstraction.Distribution<TimeSpan> orderFrequencyDistribution)
+        {
+            while (true)
+            {
+                var nextOrderTime = orderFrequencyDistribution();
+                yield return _sim.Timeout(nextOrderTime);
+
+                InvokeSimulationEvent(this, new OrderGenerationEvent(_sim.Now));
+
+                _currentPlanChangedEvent.Wait();
+                _currentPlanChangedEvent.Reset();
+            }
+        }
 
         public string GetResourceSummary()
         {
@@ -231,7 +263,31 @@ namespace ProcessSim.Implementation
 
                 }
             }
+
             return sb.ToString();
+        }
+
+        public double GetWaitingTimeSummaryOfMachines()
+        {
+            var totalIdleTime = 0.0;
+            foreach (var resource in _simResources)
+            {
+                if (resource.Value is MachineModel { WaitingTime: not null } machineModel)
+                    totalIdleTime += machineModel.WaitingTime.Sum;
+            }
+
+            return totalIdleTime;
+        }
+
+        public double GetWaitingTimeByMachineType(int machineType)
+        {
+            var totalIdleTime = 0.0;
+            _simResources.Values.OfType<MachineModel>().Where(machineModel => machineModel.Machine.MachineType == machineType)
+                .ToList().ForEach(machineModel =>
+                {
+                    if (machineModel.WaitingTime != null) totalIdleTime += machineModel.WaitingTime.Sum;
+                });
+            return totalIdleTime;
         }
     }
 }

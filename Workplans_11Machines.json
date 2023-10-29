@@ -1,0 +1,145 @@
+[
+  {
+    "name": "Produkt 1",
+    "description": "1",
+    "operations": [
+      {
+        "name": "Planposition 1",
+        "duration": 10,
+        "machineId": 1,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 2",
+        "duration": 12,
+        "machineId": 5,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 3",
+        "duration": 25,
+        "machineId": 7,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 4",
+        "duration": 10,
+        "machineId": 11,
+        "toolId": 1
+      }
+    ],
+    "workPlanId": 1
+  },
+  {
+    "name": "Produkt 2",
+    "description": "2",
+    "operations": [
+      {
+        "name": "Planposition 1",
+        "duration": 15,
+        "machineId": 2,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 2",
+        "duration": 10,
+        "machineId": 5,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 3",
+        "duration": 12,
+        "machineId": 8,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 4",
+        "duration": 20,
+        "machineId": 10,
+        "toolId": 1
+      }
+    ],
+    "workPlanId": 2
+  },
+  {
+    "name": "Produkt 3",
+    "description": "3",
+    "operations": [
+      {
+        "name": "Planposition 1",
+        "duration": 10,
+        "machineId": 3,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 2",
+        "duration": 10,
+        "machineId": 6,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 3",
+        "duration": 10,
+        "machineId": 8,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 4",
+        "duration": 10,
+        "machineId": 10,
+        "toolId": 1
+      }
+    ],
+    "workPlanId": 3
+  },
+  {
+    "name": "Produkt 4",
+    "description": "4",
+    "operations": [
+      {
+        "name": "Planposition 1",
+        "duration": 20,
+        "machineId": 3,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 2",
+        "duration": 35,
+        "machineId": 6,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 3",
+        "duration": 5,
+        "machineId": 11,
+        "toolId": 1
+      }
+    ],
+    "workPlanId": 4
+  },
+  {
+    "name": "Produkt 5",
+    "description": "5",
+    "operations": [
+      {
+        "name": "Planposition 1",
+        "duration": 12,
+        "machineId": 4,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 2",
+        "duration": 5,
+        "machineId": 9,
+        "toolId": 1
+      },
+      {
+        "name": "Planposition 3",
+        "duration": 15,
+        "machineId": 11,
+        "toolId": 1
+      }
+    ],
+    "workPlanId": 5
+  }
+]

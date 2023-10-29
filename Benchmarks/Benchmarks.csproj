@@ -18,6 +18,7 @@
       <ProjectReference Include="..\Controller.Implementation\Controller.Implementation.csproj" />
       <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
       <ProjectReference Include="..\Core.Implementation\Core.Implementation.csproj" />
+      <ProjectReference Include="..\Generators.Implementation\Generators.Implementation.csproj" />
       <ProjectReference Include="..\Planner.Implementation\Planner.Implementation.csproj" />
       <ProjectReference Include="..\SimpleProcessSim\ProcessSim.Implementation.csproj" />
     </ItemGroup>

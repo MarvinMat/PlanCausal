@@ -2,6 +2,7 @@
 
 namespace Core.Implementation.Domain
 {
+    //TODO: remove this useless class!
     public class ModelUtil
     {
         public static List<WorkOperation> GetWorkOperationsFromOrders(List<ProductionOrder> orders)

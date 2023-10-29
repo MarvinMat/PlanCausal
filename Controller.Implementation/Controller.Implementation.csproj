@@ -13,4 +13,8 @@
     <ProjectReference Include="..\ProcessSimAbstraction\ProcessSim.Abstraction.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="3.0.0-dev-02022" />
+  </ItemGroup>
+
 </Project>

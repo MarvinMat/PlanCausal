@@ -26,12 +26,12 @@ namespace Core.Abstraction.Domain.Processes
                 sb.AppendLine();
                 sb.AppendLine($"\tMachine: {machine?.Description} ({machine?.Id})");
                 sb.AppendLine();
-                var operations = Operations.Where(op => op.Machine == machine).OrderBy(op => op.EarliestStart).ToList();
+                var operations = Operations.Where(op => op.Machine == machine).OrderBy(op => op.PlannedStart).ToList();
                 operations.ForEach(operation =>
                 {
                     sb.AppendLine($"Operation: {operation.WorkPlanPosition.Name}");
-                    sb.AppendLine($"Earliest Start: {operation.EarliestStart}");
-                    sb.AppendLine($"Earliest Finish: {operation.EarliestFinish}");
+                    sb.AppendLine($"Planned Start: {operation.PlannedStart}");
+                    sb.AppendLine($"Planned Finish: {operation.PlannedFinish}");
                     sb.AppendLine($"Duration: {operation.MeanDuration}");
                     sb.AppendLine();
                 });
