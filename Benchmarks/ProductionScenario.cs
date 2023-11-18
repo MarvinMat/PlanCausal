@@ -43,7 +43,7 @@ public class ProductionScenario
         var seed = rnd.Next();
         _logger = Log.ForContext<ProductionScenario>();
         _machines = machines;
-        var simulator = sim ?? new Simulator(seed, DateTime.Now);
+        var simulator = sim ?? new Simulator(seed, DateTime.Now, this);
 
         WorkPlan ProductDistribution()
         {

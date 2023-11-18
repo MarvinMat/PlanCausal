@@ -1,4 +1,4 @@
-﻿using CoreAbstraction = Core.Abstraction;
+using CoreAbstraction = Core.Abstraction;
 using Core.Abstraction.Domain.Enums;
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
@@ -7,7 +7,9 @@ using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSim.Implementation.Core.SimulationModels;
 using SimSharp;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using ProcessSim.Abstraction;
 
 namespace ProcessSim.Implementation
 {
@@ -15,7 +17,7 @@ namespace ProcessSim.Implementation
     {
         private readonly Simulation _sim;
         private readonly Dictionary<IResource, ActiveObject<Simulation>> _simResources;
-        public TimeSpan ReplanningInterval { get; set; }
+        public TimeSpan ReplanningInterval { get; init; }
         private List<WorkOperation> _currentPlan;
         private readonly ManualResetEventSlim _currentPlanChangedEvent = new(false);
         public DateTime CurrentSimulationTime => _sim.Now;
@@ -68,7 +70,7 @@ namespace ProcessSim.Implementation
                     Debug.WriteLine($"Machine {machine.Description} with ID {machine.Id} already added.");
             }
         }
-
+        
         private IEnumerable<Event> Replanning()
         {
             while (true)
@@ -85,6 +87,7 @@ namespace ProcessSim.Implementation
         private void ExecuteOperation(WorkOperation operation)
         {
             var machine = operation.Machine ?? throw new ArgumentNullException(nameof(operation));
+            
             _simResources.TryGetValue(machine, out var activeObject);
             if (activeObject is MachineModel machineModel)
             {
@@ -104,10 +107,8 @@ namespace ProcessSim.Implementation
             {
                 var completedOperation = operationCompletedEvent.CompletedOperation;
                 var successor = completedOperation.Successor;
-                if (successor is not null)
-                {
+                if (successor?.Machine != null)
                     ExecuteOperation(successor);
-                }
             }
 
             SimulationEventHandler?.Invoke(sender, e);
@@ -197,19 +198,19 @@ namespace ProcessSim.Implementation
             {
                 var interruptTime = interruptTimeDistribution();
                 yield return _sim.Timeout(interruptTime);
-                var resourcesToInterrupt = _simResources.Where(resource => { return predicate.Invoke(resource.Value); })
-                    .ToList();
+                var resourcesToInterrupt = _simResources
+                    .Where(resource =>
+                        predicate.Invoke(resource.Value)).ToList();
 
                 var interruptedResources = new List<IResource>();
                 resourcesToInterrupt.ForEach(resource =>
                 {
-                    if (resource.Value is MachineModel machineModel)
-                        if (!machineModel.State.Equals(MachineState.Interrupted))
-                        {
-                            machineModel.Machine.State = MachineState.Interrupted;
-                            machineModel.Process.Interrupt(interruptAction);
-                            interruptedResources.Add(resource.Key);
-                        }
+                    if (resource.Value is not MachineModel machineModel) return;
+                    if (machineModel.State.Equals(MachineState.Interrupted)) return;
+                    
+                    machineModel.Machine.State = MachineState.Interrupted;
+                    machineModel.Process.Interrupt(interruptAction);
+                    interruptedResources.Add(resource.Key);
                 });
 
                 InvokeSimulationEvent(this, new InterruptionEvent(_sim.Now, interruptedResources));

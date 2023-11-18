@@ -36,11 +36,11 @@ public class SimulationController : IController
 
         _machines = machines;
         _planner = planner;
-        
+
         _logger.Information("Scheduling operations...");
         CurrentPlan = _planner.Schedule(OperationsToSimulate, machines, DateTime.Now);
         _logger.Information("Scheduling operations done.");
-        
+
         _simulation = simulator;
         _simulation.SimulationEventHandler += InterruptHandler;
         _simulation.CreateSimulationResources(machines);
@@ -49,6 +49,10 @@ public class SimulationController : IController
 
     public void Execute(TimeSpan duration)
     {
+        _logger.Information("Scheduling {Amount} operations...", OperationsToSimulate.Count);
+        CurrentPlan = _planner.Schedule(OperationsToSimulate, _machines, DateTime.Now);
+        _logger.Information("Scheduling operations done.");
+
         _simulation.SetCurrentPlan(CurrentPlan.Operations);
         _simulation.Start(duration);
     }
@@ -81,7 +85,7 @@ public class SimulationController : IController
         _simulation.Continue();
     }
 
-    public string Summerize()
+    public string Summarize()
     {
         var sb = new StringBuilder();
 

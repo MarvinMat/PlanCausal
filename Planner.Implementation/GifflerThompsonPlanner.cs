@@ -92,7 +92,8 @@ namespace Planner.Implementation
                         isPlanComplete = false;
                         continue;
                     }
-                    var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
+
+                    var earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType != null && machinesOfSelectedType.Contains(pair.Key)).ToList();
                     earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
                     var machineToSchedule = earliestStartTimeByMachineOfSelectedType.First();
 
@@ -108,7 +109,7 @@ namespace Planner.Implementation
                     // set the earliest start time of the machine to the finish time of the scheduled operation and update the earliest start time of the machine type
                     earliestStartTimeByMachine[machineToSchedule.Key] = operationToSchedule.PlannedStart + operationToSchedule.MeanDuration;
 
-                    earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType.Contains(pair.Key)).ToList();
+                    earliestStartTimeByMachineOfSelectedType = earliestStartTimeByMachine.AsParallel().Where(pair => machinesOfSelectedType != null && machinesOfSelectedType.Contains(pair.Key)).ToList();
                     earliestStartTimeByMachineOfSelectedType.Sort((a, b) => a.Value.CompareTo(b.Value));
                     var newEarliestStartTimeOfMachineType = earliestStartTimeByMachineOfSelectedType.First().Value;
                     earliestStartTimeByMachineType[selectedMachineType] = newEarliestStartTimeOfMachineType;

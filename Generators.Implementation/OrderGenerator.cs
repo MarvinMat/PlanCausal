@@ -6,14 +6,8 @@ namespace Generators.Implementation;
 
 public class OrderGenerator : IDataGenerator<ProductionOrder>
 {
-    public Distribution<int> QuantityDistribution { get; set; }
-    public Distribution<WorkPlan> ProductDistribution { get; set; }
- 
-    public OrderGenerator(Distribution<WorkPlan> productDistribution, Distribution<int> quantityDistribution)
-    {
-        ProductDistribution = productDistribution;
-        QuantityDistribution = quantityDistribution;
-    }
+    public Distribution<int>? QuantityDistribution { get; init; }
+    public Distribution<WorkPlan>? ProductDistribution { get; init; }
     
     /// <inheritdoc/>
     public List<ProductionOrder> Generate(int amount)

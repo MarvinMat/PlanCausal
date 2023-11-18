@@ -12,9 +12,9 @@ namespace Core.Abstraction.Domain.Resources
         public MachineState State { get; set; }
 
         public int MachineType { get; init; }
-        public int [] AllowedToolIds { get; init; }
+        public int []? AllowedToolIds { get; init; }
         
-        public double [][] ChangeoverTimes { get; set; }
+        public double [][]? ChangeoverTimes { get; set; }
 
         public Machine()
         {

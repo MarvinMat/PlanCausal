@@ -2,6 +2,7 @@
 using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using Core.Implementation.Events;
+using ProcessSim.Abstraction;
 using Serilog;
 using SimSharp;
 using static SimSharp.Distributions;
@@ -44,7 +45,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _machine.State = MachineState.Idle;
             _isProcessRunning = false;
             _isProcessInterrupted = false;
-            CurrentToolId = _machine.AllowedToolIds.FirstOrDefault();
+            if (_machine.AllowedToolIds != null) CurrentToolId = _machine.AllowedToolIds.FirstOrDefault();
         }
 
         public void EnqueueOperation(WorkOperation operation)
@@ -138,6 +139,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         }
         private IEnumerable<Event> ProcessOrder()
         {
+            if (_currentOperation == null) yield break;
             _currentOperation.State = OperationState.InProgress;
             if (_currentOperation.WorkOrder.State.Equals(OrderState.Created))
                 _currentOperation.WorkOrder.StartTime = Environment.Now;
@@ -149,16 +151,18 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _machine.State = MachineState.Working;
 
             var durationDistribution = N(_currentOperation.MeanDuration,
-                TimeSpan.FromMinutes(_currentOperation.VariationCoefficient * _currentOperation.MeanDuration.TotalMinutes));
+                TimeSpan.FromMinutes(_currentOperation.VariationCoefficient *
+                                     _currentOperation.MeanDuration.TotalMinutes));
             var processingDuration = Environment.Rand(POS(durationDistribution));
 
             var startTime = Environment.Now;
             _currentOperation.ActualStart = startTime;
 
-
-            _logger.Debug("On {MachineDescription}: Started {Name} at {StartTime} (should have been at {CurrentOperationPlannedStart}). " +
-                                "ETA is {ProcessingDuration}", 
-                _machine.Description, _currentOperation.WorkPlanPosition.Name, startTime, _currentOperation.PlannedStart, startTime + processingDuration);
+            _logger.Debug(
+                "On {MachineDescription}: Started {Name} at {StartTime} (should have been at {CurrentOperationPlannedStart}). " +
+                "ETA is {ProcessingDuration}",
+                _machine.Description, _currentOperation.WorkPlanPosition.Name, startTime,
+                _currentOperation.PlannedStart, startTime + processingDuration);
 
             var processingTimeDone = TimeSpan.Zero;
             while (processingDuration - processingTimeDone > TimeSpan.Zero)
@@ -170,19 +174,24 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 {
                     _isProcessInterrupted = false;
 
-                    if (Environment.ActiveProcess.Value is Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
+                    if (Environment.ActiveProcess.Value is
+                        Func<ActiveObject<Simulation>, IEnumerable<Event>> interruptAction)
                     {
                         foreach (var interruptEvent in HandleInterrupt(interruptAction))
                             yield return interruptEvent;
 
                         _machine.State = MachineState.Working;
                     }
-                    else throw new Exception("Process got interrupted during operation processing. This should not happen.");
+                    else
+                        throw new Exception(
+                            "Process got interrupted during operation processing. This should not happen.");
                 }
             }
 
-            _logger.Debug("On {MachineDescription}: Completed {Name} at {EndTime} (lasted {Duration} - supposed to {SupposedDuration} - mean is {MeanDuration})",
-                _machine.Description, _currentOperation.WorkPlanPosition.Name, Environment.Now, Environment.Now - startTime, processingDuration, _currentOperation.WorkPlanPosition.Duration);
+            _logger.Debug(
+                "On {MachineDescription}: Completed {Name} at {EndTime} (lasted {Duration} - supposed to {SupposedDuration} - mean is {MeanDuration})",
+                _machine.Description, _currentOperation.WorkPlanPosition.Name, Environment.Now,
+                Environment.Now - startTime, processingDuration, _currentOperation.WorkPlanPosition.Duration);
 
             var endTime = Environment.Now;
             _currentOperation.ActualFinish = endTime;
@@ -196,14 +205,19 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _currentOperation.WorkOrder.State = OrderState.Completed;
             _currentOperation.WorkOrder.EndTime = Environment.Now;
 
-            if (_currentOperation.WorkOrder.ProductionOrder.WorkOrders.All(workOrder =>
-                    workOrder.State.Equals(OrderState.Completed)))
-                _currentOperation.WorkOrder.ProductionOrder.State = OrderState.Completed;
+            if (!_currentOperation.WorkOrder.ProductionOrder.WorkOrders.All(workOrder =>
+                    workOrder.State.Equals(OrderState.Completed))) return;
+            
+            _currentOperation.WorkOrder.ProductionOrder.State = OrderState.Completed;
             _currentOperation.WorkOrder.ProductionOrder.CompletedDate = Environment.Now;
+            _logger.Information("Finished production order {ProductionOrderId} of product {Product} at {EndTime}",
+                _currentOperation.WorkOrder.ProductionOrder.Id, _currentOperation.WorkOrder.Name ,Environment.Now);
+
         }
 
         private IEnumerable<Event> Changeover()
         {
+            if (_currentOperation == null) yield break;
 
             var changeoverTime = GenerateChangeoverTime(_currentOperation.WorkPlanPosition.ToolId);
             var waitTime = _currentOperation.PlannedStart - Environment.Now - changeoverTime;
@@ -320,6 +334,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
         private TimeSpan GenerateChangeoverTime(int nextToolId)
         {
+            if (_machine.AllowedToolIds == null) throw new Exception("Machine has no allowed tool ids.");
             var rowIndex = _machine.AllowedToolIds.ToList().IndexOf(CurrentToolId);
             var colIndex = _machine.AllowedToolIds.ToList().IndexOf(nextToolId);
 

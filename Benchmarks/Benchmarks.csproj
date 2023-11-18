@@ -20,7 +20,15 @@
       <ProjectReference Include="..\Core.Implementation\Core.Implementation.csproj" />
       <ProjectReference Include="..\Generators.Implementation\Generators.Implementation.csproj" />
       <ProjectReference Include="..\Planner.Implementation\Planner.Implementation.csproj" />
+      <ProjectReference Include="..\ProcessSimulator\ProcessSimulator.csproj" />
       <ProjectReference Include="..\SimpleProcessSim\ProcessSim.Implementation.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="InterruptHandlerBenchmark.cs" />
+      <Compile Remove="ProductionScenario.cs" />
+      <Compile Remove="StatsBenchmark.cs" />
+      <Compile Remove="Program.cs" />
     </ItemGroup>
 
 </Project>

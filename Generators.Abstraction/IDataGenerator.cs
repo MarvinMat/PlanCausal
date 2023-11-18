@@ -1,6 +1,8 @@
 namespace Generators.Abstraction;
 
-public interface IDataGenerator<T>
+public interface IDataGenerator {}
+
+public interface IDataGenerator<T> : IDataGenerator
 {
     /// <summary>
     /// Generates a random list of type T containing the given amount of elements.
