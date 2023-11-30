@@ -1,7 +1,5 @@
 import os
 import argparse
-import random
-from itertools import dropwhile
 
 from pythonnet import load
 
@@ -30,75 +28,104 @@ for lib in dll_files:
     clr.AddReference(lib)
 
 from System import TimeSpan
-from System.Collections.Generic import List
 from System import DateTime
-from System import Func
-from System.Linq import Enumerable
-from System.Collections.Generic import IEnumerable
-from SimSharp import Distributions
-from SimSharp import ActiveObject
-from SimSharp import Simulation
-from SimSharp import Event
+from System import Double
+from System.Collections.Generic import List 
+from System.Collections.Generic import *
 
-from Core.Abstraction.Domain.Processes import ProductionOrder
-from Core.Abstraction.Domain.Processes import WorkOperation
-from Core.Abstraction.Domain.Resources import Machine
-from Core.Abstraction.Domain.Enums import OperationState
-from Core.Abstraction.Domain.Enums import MachineState
-from Core.Abstraction.Services import PythonGeneratorAdapter
-from Core.Implementation.Events import ReplanningEvent
-from Core.Implementation.Events import OperationCompletedEvent
-from Core.Implementation.Events import InterruptionEvent
-from Core.Implementation.Events import InterruptionHandledEvent
+from System import *
+
+from Serilog import *
+
+from SimSharp import ActiveObject, Simulation, Event
+
 from Core.Implementation.Services import MachineProviderJson
 from Core.Implementation.Services import WorkPlanProviderJson
-from Core.Implementation.Services import ToolProviderJson
-from Core.Implementation.Services.Reporting import ProductionStats
-from Core.Implementation.Domain import ModelUtil
+from Core.Implementation.Services import CustomerProviderJson
+from Core.Abstraction.Services import PythonGeneratorAdapter
+from Core.Abstraction.Domain.Processes import Plan, WorkOperation
+from Core.Abstraction.Domain.Resources import Machine
 
-from Planner.Implementation import GifflerThompsonPlanner
+from Core.Abstraction import Distributions
+
+from Planner.Implementation import PythonDelegatePlanner
 
 from ProcessSim.Implementation import Simulator
 from ProcessSim.Implementation.Core.SimulationModels import MachineModel
-from Controller.Implementation import SimulationController
 
-path_machines = os.path.join(root_dir, 'Machines.json')
-path_workplans = os.path.join(root_dir, 'Workplans.json')
-path_tools = os.path.join(root_dir, 'Tools.json')
+from ProcessSimulator.Scenarios import ProductionScenario
 
-machines = MachineProviderJson(path_machines).Load()
-plans = WorkPlanProviderJson(path_workplans).Load()
-tools = ToolProviderJson(path_tools).Load()
 
-orders = List[ProductionOrder]()
+# Configure Serilog
+logger_configuration = LoggerConfiguration() \
+    .MinimumLevel.Information() \
+    .Enrich.FromLogContext() \
 
-for plan in plans:
-    order = ProductionOrder()
-    order.Name = f"Order {plan.Name}"
-    order.Quantity = 50
-    order.WorkPlan = plan
-    orders.Add(order)
+logger_configuration =  ConsoleLoggerConfigurationExtensions.Console(logger_configuration.WriteTo)
+# logger_configuration = ConsoleLoggerConfigurationExtensions.File(logger_configuration.WriteTo, "log.txt", rollingInterval=RollingInterval.Day)
 
-operations = ModelUtil.GetWorkOperationsFromOrders(orders)
+# Assign the configured logger to Serilog's static Log class
+Log.Logger = logger_configuration.CreateLogger()
 
-seed = random.randint(1, 10000000)
-print(f"Seed: {seed}")
-simulator = Simulator(seed, DateTime.Now)
+path_machines = os.path.join(root_dir, 'Machines_11Machines.json')
+path_workplans = os.path.join(root_dir, 'Workplans_11Machines.json')
+path_customers = os.path.join(root_dir, 'customers.json')
 
-simulator.ReplanningInterval = TimeSpan.FromHours(1)
+timespans_py = [TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30)]
+timespans_net = List[TimeSpan]()
+prob_py = [0.25, 0.60, 0.15]
+prob_net = List[Double]()
 
-def interrupt_action(sim_process):
+for item in prob_py:
+    prob_net.Add(item)
+
+for item in timespans_py:
+    timespans_net.Add(item)
+
+    
+def schedule_internal(work_operations : List[WorkOperation], machines : List[Machine], current_time : DateTime):
+    Log.Logger.Information(F"Scheduling: {work_operations.Count} operations on {machines.Count} machines at {current_time}.")
+    return Plan(List[WorkOperation](), False)
+
+scenario = ProductionScenario("Python-11-Machines-Problem", "This is a description")\
+    .WithEntityLoader(MachineProviderJson(path_machines))\
+    .WithEntityLoader(WorkPlanProviderJson(path_workplans))\
+    .WithEntityLoader(CustomerProviderJson(path_customers))\
+    .WithInterrupt(
+        predicate= Func[ActiveObject[Simulation], bool](lambda process: True), 
+        distribution= Distributions.ConstantDistribution(TimeSpan.FromHours(5)),
+        interruptAction= Func[ActiveObject[Simulation], ProductionScenario, IEnumerable[Event]](
+            lambda simObject, scenario: \
+                PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, simObject, scenario))
+            ))\
+    .WithOrderGenerationFrequency(Distributions.DiscreteDistribution[TimeSpan](
+        timespans_net, prob_net))\
+    .WithPlanner(PythonDelegatePlanner(schedule_internal))
+
+scenario.Duration = TimeSpan.FromDays(1)
+scenario.Seed = 42
+scenario.RePlanningInterval = TimeSpan.FromHours(8)
+scenario.StartTime = DateTime.Now
+scenario.InitialCustomerOrdersGenerated = 5
+
+
+def interrupt_action(sim_process, prod_scenario):
+    if isinstance(prod_scenario.Simulator, Simulator):
+        simulator = prod_scenario.Simulator
+    else:
+        raise Exception("Simulator is not of type Simulator")
+    
     if isinstance(sim_process, MachineModel):
         waitFor = 2
         start = simulator.CurrentSimulationTime
-        print(F"Interrupted machine {sim_process.Machine.Description} at {start}: Waiting {waitFor} hours")
+        Log.Logger.Warning(F"Interrupted Machine {sim_process.Machine.Description} at {simulator.CurrentSimulationTime}.")
         yield simulator.Timeout(TimeSpan.FromHours(waitFor))
         print(F"Machine {sim_process.Machine.Description} waited {simulator.CurrentSimulationTime - start} (done at {simulator.CurrentSimulationTime}).")
 
 
 class PythonEnumerator():
-    def __init__(self, generator, arg):
-        self.generator = generator(arg)
+    def __init__(self, generator, *args):
+        self.generator = generator(*args)
         self.current = None
 
     def MoveNext(self):
@@ -115,157 +142,5 @@ class PythonEnumerator():
         pass
 
     
-simulator.AddInterrupt(
-    predicate = Func[ActiveObject[Simulation], bool](lambda process: True),
-    distribution = Distributions.EXP(TimeSpan.FromHours(5)),
-    interruptAction = Func[ActiveObject[Simulation], IEnumerable[Event]](
-            lambda arg: PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, arg))
-    )
-)
-
-gt_planner = GifflerThompsonPlanner()
-
-controller = SimulationController(operations, machines, gt_planner, simulator)
-
-
-def right_shift_successors(operation, operations_to_simulate):
-    #queued_operations_on_delayed_machine = Enumerable.OrderBy[WorkOperation, DateTime](
-    #   Enumerable.Where[WorkOperation](operations_to_simulate, Func[WorkOperation, bool](lambda op: op.Machine == operation.Machine)),
-    #   Func[WorkOperation, DateTime](lambda op: op.EarliestStart)
-    # )
-
-    queued_operations_on_delayed_machine = filter(lambda op: op.Machine == operation.Machine, operations_to_simulate)
-    queued_operations_on_delayed_machine = sorted(queued_operations_on_delayed_machine, key=lambda op: op.EarliestStart)
-
-    #Skip list till you find the current delayed operation, go one further and get the successor
-    #successor_on_machine = Enumerable.FirstOrDefault[WorkOperation](
-    #   Enumerable.Skip[WorkOperation](
-    #       Enumerable.SkipWhile[WorkOperation](
-    #           queued_operations_on_delayed_machine,
-    #           Func[WorkOperation, bool](lambda op: not op.Equals(operation))),
-    #      1
-    #   )
-    #)
-
-    successors = list(dropwhile(lambda op: not op.Equals(operation), queued_operations_on_delayed_machine))
-    successor_on_machine = successors[1] if len(successors) > 1 else None
-
-    update_successor_times(operation, successor_on_machine, operations_to_simulate)
-    update_successor_times(operation, operation.Successor, operations_to_simulate)
-
-
-def update_successor_times(operation, successor, operations_to_simulate):
-    if successor is None:
-        return
-
-    delay = operation.LatestFinish - successor.EarliestStart
-
-    if delay > TimeSpan.Zero:
-        successor.EarliestStart = successor.EarliestStart.Add(delay)
-        successor.LatestStart = successor.LatestStart.Add(delay)
-        successor.EarliestFinish = successor.EarliestFinish.Add(delay)
-        successor.LatestFinish = successor.LatestFinish.Add(delay)
-
-        right_shift_successors(successor, operations_to_simulate)
-
-
-def event_handler(e, planner, simulation, current_plan, operations_to_simulate, finished_operations):
-    if isinstance(e, ReplanningEvent) and operations_to_simulate.Count > 0:
-        print(F"Replanning at: {e.CurrentDate}")
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
-
-    if isinstance(e, OperationCompletedEvent):
-        completed_operation = e.CompletedOperation
-
-        # if it is too late, reschedule the current plan (right shift)
-        late = e.CurrentDate - completed_operation.LatestFinish
-        if late > TimeSpan.Zero:
-            completed_operation.LatestFinish = e.CurrentDate
-            right_shift_successors(completed_operation, operations_to_simulate)
-
-        if not operations_to_simulate.Remove(completed_operation):
-            raise Exception(
-                F"Operation {completed_operation.WorkPlanPosition.Name} ({completed_operation.WorkOrder.Name}) " +
-                F"was just completed but not found in the list of operations to simulate. This should not happen.")
-
-        finished_operations.Add(completed_operation)
-        controller.FinishedOperations = finished_operations
-        
-    if isinstance(e, InterruptionEvent):
-        # replan without the machines that just got interrupted
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
-        
-    if isinstance(e, InterruptionHandledEvent):
-        # replan with the machine included that just finished its interruption
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
-
-
-controller.HandleEvent = SimulationController.HandleSimulationEvent(event_handler)
-controller.Execute(TimeSpan.FromDays(7))
-
-print(simulator.GetResourceSummary())
-
-stats = ProductionStats(orders, controller.Feedbacks)
-
-meanLeadTime = stats.CalculateMeanLeadTimeInMinutes()
-print(f"Mean lead time: {meanLeadTime} minutes")
-
-meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1)
-print(f"Mean lead time of machine 1: {meanLeadTimeMachine1} minutes")
+scenario.Run()
+scenario.CollectStats()

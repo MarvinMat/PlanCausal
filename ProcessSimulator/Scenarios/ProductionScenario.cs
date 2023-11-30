@@ -44,8 +44,8 @@ public class ProductionScenario : IScenario
     public string Description { get;  }
     public int Seed { get; set; }
     public DateTime? StartTime { get; set; }
-    public TimeSpan Duration { get; init; }
-    public TimeSpan RePlanningInterval { get; init; }
+    public TimeSpan Duration { get; set; }
+    public TimeSpan RePlanningInterval { get; set; }
     
     /// <summary>
     /// Defines the amount of customer orders that are generated at the beginning of the simulation
@@ -54,7 +54,7 @@ public class ProductionScenario : IScenario
 
     public IController? Controller { get; private set; }
 
-    public ISimulator? Simulator { get; private set; }
+    public Simulator? Simulator { get; private set; }
 
     /// <summary>
     /// Represents a simulation configuration. 
@@ -112,7 +112,7 @@ public class ProductionScenario : IScenario
 
         if (!_generators.OfType<IDataGenerator<ProductionOrder>>().Any())
         {
-            _logger.Warning("The production generator is not set");
+            _logger.Warning("The production order generator is not set");
 
             var probabilities = new List<double>
                 {
@@ -132,63 +132,65 @@ public class ProductionScenario : IScenario
                 QuantityDistribution = quantityDistribution
             });
             
-            _logger.Information("Using the default generator");
+            _logger.Information("Using the default production order generator");
         }
 
         if (!_generators.OfType<IDataGenerator<CustomerOrder>>().Any())
         {
+            _logger.Warning("The customer order generator is not set");
+
             var probabilities = new List<double>
                 {
                     0.17, 0.06, 0.14, 0.16, 0.09, 0.12, 0.01, 0.01, 0.09, 0.15
                 };
             var customerDistribution = Distributions.DiscreteDistribution(_customers.Values.ToList(), probabilities);
-            
+
             _generators.Add(new CustomerOrderGenerator
             {
-                CustomerDistribution = customerDistribution, 
+                CustomerDistribution = customerDistribution,
                 OrderGenerator = _generators.OfType<IDataGenerator<ProductionOrder>>().FirstOrDefault(),
                 AmountDistribution = Distributions.ConstantDistribution(1)
             });
 
-            var customerOrders = _generators.OfType<IDataGenerator<CustomerOrder>>().FirstOrDefault()?.Generate(InitialCustomerOrdersGenerated);
-            customerOrders?.ForEach(order =>
-            {
-                _customers.TryGetValue(order.CustomerId, out var customer);
-                customer?.Orders.Add(order);
-                order.OrderReceivedDate = StartTime ?? DateTime.Now;
-            });
+            _logger.Information("Using the default generator");
+        }
 
-            var initialOperationsToSimulate = ModelUtil.GetWorkOperationsFromOrders(customerOrders.SelectMany(order => order.ProductionOrders).ToList());
-            if (Controller is SimulationController simulationController)
-            {
-                simulationController.OperationsToSimulate = initialOperationsToSimulate;
-            }
-            
-             _logger.Debug("Generated {Amount} of customer orders", 
-                 _customers.Select(customer => customer.Value.Orders.Count).Sum());
+        var customerOrders = _generators.OfType<IDataGenerator<CustomerOrder>>().FirstOrDefault()?.Generate(InitialCustomerOrdersGenerated);
+        customerOrders?.ForEach(order =>
+        {
+            _customers.TryGetValue(order.CustomerId, out var customer);
+            customer?.Orders.Add(order);
+            order.OrderReceivedDate = StartTime ?? DateTime.Now;
+        });
+
+        var initialOperationsToSimulate = ModelUtil.GetWorkOperationsFromOrders(customerOrders.SelectMany(order => order.ProductionOrders).ToList());
+        if (Controller is SimulationController simController)
+        {
+            simController.OperationsToSimulate = initialOperationsToSimulate;
         }
         
-        if (Simulator is Simulator simulator)
+         _logger.Debug("Generated {Amount} of customer orders", 
+             _customers.Select(customer => customer.Value.Orders.Count).Sum());
+
+
+        foreach (var orderGenerationFrequency in _orderGenerationFrequencies)
         {
-            foreach (var orderGenerationFrequency in _orderGenerationFrequencies)
-            {
-               simulator.AddOrderGeneration(orderGenerationFrequency);
-            }
-            
-            foreach (var interrupt in _interrupts)
-            {
-                simulator.AddInterrupt(interrupt.Predicate, interrupt.Distribution, interrupt.InterruptAction);
-            }
+           Simulator.AddOrderGeneration(orderGenerationFrequency);
+        }
+        
+        foreach (var interrupt in _interrupts)
+        {
+            Simulator.AddInterrupt(interrupt.Predicate, interrupt.Distribution, interrupt.InterruptAction);
         }
 
         Controller.Execute(Duration);
 
-        if (Controller is SimulationController simController)
+        if (Controller is SimulationController controller)
         {
             foreach (var folderPath in ReportingFolderPaths)
             {
-                FeedbackWriter.WriteFeedbacksToJson(simController.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.json"));
-                FeedbackWriter.WriteFeedbacksToCSV(simController.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.csv"));
+                FeedbackWriter.WriteFeedbacksToJson(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.json"));
+                FeedbackWriter.WriteFeedbacksToCSV(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.csv"));
                 FeedbackWriter.WriteCustomerOrdersToCSV(_customers.Values.ToList(), Path.Combine(folderPath, "customerOrders.csv"));
             }
         }
@@ -233,7 +235,7 @@ public class ProductionScenario : IScenario
         return this;
     }
 
-    public ProductionScenario WithSimulator(ISimulator simulator)
+    public ProductionScenario WithSimulator(Simulator simulator)
     {
         if (simulator is null) throw new ArgumentNullException(nameof(simulator));
         Simulator = simulator;
@@ -265,7 +267,7 @@ public class ProductionScenario : IScenario
     public ProductionScenario WithInterrupt(
         Func<ActiveObject, bool> predicate,
         Distribution<TimeSpan> distribution,
-        Func<ActiveObject, IScenario, IEnumerable<Event>> interruptAction
+        Func<ActiveObject, ProductionScenario, IEnumerable<Event>> interruptAction
     )
     {
         if (predicate is null) throw new ArgumentNullException(nameof(predicate));   
@@ -309,14 +311,14 @@ public class ProductionScenario : IScenario
     
     public void CollectStats()
     {
-        if (Simulator is not Simulator simulator) return;
-        var sumOfWaitingTime = simulator.GetWaitingTimeSummaryOfMachines();
+        if (Simulator is null) return;
+        var sumOfWaitingTime = Simulator.GetWaitingTimeSummaryOfMachines();
 
-        var utilization = ( (Duration * simulator.CountOfMachines) - TimeSpan.FromSeconds(sumOfWaitingTime) ) / (Duration * simulator.CountOfMachines);
+        var utilization = ( (Duration * Simulator.CountOfMachines) - TimeSpan.FromSeconds(sumOfWaitingTime) ) / (Duration * Simulator.CountOfMachines);
         Log.Logger.Information("Utilization: {Utilization:F2} %", utilization * 100);
-        for (var i = 1; i < simulator.CountOfMachines + 1; i++)
+        for (var i = 1; i < Simulator.CountOfMachines + 1; i++)
         {
-            var utilizationOfMachineType = (Duration - TimeSpan.FromSeconds(simulator.GetWaitingTimeByMachineType(i))) / Duration;
+            var utilizationOfMachineType = (Duration - TimeSpan.FromSeconds(Simulator.GetWaitingTimeByMachineType(i))) / Duration;
             Log.Logger.Information("Utilization of Machine {Machine} is: {Utilization:F2} %", i, utilizationOfMachineType * 100);
         }
     }
