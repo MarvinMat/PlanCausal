@@ -9,7 +9,7 @@ import clr
 # Parse the script arguments, if -s is provided, use it as the root directory
 # If no -s is provided, use the current directory as the root directory
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Run the Process Simulation with Python')
 parser.add_argument('-s', '--source', type=str, default=os.getcwd(), help='The root directory of the source code')
 args = parser.parse_args()
 
@@ -87,7 +87,7 @@ def schedule_internal(work_operations : List[WorkOperation], machines : List[Mac
     Log.Logger.Information(F"Scheduling: {work_operations.Count} operations on {machines.Count} machines at {current_time}.")
     return Plan(List[WorkOperation](), False)
 
-scenario = ProductionScenario("Python-11-Machines-Problem", "This is a description")\
+scenario = ProductionScenario("Python-11-Machines-Problem", "Simulating the 11-machine problem using python and .NET")\
     .WithEntityLoader(MachineProviderJson(path_machines))\
     .WithEntityLoader(WorkPlanProviderJson(path_workplans))\
     .WithEntityLoader(CustomerProviderJson(path_customers))\
@@ -100,7 +100,8 @@ scenario = ProductionScenario("Python-11-Machines-Problem", "This is a descripti
             ))\
     .WithOrderGenerationFrequency(Distributions.DiscreteDistribution[TimeSpan](
         timespans_net, prob_net))\
-    .WithPlanner(PythonDelegatePlanner(schedule_internal))
+    .WithPlanner(PythonDelegatePlanner(schedule_internal))\
+    .WithReporting(".")
 
 scenario.Duration = TimeSpan.FromDays(1)
 scenario.Seed = 42

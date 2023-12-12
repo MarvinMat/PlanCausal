@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Controller.Abstraction\Controller.Abstraction.csproj" />
     <ProjectReference Include="..\Controller.Implementation\Controller.Implementation.csproj" />
+    <ProjectReference Include="..\Generators.Abstraction\Generators.Abstraction.csproj" />
     <ProjectReference Include="..\Generators.Implementation\Generators.Implementation.csproj" />
     <ProjectReference Include="..\Planner.Abstraction\Planner.Abstraction.csproj" />
     <ProjectReference Include="..\Planner.Implementation\Planner.Implementation.csproj" />

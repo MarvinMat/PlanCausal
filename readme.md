@@ -1,18 +1,18 @@
 # Forschungs- und Entwicklungsprojekt "REPLAKI"
 
-- [Einführung](#einfuhrung)
-  * [Ziel](#ziel)
-  * [Anforderungen](#anforderungen)
-  * [Kurzbeschreibung](#kurzbeschreibung)
-- [Konfiguration](#konfiguration)
-  * [Maschinen](#maschinen)
-  * [Werkzeuge](#werkzeuge)
-  * [Arbeitspläne](#arbeitsplane)
-- [Beispiel Anwendung in .NET](#beispiel-anwendung-in-net)
-- [Beispiel Anwendung in Python](#beispiel-anwendung-in-python)
-  * [Python-Anwendung im Detail](#python-anwendung-im-detail)
-  * [Unterschiede zwischen Python und .NET](#unterschiede-python-net)
-  * [Ausführen der Anwendung](#ausfuhren-der-anwendung)
+1. [Einführung](#einführung)
+   - [Ziel](#ziel)
+   - [Anforderungen](#anforderungen)
+   - [Kurzbeschreibung](#kurzbeschreibung)
+2. [Konfiguration](#konfiguration)
+   - [Maschinen](#maschinen)
+   - [Werkzeuge](#werkzeuge)
+   - [Arbeitspläne](#arbeitspläne)
+3. [Beispiel Anwendung in .NET](#beispiel-anwendung-in-net)
+4. [Beispiel Anwendung in Python](#beispiel-anwendung-in-python)
+   - [Python-Anwendung im Detail](#python-anwendung-im-detail)
+   - [Unterschiede zwischen Python und .NET](#unterschiede-zwischen-python-und-net)
+   - [Ausführen der Anwendung](#ausführen-der-anwendung)
 
 ## Einführung
 
@@ -117,6 +117,7 @@ Arbeitspläne sind die dem Produktionsprozess zugrunde liegenden Stammdaten. Sie 
 Die Arbeitspläne werden dabei als eine Liste von Arbeitsgängen (alternativ: Arbeitsplanpositionen) beschrieben. Für jeden Arbeitsplan sind die folgenden Eigenschaften konfigurierbar:
 - ```workPlanId```: eine eindeutige Id
 - ```name```: der Name des Produkts
+- ```variationCoefficient```: Ein Koeffizient der das Grundrauschen der Bearbeitungszeiten der Arbeitsgänge beschreibt. Dieser Wert wird verwendet, um die Bearbeitungszeiten der Arbeitsgänge zufällig zu variieren.
 - ```operations```: ein Array von zugehörigen Arbeitsgängen. Jeder einzelne Arbeitsgang ist dabei wieder ein Objekt, für welches folgende Eigenschaften konfigurierbar sind:
     - ```name```: der Name
     - ```duration```: die Bearbeitungszeit (ohne Rüsten) in Minuten
@@ -134,286 +135,193 @@ Der folgende Ausschnitt zeigt ein Beispiel für die Konfiguration eines Arbeitspl
         {
             "machineId": 1,
             "duration": 15,
+            "variationCoefficient": 0.2,
             "name": "Tischbein sägen",
             "toolId": 2
         },
         {
             "machineId": 2,
             "duration": 10,
+            "variationCoefficient": 0.1,
             "name": "Tischbein schleifen",
             "toolId": 1
         },
         {
             "machineId": 3,
             "duration": 5,
+            "variationCoefficient": 0.3,
             "name": "Tischbein lackieren",
             "toolId": 3
         }
     ]
 },
 ```
+## Klassendiagramm der wichtigsten Klassen
+
+![image](doc/Diagramme/Klassendiagramm.svg)
+
 
 
 ## Beispiel Anwendung in .NET <a id="beispiel-anwendung-in-net"></a>
 Der in der Datei [Main.cs](ProcessSimulator/Main.cs) vorliegende Code implementiert eine beispielhafte Anwendung der Simulation zur Produktionsplanung und -steuerung. Im Folgenden wird der Aufbau und die Funktionsweise beschrieben:
 
-Zunächst werden die benötigten Ressourcen wie Maschinen, Werkzeuge und Arbeitspläne aus JSON-Dateien geladen. Diese Ressourcen dienen als Grundlage für die Simulation und Planung der Produktion.
-
+Grundlegend wird für das Starten der Simulation zwei Dinge benötigt. Ein [Szenario](ProcessSimulator/Scenarios/ProductionScenario), 
+praktisch eine Konfiguration der äußeren Umstände, beschreibt die Zusammenhänge von Controller, Planer und Simulator sowie eine Instanz eines Loggers
+werden benötigt. Wir haben uns für die Benutzung von ```Serilog``` entschieden. Hier eine beispielhafte Konfiguration,
+die ein fortlaufendes Logfile erzeugt und die Lognachrichten zusätzlich in der Konsole ausgibt:
+  
 ```csharp
-IMachineProvider machineProvider = new MachineProviderJson("../../../../Machines.json");
-var machines = machineProvider.Load();
-
-IToolProvider toolProvider = new ToolProviderJson("../../../../Tools.json");
-var tools = toolProvider.Load();
-
-IWorkPlanProvider workPlanProvider = new WorkPlanProviderJson("../../../../WorkPlans.json");
-var plans = workPlanProvider.Load();
+Log.Logger = new LoggerConfiguration()
+.WriteTo.Console()
+.WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+.MinimumLevel.Information()
+.Enrich.FromLogContext()
+.CreateLogger();
 ```
 
-Nachdem die Ressourcen geladen wurden, wird für jeden Arbeitsplan (also jedes Produkt) ein Produktionsauftrag erstellt, der simuliert werden soll. Dabei wird angegeben wie viele Einheiten des Produkts hergestellt werden sollen (```Quantity```).
+### Beispielhafte Konfiguration
+
+Im folgenden Absatz soll die Benutzung des [ProductionScenarios](ProcessSimulator/Scenarios/ProductionScenario) näher 
+erläutert werden. Ein ProductionScenario ist eine konkrete Implementierung des [IScenario](ProcessSimAbstraction/IScenario) 
+Interfaces. Das bereitgestellte ProductionScenario implentiert bereits ein breitgefächterte public API, die es ermöglicht
+einfach und schnell eine Simulation zu konfigurieren und zu starten. Es folgt eine beispielhafte Konfiguration:
 
 ```csharp
-var orders = plans.Select(plan => new ProductionOrder()
+var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
 {
-    Name = $"Order {plan.Name}",
-    Quantity = 50,
-    WorkPlan = plan,
-}).ToList();
+    Duration = TimeSpan.FromDays(30),
+    Seed = 42,
+    RePlanningInterval = TimeSpan.FromHours(8),
+    StartTime = DateTime.Now,
+    InitialCustomerOrdersGenerated = 5
+}
+    .WithEntityLoader(new MachineProviderJson($"../../../../Machines_11Machines.json"))
+    .WithEntityLoader(new WorkPlanProviderJson($"../../../../Workplans_11Machines.json"))
+    .WithEntityLoader(new CustomerProviderJson("../../../../Customers.json"))
+    .WithInterrupt(predicate: process => ((MachineModel)process).Machine.MachineType is 1 or 11, distribution:
+        CoreAbstraction.Distributions.ConstantDistribution(TimeSpan.FromHours(4)), interruptAction: InterruptAction)
+    .WithOrderGenerationFrequency(
+        CoreAbstraction.Distributions.DiscreteDistribution(
+            new List<TimeSpan> { TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30) }, 
+            new List<double> { 0.25, 0.60, 0.15 }
+        )
+    )
+    .WithReporting(".");
 ```
+Die hier gezeigte Implementierung ist ein Beispiel für die fließende API des ProductionScenarios. Durch Method Chaining
+wird eine intuitive und ausdrucksstarke Konfiguration ermöglicht. Im Folgenden werden die Funktionen der einzelnen 
+Methoden und Konstrukte erläutert.
 
-Anschließend werden aus den Aufträgen die entsprechenden ```WorkOperation```-Objekte erstellt. Diese Objekte enthalten Informationen über die einzelnen Arbeitsgänge und deren Abhängigkeiten.
-Die Methode ```ModelUtil.GetWorkOperationsFromOrders``` übernimmt das Erstellen der einzelnen ```WorkOperation```-Objekte und verknüpft diese untereinander.
-Jedes ```WorkOperation```-Objekt kennt seinen Vorgänger und seinen Nachfolger, falls diese existieren.
+#### Detailierter Aufbau der Konfiguration
+
+1. **Erstellung eines Szenarios:**
+   ```csharp
+   var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
+   ```
+   Hier wird ein neues `ProductionScenario` Objekt erstellt. Die Argumente `"ElevenMachinesProblem"` und `"Test"` sind beispielhaft der Name und die Beschreibung des Szenarios.
+
+2. **Konfiguration des Szenarios:**
+   Die folgenden Zeilen konfigurieren das Szenario durch das Setzen verschiedener Eigenschaften:
+  - `Duration = TimeSpan.FromDays(30),` legt die Dauer des Szenarios auf 30 Tage fest.
+  - `Seed = 42,` setzt einen Seed-Wert für Zufallszahlengeneratoren.
+  - `RePlanningInterval = TimeSpan.FromHours(8),` definiert das Intervall für Neuplanungen (alle 8 Stunden).
+  - `StartTime = DateTime.Now,` setzt den Startzeitpunkt auf die aktuelle Zeit.
+  - `InitialCustomerOrdersGenerated = 5` gibt an, dass zu Beginn des Szenarios 5 Kundenbestellungen generiert werden.
+
+3. **Einbindung externer Ressourcen:**
+   Mit `.WithEntityLoader(...)` werden verschiedene externe Ressourcen geladen:
+  - `new MachineProviderJson($"../../../../Machines_11Machines.json")` lädt Maschinendaten aus einer JSON-Datei.
+  - `new WorkPlanProviderJson($"../../../../Workplans_11Machines.json")` und 
+  - `new CustomerProviderJson("../../../../Customers.json")` laden Arbeitspläne bzw. Kundeninformationen aus JSON-Dateien.
+
+4. **Unterbrechungslogik:**
+   `.WithInterrupt(...)` definiert eine Unterbrechungslogik für bestimmte Prozesse:
+  - `predicate: process => ((MachineModel)process).Machine.MachineType is 1 or 11` gibt ein Prädikat an, das bestimmt, welche Maschinen unterbrochen werden (hier Maschinentypen 1 oder 11).
+  - `distribution: CoreAbstraction.Distributions.ConstantDistribution(TimeSpan.FromHours(4))` definiert die Dauer der Unterbrechung.
+  - `interruptAction: InterruptAction` legt die Aktion fest, die bei einer Unterbrechung ausgeführt wird.
+
+5. **Generierung von Bestellungen:**
+   `.WithOrderGenerationFrequency(...)` konfiguriert, wie oft neue Aufträge generiert werden:
+  - Es wird eine diskrete Verteilung mit verschiedenen Zeitintervallen (`TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30)`) und zugehörigen Wahrscheinlichkeiten (`0.25, 0.60, 0.15`) definiert.
+
+6. **Reporting:**
+   `.WithReporting(".")`ermöglicht die Berichterstattung bzw. Logging, wobei `"."` den Pfad des Berichts angibt.
+
+Für die oben beschriebene Unterbrechungslogik wird ein Callback benötigt, also genau die Methode, die bei einer Unterbrechung ausgeführt wird. Diese Methode wird im folgenden Absatz erläutert.
 
 ```csharp
-var operations = ModelUtil.GetWorkOperationsFromOrders(orders);
-```
-
-Als nächstes wird ein Simulator erstellt, der einen Seed für die Zufallszahlengenerierung erhält, sowie ein Startdatum der Simulation. Diese Klasse übernimmt das Simulieren der Produktion.
-
-```csharp
-var seed = rnd.Next();
-Console.WriteLine($"Seed: {seed}");
-var simulator = new Simulator(seed, DateTime.Now);
-```
-
-Mit Hilfe der Setter-Methode des ```ReplanningInterval``` wird nun festgelegt, wie oft die Produktionsplanung neu berechnet werden soll. Konkret gibt das Intervall an, wie oft ein ```ReplanningEvent``` von der Simulation ausgelöst wird, worauf dann von der Steuerung beliebig reagiert werden kann.
-In diesem Beispiel soll die Planung alle 8 Stunden neu berechnet werden und da das Intervall standardmäßig auf 12 Stunden eingestellt ist, muss dieses noch angepasst werden.
-
-```csharp
-simulator.ReplanningInterval = TimeSpan.FromHours(8);
-```
-
-Für die Simulation der Produktion wird im nächsten Schritt eine zufällige Unterbrechung hinzugefügt. Beispielhaft wird hier ein Stromausfall modelliert, der Vorgänge auf allen Maschinen unterbricht.
-Die Methode ```AddInterrupt``` erhält als ersten Parameter eine Funktion, die bestimmt, ob ein Vorgang unterbrochen werden soll. Sie wird für jeden Prozess in der Simulation aufgerufen und gibt einen Wahrheitswert zurück, der bestimmt, ob dieser Prozess unterbrochen werden soll. In diesem Beispiel wird jeder Vorgang unterbrochen, möglich wäre es aber beispielsweise auch, nur Vorgänge auf einer bestimmten Maschine oder einem bestimmten Maschinentyp zu unterbrechen.
-Als zweiten Parameter erhält die Methode eine Verteilung, die bestimmt, wie lange die Unterbrechung dauert. In diesem Beispiel wird eine exponentialverteilte Zufallsvariable mit einer mittleren Dauer von 5 Stunden verwendet.
-Als dritten Parameter erhält die Methode eine Funktion, die ausgeführt wird, wenn ein Vorgang unterbrochen wird. Dabei kann beispielsweise die Unterbrechung behandelt werden. In diesem Beispiel wird einfach 2 Stunden gewartet bis der Stromausfall vorbei ist.
-
-```csharp
-IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess)
+IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenario productionScenario)
 {
+    if (productionScenario is not ProductionScenario prodScenario)
+        throw new NullReferenceException("Scenario is null.");
+    if (prodScenario.Simulator is not Simulator simulator)
+        throw new NullReferenceException("Simulator is null.");
+    
     if (simProcess is MachineModel machineModel)
     {
-        var waitFor = 2;
+        var waitFor = POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
         var start = simulator.CurrentSimulationTime;
-        Console.WriteLine(
-            $"Interrupted machine {machineModel.Machine.Description} at {simulator.CurrentSimulationTime}: Waiting {waitFor} hours");
-        yield return simulator.Timeout(TimeSpan.FromHours(waitFor));
-        Console.WriteLine(
-            $"Machine {machineModel.Machine.Description} waited {simulator.CurrentSimulationTime - start:hh\\:mm\\:ss} (done at {simulator.CurrentSimulationTime}).");
-    }
-}
 
-simulator.AddInterrupt(
-    predicate: (process) =>
-    {
-        return true;
-        //return process._machine.typeId == 2
-    },
-    distribution: EXP(TimeSpan.FromHours(5)),
-    interruptAction: InterruptAction
-);
-```
-
-Der in diesem Beispiel modellierte Stromausfall unterbricht alle Vorgänge, die in der Simulation ausgeführt werden. Die Dauer zwischen zwei Stromausfällen ist im Mittel 5 Stunden und wird durch eine exponentialverteilte Zufallsvariable modelliert. Die Unterbrechung wird durch die Methode ```InterruptAction``` behandelt. In diesem Beispiel wird nur 2 Stunden gewartet, bevor der Stromausfall vorbei ist und die Produktion fortgesetzt wird.
-
-Nun wird ein Planer instanziiert, der verwendet werden soll, um die Arbeitsgänge zu planen. In diesem Beispiel wird der bereits implementierte Giffler-Thompson-Planer verwendet. Es kann aber auch ein beliebiger anderer Planer verwendet werden, der von der abstrakten Klasse ```Planner.Abstraction.Planner``` erbt.
-
-```csharp
-Planner.Abstraction.Planner planner = new GifflerThompsonPlanner();
-```
-
-Als nächstes wird die Steuerung für die Simulation erstellt. Diese Steuerung erhält die zu simulierenden Arbeitsgänge, die Maschinen, die für die Produktion zur Verfügung stehen, den Planer, der die Arbeitsgänge plant und den Simulator, der die Produktion simuliert.
-
-```csharp
-var controller = new SimulationController(operations, machines, planner, simulator);
-```
-
-Die Steuerung soll auf verschiedene Events reagieren, die während der Simulation auftreten. Dazu gehören beispielsweise das Beenden von Vorgängen, das Unterbrechen von Vorgängen und das Neuplanen der übrigen Arbeitsgänge. 
-Um die Reaktion auf diese Events zu implementieren wird ein EventHandler erstellt. Dabei wird in diesem Beispiel auf das ```ReplanningEvent```, das ```OperationCompletedEvent```, das ``ÌnterruptionEvent``` und das ```InterruptionHandledEvent``` reagiert.
-
-Wenn ein Arbeitsgang verspätet abgeschlossen wird, sollen in diesem Beispiel alle Nachfolger nach rechts geshiftet werden. Um diesen Right Shift rekursiv zu realisieren, werden zwei Hilfsmethoden verwendet, RightShiftSuccessors und UpdateSuccessorTimes.
-
-```csharp
-void RightShiftSuccessors(WorkOperation operation, List<WorkOperation> operationsToSimulate)
-{
-    var QueuedOperationsOnDelayedMachine = operationsToSimulate
-        .Where(op => op.Machine == operation.Machine)
-        .OrderBy(op => op.EarliestStart)
-        .ToList();
-    // Skip list till you find the current delayed operation, go one further and get the successor
-    var successorOnMachine = QueuedOperationsOnDelayedMachine
-        .SkipWhile(op => !op.Equals(operation))
-        .Skip(1)
-        .FirstOrDefault();
-
-    UpdateSuccessorTimes(operation, successorOnMachine, operationsToSimulate);
-    UpdateSuccessorTimes(operation, operation.Successor, operationsToSimulate);
-}
-
-void UpdateSuccessorTimes(WorkOperation operation, WorkOperation? successor, List<WorkOperation> operationsToSimulate)
-{
-    if (successor == null) return;
-
-    var delay = operation.LatestFinish - successor.EarliestStart;
-
-    if (delay > TimeSpan.Zero)
-    {
-        successor.EarliestStart = successor.EarliestStart.Add(delay);
-        successor.LatestStart = successor.LatestStart.Add(delay);
-        successor.EarliestFinish = successor.EarliestFinish.Add(delay);
-        successor.LatestFinish = successor.LatestFinish.Add(delay);
-
-        RightShiftSuccessors(successor, operationsToSimulate);
+        Log.Logger.Warning("Interrupted {Machine} at {Time}",
+            machineModel.Machine.Description, simulator.CurrentSimulationTime);
+        yield return simulator.Timeout(waitFor);
+        Log.Logger.Warning("{Machine} waited {Waited} hours (done at {Time})",
+            machineModel.Machine.Description, simulator.CurrentSimulationTime - start, simulator.CurrentSimulationTime);
     }
 }
 ```
+Die gezeigte Methode `InterruptAction` ist eine Callback-Funktion. Sie nimmt zwei Parameter entgegen: 
+- `simProcess` : ein `ActiveObject<Simulation>` Typ 
+- `productionScenario` : ein [`IScenario`](ProcessSimAbstraction/IScenario) Typ. 
 
-Nun kann der Steuerungsalgorithmus implementiert werden.
+Die Methode gibt ein `IEnumerable<Event>` zurück.
 
-```csharp
-SimulationController.HandleSimulationEvent eHandler = (e,
-                                                      planner,
-                                                      simulation,
-                                                      currentPlan,
-                                                      operationsToSimulate,
-                                                      finishedOperations) =>
-{
-```
+##### Detailierter Aufbau der Callback-Funktion `InterruptAction`
 
-Tritt ein ```ReplanningEvent``` auf, werden die noch zu simulierenden Arbeitsgänge mit Hilfe des Planers neu geplant. Dabei werden natürlich nur Arbeitsgänge geplant, die noch nicht begonnen bzw. abgeschlossen wurden. Außerdem werden nur Maschinen verwendet, die im Moment arbeiten können und nicht unterbrochen sind.
+1. **Parameter-Prüfung:**
+  - Die Methode überprüft zuerst, ob `productionScenario` tatsächlich eine Instanz von `ProductionScenario` ist. Wenn dies nicht der Fall ist, wird eine `NullReferenceException` mit der Nachricht "Scenario is null." ausgelöst.
+  - Dann wird geprüft, ob das `prodScenario`-Objekt einen gültigen `Simulator` hat. Ist dies nicht der Fall, wird ebenfalls eine `NullReferenceException` mit der Nachricht "Simulator is null." ausgelöst.
 
-```csharp
-    if (e is ReplanningEvent replanningEvent && operationsToSimulate.Any())
-    {
-        Console.WriteLine($"Replanning started at: {replanningEvent.CurrentDate}");
-        var newPlan = planner.Schedule(operationsToSimulate
-                .Where(op => !op.State.Equals(OperationState.InProgress)
-                             && !op.State.Equals(OperationState.Completed))
-                .ToList(),
-            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-            replanningEvent.CurrentDate);
-        controller.CurrentPlan = newPlan;
-        simulation.SetCurrentPlan(newPlan.Operations);
-    }
-```
+2. **Verarbeitungslogik für `MachineModel`:**
+  - Die Methode prüft, ob `simProcess` eine Instanz von `MachineModel` ist. Wenn ja, wird die Logik für das `MachineModel` ausgeführt.
+  - Innerhalb dieses Blocks wird eine Wartezeit berechnet. Dies geschieht durch den Aufruf `POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)))`, der eine stochastische Berechnung mit einer normalverteilten Zufallsvariablen darstellt, mit einem Mittelwert von 2 Stunden und einer Standardabweichung von 30 Minuten.
+  - Es wird der Startzeitpunkt der Unterbrechung mit `simulator.CurrentSimulationTime` festgehalten.
 
-Tritt ein ```OperationCompletedEvent``` auf, wird der entsprechende Arbeitsgang als abgeschlossen markiert und im Falle einer Verspätung werden die Start- und Endzeiten der Nachfolger des Arbeitsgangs entsprechend angepasst (Right Shift). 
+3. **Logging:**
+  - Es erfolgt ein Log-Eintrag, der darauf hinweist, dass eine bestimmte Maschine zu einem bestimmten Zeitpunkt unterbrochen wurde.
+  - Nach dem Ablauf der Wartezeit (simuliert durch `yield return simulator.Timeout(waitFor)`) erfolgt ein weiterer Log-Eintrag, der anzeigt, wie lange die Maschine gewartet hat und zu welcher Zeit die Wartezeit beendet wurde.
 
-```csharp
-    if (e is OperationCompletedEvent operationCompletedEvent)
-    {
-        var completedOperation = operationCompletedEvent.CompletedOperation;
+4. **Verwendung von `yield return`:**
+  - Durch die Verwendung von `yield return` innerhalb der `if`-Anweisung gibt die Methode ein `Event` zurück, das den Zeitpunkt markiert, an dem die Maschine ihre Wartezeit beendet. Dies ist typisch für C#-Methoden, die `IEnumerable` zurückgeben und ist ein Mechanismus, um eine Sequenz von Werten über mehrere Aufrufe hinweg zu erzeugen.
 
-        // if it is too late, reschedule the current plan (right shift)
-        var late = operationCompletedEvent.CurrentDate - completedOperation.LatestFinish;
-        if (late > TimeSpan.Zero)
-        {
-            completedOperation.LatestFinish = operationCompletedEvent.CurrentDate;
-            RightShiftSuccessors(completedOperation, operationsToSimulate);
-        }
-        if (!operationsToSimulate.Remove(completedOperation))
-            throw new Exception($"Operation {completedOperation.WorkPlanPosition.Name} ({completedOperation.WorkOrder.Name}) " +
-                $"was just completed but not found in the list of operations to simulate. This should not happen.");
-        finishedOperations.Add(completedOperation);
-        controller.FinishedOperations = finishedOperations;
-    }
-```
+###### TL;DR
 
-Tritt ein ```ÌnterruptionEvent``` auf, wird ein neuer Plan erstellt, ohne die Maschinen, die gerade unterbrochen wurden.
+Zusammengefasst ist `InterruptAction` eine Methode, die im Kontext einer Simulation eine Unterbrechung einer Maschine verarbeitet. Sie führt Sicherheitsüberprüfungen durch, berechnet Wartezeiten, protokolliert Ereignisse und gibt ein Ereignis zurück, das den Abschluss der Unterbrechung signalisiert.
+
+#### Starten der Simulation
+
+Wenn ein IScenario Objekt erstellt und konfiguriert wurde, kann es mit `.Run()` gestartet werden. Beispiel:
 
 ```csharp
-    if (e is InterruptionEvent interruptionEvent)
-    {
-        // replan without the machines that just got interrupted
-        var newPlan = planner.Schedule(operationsToSimulate
-                .Where(op => !op.State.Equals(OperationState.InProgress)
-                             && !op.State.Equals(OperationState.Completed))
-                .ToList(),
-            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-            interruptionEvent.CurrentDate);
-        controller.CurrentPlan = newPlan;
-        simulation.SetCurrentPlan(newPlan.Operations);
-    }
+scenario.Run();
+scenario.CollectStats();
 ```
 
-Tritt ein ```InterruptionHandledEvent``` auf, wird ein neuer Plan erstellt, mit der Maschine, die gerade ihre Unterbrechung beendet hat.
+Die hier gezeigte ```CollectStats``` Methode sammelt die Statistiken der Simulation und gibt sie in der Konsole aus.
 
-```csharp
-    if (e is InterruptionHandledEvent interruptionHandledEvent)
-    {
-        // replan with the machine included that just finished its interruption
-        var newPlan = planner.Schedule(operationsToSimulate
-                .Where(op => !op.State.Equals(OperationState.InProgress)
-                             && !op.State.Equals(OperationState.Completed))
-                .ToList(),
-            machines.Where(m => !m.State.Equals(MachineState.Interrupted)).ToList(),
-            interruptionHandledEvent.CurrentDate);
-        controller.CurrentPlan = newPlan;
-        simulation.SetCurrentPlan(newPlan.Operations);
-    }
-};
-```
+Abschließend wird mit ```Log.CloseAndFlush()``` die Logfile geschlossen und alle belegten Resourcen des Loggers freigegeben. 
 
-Dieser EventHandler wird nun in der Steuerung gesetzt. So wird das Verhalten der Steuerung definiert.
+### Zusammenfassung
 
-```csharp
-controller.HandleEvent = eHandler;
-```
+Der gesamte Prozess der Initialisierung und Ausführung der Simulation kann wie folgt zusammengefasst werden:
 
-Zu guter Letzt werden mit Hilfe der ```Execute```-Methode alle übergebenen Resourcen alloziert und die Simulation zu den gegebenen Parametern gestartet. Während die Simulation läuft, werden die Unterbrechungsaktionen ausgeführt, wenn die Bedingungen erfüllt sind. Der Verlauf der Simulation kann anhand des Simulationslogs auf der Konsole verfolgt werden.
-
-```csharp
-controller.Execute(TimeSpan.FromDays(7));
-```
-
-Die Logs der Simulation sehen beispielsweise wie folgt aus:
-
-```
-Replanning started at: 06.06.2023 07:09:56
-Completed Lackieren at 06.06.2023 07:20:47 (lasted 01:44:43 - was planned 01:40:00)
-Started Lackieren on machine 56ad699e-8d2d-4b88-ab75-7429c06eaa22 at 06.06.2023 07:20:47 (should have been at 06.06.2023 07:20:47).
-Completed Lackieren at 06.06.2023 09:00:53 (lasted 01:40:06 - was planned 01:40:00)
-Started Lackieren on machine 56ad699e-8d2d-4b88-ab75-7429c06eaa22 at 06.06.2023 09:00:53 (should have been at 06.06.2023 09:00:53).
-Interrupted at 06.06.2023 09:33:37: Waiting 2 hours
-Interrupted at 06.06.2023 09:33:37: Waiting 2 hours
-``` 
-
-Einige Ergebnisse und Statistiken zu den Maschinen in der Simulation können mit Hilfe der ```GetResourceSummary```-Methode ausgegeben werden.
-```csharp
-Console.WriteLine(simulator.GetResourceSummary());
-```
-
-Außerdem kann die ```ProductionStats```-Klasse verwendet werden, um einige weitere Statistiken zur Produktion zu erhalten.
-```csharp
-var stats = new ProductionStats(orders, controller.Feedbacks);
-
-var meanLeadTime = stats.CalculateMeanLeadTimeInMinutes();
-Console.WriteLine($"Mean lead time: {meanLeadTime:##.##} minutes");
-
-var meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1);
-Console.WriteLine($"Mean lead time of machine 1: {meanLeadTimeMachine1:##.##} minutes");
-```
+1. Erstellen eines Szenarios das den IScenario Typ implementiert.
+2. Konfigurieren des Szenarios durch Setzen verschiedener Eigenschaften.
+3. Einbinden externer Ressourcen.
+4. eventuell Definieren einer Unterbrechungslogik.
+5. eventuell Definieren einer Neuplanungslogik.
+6. Starten der Simulation durch Aufruf der Methode `.Run()` des Szenarios.
+7. Sammeln der Statistiken durch Aufruf der Methode `.CollectStats()` des Szenarios - sofern implementiert.
 
 ## Beispiel-Anwendung in Python
 
@@ -428,8 +336,6 @@ Zuerst werden einige Python-Bibliotheken geladen sowie die .Net Core CLR. Diese 
 ```python
 import os
 import argparse
-import random
-from itertools import dropwhile
 
 from pythonnet import load
 
@@ -440,7 +346,7 @@ import clr
 Als nächstes wird ein Kommandozeilenargument (```-s``` bzw. ```--source```) eingelesen, welches den Pfad zum Root-Ordner dieses Projektes und somit zu den .dll-Dateien der Klassenbibliotheken enthält.
 
 ```python
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Run the Process Simulation with Python')
 parser.add_argument('-s', '--source', type=str, default=os.getcwd(), help='The root directory of the source code')
 args = parser.parse_args()
 
@@ -463,83 +369,143 @@ for lib in dll_files:
 Die benötigten Klassen können nun importiert werden.
 ```python
 from System import TimeSpan
-from System.Collections.Generic import List
 from System import DateTime
-from System import Func
-from System.Linq import Enumerable
-from System.Collections.Generic import IEnumerable
-from SimSharp import Distributions
-from SimSharp import ActiveObject
-from SimSharp import Simulation
-from SimSharp import Event
+from System import Double
+from System.Collections.Generic import List 
+from System.Collections.Generic import *
 
-from Core.Abstraction.Domain.Processes import ProductionOrder
-from Core.Abstraction.Domain.Processes import WorkOperation
-from Core.Abstraction.Domain.Processes import WorkOrder
-from Core.Abstraction.Services import PythonGeneratorAdapter
-from Core.Implementation.Events import ReplanningEvent
-from Core.Implementation.Events import OperationCompletedEvent
+from System import *
+
+from Serilog import *
+
+from SimSharp import ActiveObject, Simulation, Event
+
 from Core.Implementation.Services import MachineProviderJson
 from Core.Implementation.Services import WorkPlanProviderJson
+from Core.Implementation.Services import CustomerProviderJson
+from Core.Abstraction.Services import PythonGeneratorAdapter
+from Core.Abstraction.Domain.Processes import Plan, WorkOperation
+from Core.Abstraction.Domain.Resources import Machine
 
-from Planner.Implementation import GifflerThompsonPlanner
+from Core.Abstraction import Distributions
+
+from Planner.Implementation import PythonDelegatePlanner
 
 from ProcessSim.Implementation import Simulator
 from ProcessSim.Implementation.Core.SimulationModels import MachineModel
-from Controller.Implementation import SimulationController
+
+from ProcessSimulator.Scenarios import ProductionScenario
 ```
 
-Nun werden die Maschinen, Arbeitspläne und Werkzeuge aus den Konfigurationsdateien geladen.
+Zu Beginn wird das Logging konfiguriert. In der Simulationsbibliothek wurde Serilog verwendet, um das Logging zu realisieren. Diese Bibliothek kann auch in Python verwendet werden, sie wurde oben importiert. Es wird nun ein Logger erstellt, der die Log-Nachrichten in die Konsole schreibt. Außerdem wird das Log-Level auf Information gesetzt, sodass alle Log-Nachrichten mit diesem Level oder höher in die Konsole geschrieben werden. Auch möglich wäre es, einen Logger zu erstellen, der die Log-Nachrichten in eine Datei schreibt.
 
 ```python
-path_machines = os.path.join(root_dir, 'Machines.json')
-path_workplans = os.path.join(root_dir, 'Workplans.json')
-path_tools = os.path.join(root_dir, 'Tools.json')
+logger_configuration = LoggerConfiguration() \
+    .MinimumLevel.Information() \
+    .Enrich.FromLogContext() \
 
-machines = MachineProviderJson(path_machines).Load()
-plans = WorkPlanProviderJson(path_workplans).Load()
-tools = ToolProviderJson(path_tools).Load()
+logger_configuration =  ConsoleLoggerConfigurationExtensions.Console(logger_configuration.WriteTo)
+# logger_configuration = ConsoleLoggerConfigurationExtensions.File(logger_configuration.WriteTo, "log.txt", rollingInterval=RollingInterval.Day)
+
+Log.Logger = logger_configuration.CreateLogger()
 ```
 
-Als nächstes werden die Aufträge und daraus die Arbeitsgänge erstellt.
+Nun werden die Pfade für die Konfigurationsdateien der Maschinen, Arbeitspläne und Kunden hinterlegt.
 
 ```python
-orders = List[ProductionOrder]()
-
-for plan in plans:
-    order = ProductionOrder()
-    order.Name = f"Order {plan.Name}"
-    order.Quantity = 50
-    order.WorkPlan = plan
-    orders.Add(order)
-
-operations = ModelUtil.GetWorkOperationsFromOrders(orders)
+path_machines = os.path.join(root_dir, 'Machines_11Machines.json')
+path_workplans = os.path.join(root_dir, 'Workplans_11Machines.json')
+path_customers = os.path.join(root_dir, 'customers.json')
 ```
 
-Nun wird die Simulation mit einem zufälligen Seed initialisiert und das Replanning-Intervall auf 8 Stunden gesetzt.
-```python
-seed = random.randint(1, 10000000)
-print(f"Seed: {seed}")
-simulator = Simulator(seed, DateTime.Now)
+Als nächstes werden Listen mit Zeitspannen und die dazugehörigen Wahrscheinlichkeiten angelegt. Diese werden später dazu verwendet, anzugeben, wie oft ein neuer Auftrag in der Simulation generiert wird. Da später C#-Listen verwendet werden müssen, werden an dieser Stelle gleich die Python-Listen in C#-Listen umgewandelt.
 
-simulator.ReplanningInterval = TimeSpan.FromHours(8)
+```python
+timespans_py = [TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30)]
+timespans_net = List[TimeSpan]()
+prob_py = [0.25, 0.60, 0.15]
+prob_net = List[Double]()
+
+for item in prob_py:
+    prob_net.Add(item)
+
+for item in timespans_py:
+    timespans_net.Add(item)
 ```
 
-Danach wird der Stromausfall (die Unterbrechung) im Simulator registriert. Dafür wird eine Python-Generator-Funktion verwendet. Da diese aber anders funktioniert als in .NET, müssen hier noch eigene Klassen verwendet werden, die die gleiche Funktionalität ermöglichen.
+Nun wird eine Methode definiert, die die Implementierung eines eigenen Planungsalgorithmus in Python veranschaulichen soll. Diese Methode erhält eine Liste von Arbeitsgängen, eine Liste von Maschinen und ein Datum, an dem die Planung beginnen soll. Die Methode gibt einen Plan zurück, der die geplanten Arbeitsgänge enthält. 
+
+In diesem Beispiel loggt die Methode nur, dass sie aufgerufen wurde und gibt einen leeren Plan zurück.
 
 ```python
-def interrupt_action(sim_process):
+def schedule_internal(work_operations : List[WorkOperation], machines : List[Machine], current_time : DateTime):
+    Log.Logger.Information(F"Scheduling: {work_operations.Count} operations on {machines.Count} machines at {current_time}.")
+    return Plan(List[WorkOperation](), False)
+```
+
+Nun wird das ```ProductionScenario```-Objekt erstellt, welches die Simulation steuert. Mit Hilfe dieses Objektes kann die gesamte Simulation konfiguriert und ausgeführt werden. 
+
+Beispielhaft werden hier die ```EntityLoader``` für Maschinen, Arbeitspläne und Kunden gesetzt. Diese werden dann im Szenario verwendet, um die entsprechenden Ressourcen aus den JSON-Dateien zu laden.
+
+Außerdem wird eine Unterbrechung registriert. Dabei werden alle Maschinen aller 5 Stunden unterbrochen. Was bei der Unterbrechung auf jeder Maschine passiert, wird in der Methode ```interrupt_action``` weiter unten definiert.
+
+Weiterhin wird die Häufigkeit der Generierung von neuen Aufträgen gesetzt. In diesem Beispiel folgt die Dauer zwischen zwei Aufträgen einer diskreten Verteilung mit den bereits oben konfigurierten Werten und Wahrscheinlichkeiten.
+
+Als nächstes wird ein eigener, in Python implementierter Planer gesetzt. Dazu wird die Klasse ```PythonDelegatePlanner``` verwendet, die eine Python-Funktion als Argument erhält. Hier wird die oben definierte Funktion ```schedule_internal``` verwendet.
+
+Zuletzt wird noch ein Reporting-Verzeichnis gesetzt. In diesem Beispiel wird das aktuelle Verzeichnis verwendet, in dem die Python-Anwendung ausgeführt wird.
+In diesem Verzeichnis werden nach dem Ende der Simulation einige Dateien erstellt, die die Ergebnisse und Daten der Simulation enthalten.
+
+```python
+scenario = ProductionScenario("Python-11-Machines-Problem", "Simulating the 11-machine problem using python and .NET")\
+    .WithEntityLoader(MachineProviderJson(path_machines))\
+    .WithEntityLoader(WorkPlanProviderJson(path_workplans))\
+    .WithEntityLoader(CustomerProviderJson(path_customers))\
+    .WithInterrupt(
+        predicate= Func[ActiveObject[Simulation], bool](lambda process: True), 
+        distribution= Distributions.ConstantDistribution(TimeSpan.FromHours(5)),
+        interruptAction= Func[ActiveObject[Simulation], ProductionScenario, IEnumerable[Event]](
+            lambda simObject, scenario: \
+                PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, simObject, scenario))
+            ))\
+    .WithOrderGenerationFrequency(Distributions.DiscreteDistribution[TimeSpan](
+        timespans_net, prob_net))\
+    .WithPlanner(PythonDelegatePlanner(schedule_internal))
+    .WithReporting(".")
+```
+
+Weiterhin werden einige Properties des Szenarios gesetzt. Hier wird die zu simulierende Dauer der Simulation, der Seed, das Intervall, in dem regelmäßig neu geplant werden soll, die Startzeit und die Anzahl der initial zu simulierenden Aufträge festgelegt.
+
+```python
+scenario.Duration = TimeSpan.FromDays(1)
+scenario.Seed = 42
+scenario.RePlanningInterval = TimeSpan.FromHours(8)
+scenario.StartTime = DateTime.Now
+scenario.InitialCustomerOrdersGenerated = 5
+```
+
+Danach folgt die Definition der Unterbrechung. Dafür wird eine Python-Generator-Funktion verwendet. Da diese aber anders funktioniert als in .NET, müssen hier noch eigene Klassen verwendet werden, die die gleiche Funktionalität ermöglichen, u. a. die PythonEnumerator-Klasse.
+
+In diesem Beispiel wird während der Unterbrechung einfach 2 Stunden gewartet, bevor die Produktion fortgesetzt wird.
+
+```python
+def interrupt_action(sim_process, prod_scenario):
+    if isinstance(prod_scenario.Simulator, Simulator):
+        simulator = prod_scenario.Simulator
+    else:
+        raise Exception("Simulator is not of type Simulator")
+    
     if isinstance(sim_process, MachineModel):
         waitFor = 2
         start = simulator.CurrentSimulationTime
-        print(F"Interrupted machine {sim_process.Machine.Description} at {start}: Waiting {waitFor} hours")
+        Log.Logger.Warning(F"Interrupted Machine {sim_process.Machine.Description} at {simulator.CurrentSimulationTime}.")
         yield simulator.Timeout(TimeSpan.FromHours(waitFor))
         print(F"Machine {sim_process.Machine.Description} waited {simulator.CurrentSimulationTime - start} (done at {simulator.CurrentSimulationTime}).")
 
 
 class PythonEnumerator():
-    def __init__(self, generator, arg):
-        self.generator = generator(arg)
+    def __init__(self, generator, *args):
+        self.generator = generator(*args)
         self.current = None
 
     def MoveNext(self):
@@ -554,173 +520,18 @@ class PythonEnumerator():
 
     def Dispose(self):
         pass
-
-    
-simulator.AddInterrupt(
-    predicate = Func[ActiveObject[Simulation], bool](lambda process: True),
-    distribution = Distributions.EXP(TimeSpan.FromHours(5)),
-    interruptAction = Func[ActiveObject[Simulation], IEnumerable[Event]](
-            lambda arg: PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, arg))
-    )
-)
-```
-
-Im nächsten Schritt wird der Planer initialisiert und die Steuerung wird mit den benötigten Argumenten erstellt.
-
-```python
-gt_planner = GifflerThompsonPlanner()
-
-controller = SimulationController(operations, machines, gt_planner, simulator)
-```
-
-Danach wird die Steuerung implementiert. Dabei wurden an einigen Stellen für das Arbeiten mit Listen eher python-typische Funktionen wie filter, sorted oder dropwhile verwendet, um den Code zu vereinfachen. Möglich wäre es auch, die äquivalenten C#-Funktionen zu verwenden, was aber längeren und schwerer lesbaren Code zur Folge hätte. Der Vollständigkeit halber sind diese Varianten in den Kommentaren im Code mit angegeben.
-
-```python
-def right_shift_successors(operation, operations_to_simulate):
-    #queued_operations_on_delayed_machine = Enumerable.OrderBy[WorkOperation, DateTime](
-    #   Enumerable.Where[WorkOperation](operations_to_simulate, Func[WorkOperation, bool](lambda op: op.Machine == operation.Machine)),
-    #   Func[WorkOperation, DateTime](lambda op: op.EarliestStart)
-    # )
-
-    queued_operations_on_delayed_machine = filter(lambda op: op.Machine == operation.Machine, operations_to_simulate)
-    queued_operations_on_delayed_machine = sorted(queued_operations_on_delayed_machine, key=lambda op: op.EarliestStart)
-
-    #Skip list till you find the current delayed operation, go one further and get the successor
-    #successor_on_machine = Enumerable.FirstOrDefault[WorkOperation](
-    #   Enumerable.Skip[WorkOperation](
-    #       Enumerable.SkipWhile[WorkOperation](
-    #           queued_operations_on_delayed_machine,
-    #           Func[WorkOperation, bool](lambda op: not op.Equals(operation))),
-    #      1
-    #   )
-    #)
-
-    successors = list(dropwhile(lambda op: not op.Equals(operation), queued_operations_on_delayed_machine))
-    successor_on_machine = successors[1] if len(successors) > 1 else None
-
-    update_successor_times(operation, successor_on_machine, operations_to_simulate)
-    update_successor_times(operation, operation.Successor, operations_to_simulate)
-
-
-def update_successor_times(operation, successor, operations_to_simulate):
-    if successor is None:
-        return
-
-    delay = operation.LatestFinish - successor.EarliestStart
-
-    if delay > TimeSpan.Zero:
-        successor.EarliestStart = successor.EarliestStart.Add(delay)
-        successor.LatestStart = successor.LatestStart.Add(delay)
-        successor.EarliestFinish = successor.EarliestFinish.Add(delay)
-        successor.LatestFinish = successor.LatestFinish.Add(delay)
-
-        right_shift_successors(successor, operations_to_simulate)
-
-
-def event_handler(e, planner, simulation, current_plan, operations_to_simulate, finished_operations):
-    if isinstance(e, ReplanningEvent) and operations_to_simulate.Count > 0:
-        print(F"Replanning at: {e.CurrentDate}")
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
-
-    if isinstance(e, OperationCompletedEvent):
-        completed_operation = e.CompletedOperation
-
-        # if it is too late, reschedule the current plan (right shift)
-        late = e.CurrentDate - completed_operation.LatestFinish
-        if late > TimeSpan.Zero:
-            completed_operation.LatestFinish = e.CurrentDate
-            right_shift_successors(completed_operation, operations_to_simulate)
-
-        if not operations_to_simulate.Remove(completed_operation):
-            raise Exception(
-                F"Operation {completed_operation.WorkPlanPosition.Name} ({completed_operation.WorkOrder.Name}) " +
-                F"was just completed but not found in the list of operations to simulate. This should not happen.")
-
-        finished_operations.Add(completed_operation)
-        controller.FinishedOperations = finished_operations
-        
-    if isinstance(e, InterruptionEvent):
-        # replan without the machines that just got interrupted
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
-        
-    if isinstance(e, InterruptionHandledEvent):
-        # replan with the machine included that just finished its interruption
-        operations_to_plan = list(filter(
-            lambda op: (not op.State.Equals(OperationState.InProgress)) and (not op.State.Equals(OperationState.Completed)),
-            operations_to_simulate
-        ))
-        operations_to_plan_list = List[WorkOperation]()
-        for op in operations_to_plan:
-            operations_to_plan_list.Add(op)
-            
-        working_machines = list(filter(lambda m: m.State.Equals(MachineState.Working), machines))
-        working_machines_list = List[Machine]()
-        for m in working_machines:
-            working_machines_list.Add(m)
-            
-        new_plan = planner.Schedule(
-            operations_to_plan_list,
-            working_machines_list,
-            e.CurrentDate
-        )
-        controller.CurrentPlan = new_plan
-        simulation.SetCurrentPlan(new_plan.Operations)
 ```
 
 Nun kann die Simulation gestartet werden.
 ```python
-controller.Execute(TimeSpan.FromDays(7))
+scenario.Run()
 ```
+
+Zu beachten ist, dass beim Starten der Simulation für alle nicht konfigurierten Parameter (hier beispielsweise der Steuerungsalgorithmus) die in der Klasse ```ProductionScenario``` definierten Standardwerte verwendet werden. Diese sind in der Datei [ProductionScenario.cs](ProcessSimulator/Scenarios/ProductionScenario.cs) zu finden. Sollten andere Standardwerte gewünscht sein, können diese dort angepasst werden oder es kann ein weiteres Szenario erstellt werden, welches die gewünschten Standardwerte verwendet.
 
 Im Anschluss können noch einige Statistiken ausgegeben werden.
 ```python
-print(simulator.GetResourceSummary())
-
-stats = ProductionStats(orders, controller.Feedbacks)
-
-meanLeadTime = stats.CalculateMeanLeadTimeInMinutes()
-print(f"Mean lead time: {meanLeadTime} minutes")
-
-meanLeadTimeMachine1 = stats.CalculateMeanLeadTimeOfAGivenMachineTypeInMinutes(1)
-print(f"Mean lead time of machine 1: {meanLeadTimeMachine1} minutes")
+scenario.CollectStats()
 ```
 
 ### Unterschiede zwischen Python und .NET <a id="unterschiede-python-net"></a>
@@ -729,7 +540,7 @@ Die Anwendung für Python ist prinzipiell identisch mit der in C#. Alle in .NET v
 #### Verwendung von Linq-Funktionen
 Die Verwendung der Linq-Funktionen (bspw. ```Where```, ```Any```, ```Skip```, ```OrderBy```, ...) ist theoretisch auch in Python möglich. Auf sie muss dabei als statische Funktionen der entsprechenden Klassen (bspw. ```Enumerable```) zugegriffen werden. Dies macht den Code allerdings länger, verschachtelter und damit schlechter les- und wartbarer.
 
-An einigen Stellen wurden daher eher Python-typische Methoden verwendet, um mit Listen zu arbeiten (filter, sorted, dropwhile,...). Dies ist ebenso möglich. Allerdings ist dabei zu beachten, dass die entstandene Python-Liste am Ende wieder in eine C#-```List``` umgewandelt wird, da nur Objekte dieses Typs an die Simulationssoftware übergeben werden können.
+Es sollten daher eher Python-typische Methoden verwendet werden, um mit Listen zu arbeiten (filter, sorted, dropwhile,...). Dies ist ebenso möglich. Allerdings ist dabei zu beachten, dass die entstandene Python-Liste am Ende wieder in eine C#-```List``` umgewandelt wird, da nur Objekte dieses Typs an die Simulationssoftware übergeben werden können.
 
 Betrachten wir beispielsweise diesen C#-Code für das Filtern von Operationen, die noch nicht abgeschlossen sind:
 ```csharp
@@ -751,7 +562,7 @@ for op in operations_to_plan:
     operations_to_plan_list.Add(op)
 ```
 
-Möglich wäre aber auch:
+Möglich wäre aber auch eine direkte Übersetzung in Python mit Hilfe der Linq-Funktionen:
 ```python
 operations_to_plan = Enumerable.Where[WorkOperation](
     operations_to_simulate,
@@ -762,7 +573,7 @@ operations_to_plan = Enumerable.Where[WorkOperation](
 
 Vor allem bei mehreren aufeinanderfolgenden Linq-Funktionen ist die Verwendung der Python-Funktionen aber deutlich übersichtlicher.
 
-Ein weiteres Beispiel ist in der Funktion ```right_shift_successors``` in der Python-Beispielanwendung zu finden:
+Ein weiteres Beispiel aus einer (nicht mehr im Code vorhandenen) Implementierung einer Right-Shift-Funktion in Python:
 
 Der C#-Code:
 ```csharp
@@ -831,8 +642,9 @@ Allgemein müssen alle Python-Funktionen noch in den entsprechenden Typ konvertie
 ```python
 predicate = Func[ActiveObject[Simulation], bool](lambda process: True),
 ...
-interruptAction = Func[ActiveObject[Simulation], IEnumerable[Event]](
-            lambda arg: ...
+interruptAction = Func[ActiveObject[Simulation], ProductionScenario, IEnumerable[Event]](
+    lambda simObject, scenario:
+        ...
     )
 ```
 
@@ -840,24 +652,30 @@ Zu beachten ist hier auch, dass in den eckigen Klammern entsprechend die richtig
 
 #### Verwendung von Generator-Funktionen
 
-Generator-Funktionen gibt es sowohl in Python als auch in C#. Allerdings funktionieren sie in Python etwas anders. Um Python-Generator-Funktionen in C# als ```IEnumerable``` verwenden zu können (das wird für die zufälligen Unterbrechungen benötigt), muss eine entsprechende Klasse in Python verwendet werden, die die Funktionalität eines C#-```Enumerator``` bietet. Es ist allerdings **nicht** möglich, die Interfaces ```IEnumerator``` bzw. ```IEnumerable``` in Python direkt mit einer Klasse zu implementieren. Daher müssen zwei weitere entsprechende Klassen in C# verwendet werden (hier ```PythonGeneratorAdapter``` und ```PythonGeneratorEnumerator```), die die Python-Generator-Funktion verwendet und die Interfaces implementiert. Diese Klasse kann dann in Python verwendet werden, um sie an die C#-Funktionen übergeben zu können, die ```IEnumerable``` erwarten.
+Generator-Funktionen gibt es sowohl in Python als auch in C#. Allerdings funktionieren sie in Python etwas anders. Um Python-Generator-Funktionen in C# als ```IEnumerable``` verwenden zu können (das wird für die zufälligen Unterbrechungen benötigt), muss eine entsprechende Klasse in Python verwendet werden, die die Funktionalität eines C#-```Enumerator``` bietet. Es ist allerdings **nicht** möglich, die Interfaces ```IEnumerator``` bzw. ```IEnumerable``` in Python direkt mit einer Klasse zu implementieren. (Dazu gibt es im nächsten Punkt noch mehr Informationen.) Daher müssen zwei weitere entsprechende Klassen in C# verwendet werden (hier ```PythonGeneratorAdapter``` und ```PythonGeneratorEnumerator```), die die Python-Generator-Funktion verwendet und die Interfaces implementiert. Diese Klasse kann dann in Python verwendet werden, um sie an die C#-Funktionen übergeben zu können, die ```IEnumerable``` erwarten.
 
 Die ```InterruptAction``` kann dann wie folgt erstellt werden:
 
 ```python
-def interrupt_action(sim_process):
+def interrupt_action(sim_process, prod_scenario):
+    if isinstance(prod_scenario.Simulator, Simulator):
+        simulator = prod_scenario.Simulator
+    else:
+        raise Exception("Simulator is not of type Simulator")
+    
     if isinstance(sim_process, MachineModel):
         waitFor = 2
         start = simulator.CurrentSimulationTime
-        print(F"Interrupted machine {sim_process.Machine.Description} at {start}: Waiting {waitFor} hours")
+        Log.Logger.Warning(F"Interrupted Machine {sim_process.Machine.Description} at {simulator.CurrentSimulationTime}.")
         yield simulator.Timeout(TimeSpan.FromHours(waitFor))
         print(F"Machine {sim_process.Machine.Description} waited {simulator.CurrentSimulationTime - start} (done at {simulator.CurrentSimulationTime}).")
 
 ...
 
-interruptAction = Func[ActiveObject[Simulation], IEnumerable[Event]](
-    lambda arg: PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, arg))
-)
+interruptAction= Func[ActiveObject[Simulation], ProductionScenario, IEnumerable[Event]](
+    lambda simObject, scenario: \
+        PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, simObject, scenario))
+    )
 ```
 
 Hier wird die Generator-Funktion ```interrupt_action```, die mit ```yield``` Events zurückgibt, an den Konstruktor der Klasse ```PythonEnumerator``` übergeben, der diese Funktion dann mit dem ebenfalls übergebenen Argument aufruft. Dieses ```PythonEnumerator```-Objekt wird dann wiederum an die C#-Klasse ```PythonGeneratorAdapter``` übergeben, die das ```IEnumerable```-Interface implementiert, was dem von der ```AddInterrupt```-Methode erwarteten Typ entspricht.
@@ -935,6 +753,38 @@ internal class PythonGeneratorEnumerator<T> : IEnumerator<T>
     }
 }
 ```
+
+#### Verwendung von C#-Interfaces in Python
+
+Bezüglich der Verwendung von C#-Interfaces in Python gibt es einige Einschränkungen. Allgemein kann von der direkten Verwendung von C#-Interfaces in Python nur abgeraten werden. Diese werden von der Bibliothek ```pythonnet``` nicht korrekt unterstützt. (Ein Pull-Request, der dieses Problem (zumindest teilweise) beheben soll, ist bereits erstellt, aber noch nicht gemerged: https://github.com/pythonnet/pythonnet/pull/2019)
+
+Es ist **nicht** möglich, in Python ein Interface zu implementieren, das in C# definiert wurde. Python-Klassen können höchstens von C#-Klassen erben, die ein Interface implementieren. Alternativ kann die Verwendung abstrakter C#-Klassen anstelle von Interfaces in Betracht gezogen werden.
+
+In manchen Situationen, wenn als Typ-Argument für die Generic-Typen mancher C#-Klassen ein Interface verwendet wird, kann es zu Problemen kommen. Beispielsweise in diesem Code:
+
+```python
+Func[..., IScenario, ...] (
+    lambda simObject, scenario: ..
+)
+```
+Wird die hier erstellte C#-Funktion im C#-Code mit einer Instanz eines ```ProductionScenario``` aufgerufen, dann erhält die Python-Lambda-Funktion trotzdem nur ein ```IScenario```-Objekt und hat auch nur Zugriff auf Properties und Methoden dieses Interfaces, obwohl das Objekt eigentlich ein ```ProductionScenario``` ist und somit auch andere Properties und Methoden hat. Dies kann auch durch explizites Typ-Checking mit ```isinstance``` und Casting nicht geändert werden.
+
+Ein ähnlicher Fehler kann auftreten, wenn öffentliche Properties von C#-Klassen vom Typ eines Interfaces sind. Beispielsweise in diesem Code:
+
+```csharp
+public class ProductionScenario : IScenario
+{
+    public ISimulator? Simulator { get; private set; }
+}
+```
+
+Wird in Python auf diese Property zugegriffen:
+
+```python
+simulator = prod_scenario.Simulator
+```
+dann ist ```simulator``` vom Typ ```ISimulator```, obwohl es eigentlich ein ```Simulator```-Objekt (oder auch eine Instanz einer anderen Klasse, die das ```ISimulator```-Interface implementiert) ist. Dies kann auch durch explizites Typ-Checking mit ```isinstance``` und Casting nicht geändert werden.
+
 
 ### Ausführen der Python-Anwendung
 Das Python-Skript muss mit einem Argument ```-s``` bzw. ```--source```  aufgerufen werden, welches den **absoluten** Pfad zum Root-Ordner dieses Projektes enthält. Dieser Pfad wird benötigt, um die Klassenbibliotheken zu laden. Die entsprechenden .dll-Dateien sollten sich dann in einem Unterordner ```ProcessSimulator/bin/Debug/net6.0``` befinden.
