@@ -2,6 +2,7 @@ using Core.Abstraction.Domain;
 using Core.Abstraction.Domain.Customers;
 using System.Text;
 using System.Text.Json;
+using Serilog;
 
 namespace Core.Implementation.Services.Reporting;
 
@@ -13,8 +14,14 @@ public class FeedbackWriter
         {
             WriteIndented = true
         });
-
-        await File.WriteAllTextAsync(filePath, jsonData, Encoding.UTF8);
+        try
+        {
+            await File.WriteAllTextAsync(filePath, jsonData, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<FeedbackWriter>().Error("Production feedbacks could not be written: " + ex.Message);
+        }
     }
 
     public static void WriteFeedbacksToJson(List<ProductionFeedback> feedbackList, string filePath)
@@ -23,8 +30,14 @@ public class FeedbackWriter
         {
             WriteIndented = true
         });
-
-        File.WriteAllText(filePath, jsonData, Encoding.UTF8);
+        try
+        {
+            File.WriteAllText(filePath, jsonData, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<FeedbackWriter>().Error("Production feedbacks could not be written: " + ex.Message);
+        }
     }
 
     public static async Task WriteFeedbacksToCSVAsync(List<ProductionFeedback> feedbackList, string filePath)
@@ -37,7 +50,14 @@ public class FeedbackWriter
             var newLine = $"{operation.WorkPlanPosition.Name};{operation.PlannedStart};{operation.PlannedFinish};{operation.ActualStart};{operation.ActualFinish};{operation.Machine?.Description};{operation.WorkPlanPosition.ToolId};{feedback.DoneInPercent}";
             csv.AppendLine(newLine);
         }
-        await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8);
+        try
+        {
+            await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<FeedbackWriter>().Error("Production feedbacks could not be written: " + ex.Message);
+        }
     }
 
     public static void WriteFeedbacksToCSV(List<ProductionFeedback> feedbackList, string filePath)
@@ -50,7 +70,13 @@ public class FeedbackWriter
             var newLine = $"{operation.WorkPlanPosition.Name};{operation.PlannedStart};{operation.PlannedFinish};{operation.ActualStart};{operation.ActualFinish};{operation.Machine?.Description};{operation.WorkPlanPosition.ToolId};{feedback.DoneInPercent}";
             csv.AppendLine(newLine);
         }
-        File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
+        try { 
+            File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<FeedbackWriter>().Error("Production feedbacks could not be written: " + ex.Message);
+        }
     }
 
     public static void WriteCustomerOrdersToCSV(List<Customer> customers, string filePath)
@@ -68,6 +94,13 @@ public class FeedbackWriter
                 });
             });
         });
-        File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
+        try
+        {
+            File.WriteAllText(filePath, csv.ToString(), Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            Log.ForContext<FeedbackWriter>().Error("Customer order report could not be written: " + ex.Message);
+        }
     }
 }
