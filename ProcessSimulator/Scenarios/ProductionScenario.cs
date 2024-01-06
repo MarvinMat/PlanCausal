@@ -17,6 +17,7 @@ using Planner.Implementation;
 using ProcessSim.Abstraction;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSim.Implementation;
+using ProcessSim.Implementation.Core.InfluencingFactors;
 using ProcessSim.Implementation.Core.Interrupts;
 using Serilog;
 using ActiveObject = SimSharp.ActiveObject<SimSharp.Simulation>;
@@ -33,6 +34,8 @@ public class ProductionScenario : IScenario
     private readonly List<Distribution<TimeSpan>> _orderGenerationFrequencies = new();
     private readonly HashSet<IDataGenerator> _generators = new();
     public List<string> ReportingFolderPaths = new();
+    private readonly HashSet<IFactor> _influencingFactors = new();
+    private Func<Dictionary<string, IFactor>, double> _calculateOperationDurationFactor;
 
     private Planner.Abstraction.Planner? _planner;
     private List<WorkPlan> _workPlans;
@@ -73,6 +76,7 @@ public class ProductionScenario : IScenario
         _workPlans = new List<WorkPlan>();
         _tools = new List<Tool>();
         _customers = new Dictionary<Guid, Customer>();
+        _calculateOperationDurationFactor = _ => 1;
     }
     
     public void Run()
@@ -88,7 +92,11 @@ public class ProductionScenario : IScenario
             if (Seed is 0) Seed = 42;
             StartTime ??= DateTime.Now;
             Simulator = new Simulator(Seed, DateTime.Now)
-                { ReplanningInterval = RePlanningInterval};
+            { 
+                ReplanningInterval = RePlanningInterval,
+                InfluencingFactors = _influencingFactors,
+                CalculateOperationDurationFactor = _calculateOperationDurationFactor
+            };
             _logger.Information("Using the default simulator with Seed: {Seed} and date: {Date}", Seed, DateTime.Now);
         }
         
@@ -185,14 +193,12 @@ public class ProductionScenario : IScenario
 
         Controller.Execute(Duration);
 
-        if (Controller is SimulationController controller)
+        if (Controller is not SimulationController controller) return;
+        foreach (var folderPath in ReportingFolderPaths)
         {
-            foreach (var folderPath in ReportingFolderPaths)
-            {
-                FeedbackWriter.WriteFeedbacksToJson(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.json"));
-                FeedbackWriter.WriteFeedbacksToCSV(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.csv"));
-                FeedbackWriter.WriteCustomerOrdersToCSV(_customers.Values.ToList(), Path.Combine(folderPath, "customerOrders.csv"));
-            }
+            FeedbackWriter.WriteFeedbacksToJson(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.json"));
+            FeedbackWriter.WriteFeedbacksToCsv(controller.Feedbacks.OfType<ProductionFeedback>().ToList(), Path.Combine(folderPath, "feedbacks.csv"));
+            FeedbackWriter.WriteCustomerOrdersToCsv(_customers.Values.ToList(), Path.Combine(folderPath, "customerOrders.csv"));
         }
     }
 
@@ -306,6 +312,32 @@ public class ProductionScenario : IScenario
         
         ReportingFolderPaths.Add(folderPath);
 
+        return this;
+    }
+    
+    public ProductionScenario WithInfluencingFactor<T>(string name, Func<ProductionScenario, Action<T>, IEnumerable<Event>> simulateInfluenceFactor, T currentValue)
+    {
+        if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
+        if (simulateInfluenceFactor is null) throw new ArgumentNullException(nameof(simulateInfluenceFactor));
+        if (currentValue is null) throw new ArgumentNullException(nameof(currentValue));
+
+        var influencingFactor = new InfluencingFactor<T>(name, (action) => simulateInfluenceFactor(this, action), currentValue);
+
+        if (!_influencingFactors.Add(influencingFactor))
+            Log.Logger.Warning("The influencing factor {InfluencingFactorName} was already added", name);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Set a function that calculates a factor 
+    /// </summary>
+    /// <param name="calculateDurationFactor"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public ProductionScenario WithAdjustedOperationTime(Func<Dictionary<string, IFactor>, double> calculateDurationFactor)
+    {
+        _calculateOperationDurationFactor = calculateDurationFactor ?? throw new ArgumentNullException(nameof(calculateDurationFactor));
         return this;
     }
     

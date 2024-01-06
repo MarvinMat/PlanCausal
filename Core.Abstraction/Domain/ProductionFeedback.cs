@@ -17,11 +17,13 @@ public class ProductionFeedback : IFeedback
     public TimeSpan LeadTime => CreatedAt - WorkOperation.ActualStart;
     //TODO: implement done as a computed property - calculated by the parts manufactured divided by the total part count
     public double DoneInPercent { get; init; } = 0.0;
+    public Dictionary<string, object> InfluenceFactors { get; init; }
     public ProductionFeedback(WorkOperation workOperation)
     {
         Id = Guid.NewGuid();
         Resources = new List<IResource>();
         CreatedAt = DateTime.Now;
         WorkOperation = workOperation;
+        InfluenceFactors = new Dictionary<string, object>();
     }
 }

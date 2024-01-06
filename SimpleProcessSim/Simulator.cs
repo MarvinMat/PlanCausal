@@ -7,7 +7,6 @@ using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSim.Implementation.Core.SimulationModels;
 using SimSharp;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using ProcessSim.Abstraction;
 
@@ -24,6 +23,9 @@ namespace ProcessSim.Implementation
         public event EventHandler? SimulationEventHandler;
         public int CountOfMachines => _simResources.Keys.OfType<Machine>().Count();
 
+        public IEnumerable<IFactor> InfluencingFactors { get; set; }
+        public Func<Dictionary<string, IFactor>, double> CalculateOperationDurationFactor;
+
         /// <summary>
         /// Construct a new SimSharp simulation environment with the given seed and start date.
         /// </summary>
@@ -35,11 +37,18 @@ namespace ProcessSim.Implementation
             _simResources = new();
             _currentPlan = new();
             ReplanningInterval = TimeSpan.FromHours(12);
+            InfluencingFactors = new HashSet<IFactor>();
+            CalculateOperationDurationFactor = _ => 1;
         }
 
         public void Start(TimeSpan duration)
         {
             _sim.Process(Replanning());
+
+            foreach (var factor in InfluencingFactors)
+            {
+                _sim.Process(factor.SimulateFactor());
+            }
 
             _currentPlanChangedEvent.Reset();
 
@@ -62,7 +71,9 @@ namespace ProcessSim.Implementation
                 {
                     WaitingTime = new SampleMonitor($"WaitingTime of Machine {machine.Description}", true),
                     LeadTime = new SampleMonitor($"LeadTime of Machine {machine.Description}", true),
-                    QueueLength = new TimeSeriesMonitor(_sim, $"QueueLength of Machine {machine.Description}", true)
+                    QueueLength = new TimeSeriesMonitor(_sim, $"QueueLength of Machine {machine.Description}", true),
+                    InfluencingFactors = InfluencingFactors,
+                    CalculateOperationDurationFactor = CalculateOperationDurationFactor,
                 };
                 model.SimulationEventHandler += InvokeSimulationEvent;
 

@@ -3,6 +3,7 @@ using Core.Abstraction.Domain.Processes;
 using Core.Abstraction.Domain.Resources;
 using Core.Implementation.Events;
 using ProcessSim.Abstraction;
+using ProcessSim.Implementation.Core.InfluencingFactors;
 using Serilog;
 using SimSharp;
 using static SimSharp.Distributions;
@@ -26,8 +27,13 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         public Machine Machine => _machine;
         public Process Process { get; init; }
         public event EventHandler? SimulationEventHandler;
+        public IEnumerable<IFactor> InfluencingFactors { get; set; }
+        private Dictionary<string, object> LastObservedValuesOfInfluencingFactors { get; set; }
+        public Func<Dictionary<string, IFactor>, double> CalculateOperationDurationFactor { get; set; }
 
         public int CurrentToolId { get; set; }
+
+        private bool operationNeededChangeover = false;
 
         // monitoring
         public ITimeSeriesMonitor? Utilization { get; set; }
@@ -45,6 +51,9 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             _machine.State = MachineState.Idle;
             _isProcessRunning = false;
             _isProcessInterrupted = false;
+            InfluencingFactors = new HashSet<IFactor>();
+            LastObservedValuesOfInfluencingFactors = new();
+            CalculateOperationDurationFactor = _ => 1.0;
             if (_machine.AllowedToolIds != null) CurrentToolId = _machine.AllowedToolIds.FirstOrDefault();
         }
 
@@ -126,7 +135,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 }
 
                 AssessOrderCompletion();
-                SimulationEventHandler?.Invoke(this, new OperationCompletedEvent(Environment.Now, _currentOperation));
+                SimulationEventHandler?.Invoke(this, new OperationCompletedEvent(Environment.Now, _currentOperation, LastObservedValuesOfInfluencingFactors));
 
                 _continueEvent.Wait();
                 _continueEvent.Reset();
@@ -135,6 +144,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
                 _machine.State = MachineState.Idle;
                 _operationQueue.Remove(_currentOperation);
+                operationNeededChangeover = false;
             }
         }
         private IEnumerable<Event> ProcessOrder()
@@ -150,9 +160,21 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
             _machine.State = MachineState.Working;
 
-            var durationDistribution = N(_currentOperation.MeanDuration,
-                TimeSpan.FromMinutes(_currentOperation.VariationCoefficient *
-                                     _currentOperation.MeanDuration.TotalMinutes));
+            var influencingFactors = InfluencingFactors.ToDictionary(factor => factor.Name);
+            influencingFactors.Add(InternalInfluenceFactorName.NeededChangeover.ToString(), new InfluencingFactor<bool>(InternalInfluenceFactorName.NeededChangeover.ToString(), null, operationNeededChangeover));
+            influencingFactors.Add(InternalInfluenceFactorName.CurrentTime.ToString(), new InfluencingFactor<DateTime>(InternalInfluenceFactorName.CurrentTime.ToString(), null, Environment.Now));
+
+            LastObservedValuesOfInfluencingFactors = new Dictionary<string, object>();
+            foreach (var factor in influencingFactors)
+            {
+                LastObservedValuesOfInfluencingFactors.Add(factor.Key, factor.Value.GetCurrentValue());
+            }
+
+            var durationFactor = CalculateOperationDurationFactor(influencingFactors);
+            var meanDuration = _currentOperation.MeanDuration * durationFactor;
+            var standardDeviation = _currentOperation.VariationCoefficient * meanDuration;
+
+            var durationDistribution = N(meanDuration, standardDeviation);
             var processingDuration = Environment.Rand(POS(durationDistribution));
 
             var startTime = Environment.Now;
@@ -277,6 +299,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                     var changeoverStartedAt = Environment.Now;
                     var timeout = changeoverTime - changeoverTimeDone;
 
+                    operationNeededChangeover = true;
                     yield return Environment.Timeout(timeout);
 
                     changeoverTimeDone += Environment.Now - changeoverStartedAt;

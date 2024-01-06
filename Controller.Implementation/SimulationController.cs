@@ -75,6 +75,7 @@ public class SimulationController : IController
                 DoneInPercent = 100,
                 Resources = new List<IResource>(){operationCompletedEvent.CompletedOperation.Machine ??
                                                   throw new NullReferenceException("Machine is null.")},
+                InfluenceFactors = operationCompletedEvent.InfluenceFactors
             };
             operationCompletedEvent.CompletedOperation.Feedbacks.Add(productionFeedback);
             Feedbacks.Add(productionFeedback);

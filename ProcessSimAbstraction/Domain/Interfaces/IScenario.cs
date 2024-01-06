@@ -1,4 +1,4 @@
-namespace ProcessSim.Abstraction;
+namespace ProcessSim.Abstraction.Domain.Interfaces;
 
 public interface IScenario
 {

@@ -6,10 +6,12 @@ namespace Core.Implementation.Events
     {
         public DateTime CurrentDate { get; }
         public WorkOperation CompletedOperation { get; }
-        public OperationCompletedEvent(DateTime currentDate, WorkOperation completedOperation)
+        public Dictionary<string, object> InfluenceFactors { get; }
+        public OperationCompletedEvent(DateTime currentDate, WorkOperation completedOperation, Dictionary<string, object> influenceFactors)
         {
             CurrentDate = currentDate;
             CompletedOperation = completedOperation;
+            InfluenceFactors = influenceFactors;
         }
     }
 }

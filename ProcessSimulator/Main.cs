@@ -17,9 +17,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core.Abstraction.Domain.Models;
 using Core.Abstraction.Domain.Resources;
-using Generators.Implementation;
 using static SimSharp.Distributions;
 using MathNet.Numerics.Distributions;
+using ProcessSim.Implementation.Core.InfluencingFactors;
+using ProcessSim.Abstraction.Domain.Interfaces;
 
 // Log.Logger = new LoggerConfiguration().WriteTo.Console().MinimumLevel.Information().CreateLogger();
 //
@@ -200,7 +201,7 @@ Log.Logger = new LoggerConfiguration()
 
 var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
 {
-    Duration = TimeSpan.FromDays(30),
+    Duration = TimeSpan.FromDays(2),
     Seed = 42,
     RePlanningInterval = TimeSpan.FromHours(8),
     StartTime = DateTime.Now,
@@ -213,11 +214,50 @@ var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
         CoreAbstraction.Distributions.ConstantDistribution(TimeSpan.FromHours(4)), interruptAction: InterruptAction)
     .WithOrderGenerationFrequency(
         CoreAbstraction.Distributions.DiscreteDistribution(
-            new List<TimeSpan> { TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30) }, 
+            new List<TimeSpan> { TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(20), TimeSpan.FromMinutes(30) },
             new List<double> { 0.25, 0.60, 0.15 }
         )
     )
-    .WithReporting(".");
+    .WithReporting(".")
+    .WithInfluencingFactor("Temperature", SimulateTemperature, 8.0)
+    .WithAdjustedOperationTime(CalculateDurationFactor);
+
+double CalculateDurationFactor(Dictionary<string, IFactor> influencingFactors)
+{
+    if (!influencingFactors.TryGetValue("Temperature", out var temp))
+        return 1;
+    if (temp is not InfluencingFactor<double> temperature)
+        return 1;
+
+    if (!influencingFactors.TryGetValue(InternalInfluenceFactorName.NeededChangeover.ToString(), out var neededChangeoverFactor))
+        return 1;
+    if (neededChangeoverFactor is not InfluencingFactor<bool> neededChangeover)
+        return 1;
+
+    Log.Logger.Information("Temperature: {Temperature}", temperature.CurrentValue);
+    return temperature.CurrentValue switch
+    {
+        < 5 => 0.8,
+        < 8 => 0.9,
+        < 10 => 1.0,
+        < 15 => 1.2,
+        _ => 0.0
+    };
+}
+
+IEnumerable<Event> SimulateTemperature(ProductionScenario scenario, Action<double> setCurrentValue)
+{
+    if (scenario.Simulator is not Simulator simulator)
+        throw new Exception("scenario.Simulator should be a Simulator.");
+
+    while (true)
+    {
+        var curTime = simulator.CurrentSimulationTime;
+        var temperature = 12 - Math.Abs(curTime.Hour - 12);
+        setCurrentValue(temperature);
+        yield return simulator.Timeout(TimeSpan.FromHours(1));
+    }
+}
 
 IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenario productionScenario)
 {
@@ -225,7 +265,7 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenari
         throw new NullReferenceException("Scenario is null.");
     if (prodScenario.Simulator is not Simulator simulator)
         throw new NullReferenceException("Simulator is null.");
-    
+
     if (simProcess is MachineModel machineModel)
     {
         var waitFor = POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
