@@ -177,8 +177,8 @@ public class ProductionScenario : IScenario
             simController.OperationsToSimulate = initialOperationsToSimulate;
         }
         
-         _logger.Debug("Generated {Amount} of customer orders", 
-             _customers.Select(customer => customer.Value.Orders.Count).Sum());
+        _logger.Debug("Generated {Amount} of customer orders", 
+            _customers.Select(customer => customer.Value.Orders.Count).Sum());
 
 
         foreach (var orderGenerationFrequency in _orderGenerationFrequencies)

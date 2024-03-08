@@ -3,13 +3,13 @@ using Core.Implementation.Services;
 using ProcessSim.Abstraction;
 using ProcessSim.Implementation;
 using ProcessSim.Implementation.Core.SimulationModels;
-using ProcessSimulator;
 using ProcessSimulator.Scenarios;
 using Serilog;
 using SimSharp;
 using static SimSharp.Distributions;
 using ProcessSim.Implementation.Core.InfluencingFactors;
 using ProcessSim.Abstraction.Domain.Interfaces;
+using ProcessSimulator;
 using Python.Runtime;
 
 Log.Logger = new LoggerConfiguration()
@@ -18,6 +18,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .Enrich.FromLogContext()
     .CreateLogger();
+
 
 Runtime.PythonDLL = "python311.dll";
 PythonEngine.Initialize();
@@ -34,6 +35,8 @@ var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
 }
     .WithEntityLoader(new MachineProviderJson($"../../../../Machines_11Machines.json"))
     .WithEntityLoader(new WorkPlanProviderJson($"../../../../Workplans_11Machines.json"))
+    //.WithEntityLoader(new MachineProviderCsv($"../../../../data_machines.csv"))
+    //.WithEntityLoader(new WorkPlanProviderCsv($"../../../../data.csv", 5))
     .WithEntityLoader(new CustomerProviderJson("../../../../Customers.json"))
     .WithInterrupt(
         predicate: process => new Random().NextDouble() < 0.7,
@@ -138,7 +141,7 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenari
 
     if (simProcess is MachineModel machineModel)
     {
-        var waitFor = POS(N(TimeSpan.FromHours(1.0), TimeSpan.FromMinutes(25)));
+        var waitFor = Distributions.POS(Distributions.N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
         var start = simulator.CurrentSimulationTime;
 
         Log.Logger.Warning("Interrupted {Machine} at {Time}",
