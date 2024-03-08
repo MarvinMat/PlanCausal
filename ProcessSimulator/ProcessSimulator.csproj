@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ML.Probabilistic" Version="0.4.2301.301" />
+    <PackageReference Include="Microsoft.ML.Probabilistic.Compiler" Version="0.4.2301.301" />
+    <PackageReference Include="Microsoft.ML.Probabilistic.Compiler.Visualizers.Windows" Version="0.3.1912.403" />
+    <PackageReference Include="Microsoft.ML.Probabilistic.Visualizers.Windows" Version="0.4.2301.301" />
+    <PackageReference Include="pythonnet" Version="3.0.3" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="SimSharp" Version="3.4.1" />

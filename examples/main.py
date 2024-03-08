@@ -1,5 +1,6 @@
 import os
 import argparse
+import random
 
 from pythonnet import load
 
@@ -46,12 +47,15 @@ from Core.Abstraction.Services import PythonGeneratorAdapter
 from Core.Abstraction.Domain.Processes import Plan, WorkOperation
 from Core.Abstraction.Domain.Resources import Machine
 
-from Core.Abstraction import Distributions
+from Core.Abstraction import Distributions, Distribution
 
 from Planner.Implementation import PythonDelegatePlanner
 
 from ProcessSim.Implementation import Simulator
 from ProcessSim.Implementation.Core.SimulationModels import MachineModel
+from ProcessSim.Implementation.Core.InfluencingFactors import InternalInfluenceFactorName
+
+from ProcessSim.Abstraction import IFactor
 
 from ProcessSimulator.Scenarios import ProductionScenario
 
@@ -61,7 +65,7 @@ logger_configuration = LoggerConfiguration() \
     .MinimumLevel.Information() \
     .Enrich.FromLogContext() \
 
-logger_configuration =  ConsoleLoggerConfigurationExtensions.Console(logger_configuration.WriteTo)
+logger_configuration = ConsoleLoggerConfigurationExtensions.Console(logger_configuration.WriteTo)
 # logger_configuration = ConsoleLoggerConfigurationExtensions.File(logger_configuration.WriteTo, "log.txt", rollingInterval=RollingInterval.Day)
 
 # Assign the configured logger to Serilog's static Log class
@@ -87,27 +91,41 @@ def schedule_internal(work_operations : List[WorkOperation], machines : List[Mac
     Log.Logger.Information(F"Scheduling: {work_operations.Count} operations on {machines.Count} machines at {current_time}.")
     return Plan(List[WorkOperation](), False)
 
+def calculate_duration_factor(influencing_factors):
+    # temperature = influencing_factors["Temperature"]
+    # shift = influencing_factors["Shift"]
+    current_time = influencing_factors[InternalInfluenceFactorName.CurrentTime.ToString()]
+    time_since_last_interrupt = influencing_factors[InternalInfluenceFactorName.TimeSinceLastInterrupt.ToString()]
+    
+    # print(temperature.CurrentValue)
+    # print(shift.CurrentValue)
+    print(current_time.GetCurrentValue())
+    print(time_since_last_interrupt.GetCurrentValue())
+    
+    return 1
+
 scenario = ProductionScenario("Python-11-Machines-Problem", "Simulating the 11-machine problem using python and .NET")\
     .WithEntityLoader(MachineProviderJson(path_machines))\
     .WithEntityLoader(WorkPlanProviderJson(path_workplans))\
     .WithEntityLoader(CustomerProviderJson(path_customers))\
     .WithInterrupt(
-        predicate= Func[ActiveObject[Simulation], bool](lambda process: True), 
-        distribution= Distributions.ConstantDistribution(TimeSpan.FromHours(5)),
+        predicate= Func[ActiveObject[Simulation], bool](lambda process: random.random() < 0.7), 
+        distribution= Distribution[TimeSpan] (lambda: TimeSpan.FromHours(random.expovariate(1/20))),
         interruptAction= Func[ActiveObject[Simulation], ProductionScenario, IEnumerable[Event]](
             lambda simObject, scenario: \
                 PythonGeneratorAdapter[Event](PythonEnumerator(interrupt_action, simObject, scenario))
             ))\
     .WithOrderGenerationFrequency(Distributions.DiscreteDistribution[TimeSpan](
         timespans_net, prob_net))\
-    .WithPlanner(PythonDelegatePlanner(schedule_internal))\
-    .WithReporting(".")
+    .WithReporting(".")\
+    .WithAdjustedOperationTime(Func[Dictionary[str, IFactor], Double](calculate_duration_factor))
+    # .WithPlanner(PythonDelegatePlanner(schedule_internal))
 
 scenario.Duration = TimeSpan.FromDays(1)
 scenario.Seed = 42
 scenario.RePlanningInterval = TimeSpan.FromHours(8)
 scenario.StartTime = DateTime.Now
-scenario.InitialCustomerOrdersGenerated = 5
+scenario.InitialCustomerOrdersGenerated = 10
 
 
 def interrupt_action(sim_process, prod_scenario):
@@ -117,7 +135,7 @@ def interrupt_action(sim_process, prod_scenario):
         raise Exception("Simulator is not of type Simulator")
     
     if isinstance(sim_process, MachineModel):
-        waitFor = 2
+        waitFor = max(random.normalvariate(1, 25/60), 0.01)
         start = simulator.CurrentSimulationTime
         Log.Logger.Warning(F"Interrupted Machine {sim_process.Machine.Description} at {simulator.CurrentSimulationTime}.")
         yield simulator.Timeout(TimeSpan.FromHours(waitFor))

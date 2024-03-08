@@ -9,7 +9,8 @@ namespace ProcessSim.Implementation.Core.InfluencingFactors
     public enum InternalInfluenceFactorName
     {
         NeededChangeover,
-        CurrentTime
+        CurrentTime,
+        TimeSinceLastInterrupt
     }
 }
 

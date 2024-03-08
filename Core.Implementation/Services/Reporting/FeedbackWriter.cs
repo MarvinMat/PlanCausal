@@ -86,7 +86,7 @@ public class FeedbackWriter
     {
         var csv = new StringBuilder();
         var headerLine = "Operation;Planned Start;Planned Finish;Actual Start;Actual End;Machine;Tool;DonePercent";
-        var influenceFactorNames = feedbackList.First().InfluenceFactors.Keys.ToList();
+        var influenceFactorNames = feedbackList.Count > 0 ? feedbackList.First().InfluenceFactors.Keys.ToList() : new List<string>();
         foreach (var influenceFactorName in influenceFactorNames)
         {
             headerLine += ";" + influenceFactorName;
@@ -101,7 +101,14 @@ public class FeedbackWriter
             {
                 feedback.InfluenceFactors.TryGetValue(influenceFactorName, out var value);
                 if (value != null) {
-                    nextLine += ";" + value;
+                    if (value is TimeSpan timeSpan)
+                    {
+                        nextLine += ";" + Math.Floor(timeSpan.TotalHours) + ":" + timeSpan.Minutes + ":" + timeSpan.Seconds;
+                    }
+                    else
+                    {
+                        nextLine += ";" + value;
+                    }
                 }
             }
             csv.AppendLine(nextLine);

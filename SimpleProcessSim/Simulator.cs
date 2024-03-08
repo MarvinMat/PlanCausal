@@ -233,6 +233,7 @@ namespace ProcessSim.Implementation
 
         public SimSharp.Timeout Timeout(Distribution<TimeSpan> distribution) => _sim.Timeout(distribution);
         public SimSharp.Timeout Timeout(TimeSpan duration) => _sim.Timeout(duration);
+        public T SampleRandomDistribution<T>(IDistribution<T> distribution) => _sim.Rand(distribution);
 
         /// <summary>
         /// Add an order generation process that invokes the <see cref="OrderGenerationEvent"/> regularly, according to the given distribution.

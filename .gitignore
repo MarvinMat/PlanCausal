@@ -12,3 +12,5 @@
 *.userosscache
 *.sln.docstates
 *.bak
+
+__pycache__/

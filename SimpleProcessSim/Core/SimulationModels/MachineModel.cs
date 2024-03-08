@@ -31,9 +31,10 @@ namespace ProcessSim.Implementation.Core.SimulationModels
         private Dictionary<string, object> LastObservedValuesOfInfluencingFactors { get; set; }
         public Func<Dictionary<string, IFactor>, double> CalculateOperationDurationFactor { get; set; }
 
-        public int CurrentToolId { get; set; }
-
         private bool operationNeededChangeover = false;
+        private DateTime lastInterruptEndTime = DateTime.MinValue;
+
+        public int CurrentToolId { get; set; }
 
         // monitoring
         public ITimeSeriesMonitor? Utilization { get; set; }
@@ -54,6 +55,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
             InfluencingFactors = new HashSet<IFactor>();
             LastObservedValuesOfInfluencingFactors = new();
             CalculateOperationDurationFactor = _ => 1.0;
+            lastInterruptEndTime = Environment.Now;
             if (_machine.AllowedToolIds != null) CurrentToolId = _machine.AllowedToolIds.FirstOrDefault();
         }
 
@@ -147,6 +149,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 operationNeededChangeover = false;
             }
         }
+
         private IEnumerable<Event> ProcessOrder()
         {
             if (_currentOperation == null) yield break;
@@ -160,15 +163,7 @@ namespace ProcessSim.Implementation.Core.SimulationModels
 
             _machine.State = MachineState.Working;
 
-            var influencingFactors = InfluencingFactors.ToDictionary(factor => factor.Name);
-            influencingFactors.Add(InternalInfluenceFactorName.NeededChangeover.ToString(), new InfluencingFactor<bool>(InternalInfluenceFactorName.NeededChangeover.ToString(), null, operationNeededChangeover));
-            influencingFactors.Add(InternalInfluenceFactorName.CurrentTime.ToString(), new InfluencingFactor<DateTime>(InternalInfluenceFactorName.CurrentTime.ToString(), null, Environment.Now));
-
-            LastObservedValuesOfInfluencingFactors = new Dictionary<string, object>();
-            foreach (var factor in influencingFactors)
-            {
-                LastObservedValuesOfInfluencingFactors.Add(factor.Key, factor.Value.GetCurrentValue());
-            }
+            Dictionary<string, IFactor> influencingFactors = ObserveInfluencingFactors();
 
             var durationFactor = CalculateOperationDurationFactor(influencingFactors);
             var meanDuration = _currentOperation.MeanDuration * durationFactor;
@@ -401,8 +396,25 @@ namespace ProcessSim.Implementation.Core.SimulationModels
                 yield return interruptEvent;
 
             SimulationEventHandler?.Invoke(this, new InterruptionHandledEvent(Environment.Now, _machine));
+            lastInterruptEndTime = Environment.Now;
             _continueEvent.Wait();
             _continueEvent.Reset();
+        }
+
+        private Dictionary<string, IFactor> ObserveInfluencingFactors()
+        {
+            var influencingFactors = InfluencingFactors.ToDictionary(factor => factor.Name);
+            influencingFactors.Add(InternalInfluenceFactorName.NeededChangeover.ToString(), new InfluencingFactor<bool>(InternalInfluenceFactorName.NeededChangeover.ToString(), null, operationNeededChangeover));
+            influencingFactors.Add(InternalInfluenceFactorName.CurrentTime.ToString(), new InfluencingFactor<DateTime>(InternalInfluenceFactorName.CurrentTime.ToString(), null, Environment.Now));
+            influencingFactors.Add(InternalInfluenceFactorName.TimeSinceLastInterrupt.ToString(), new InfluencingFactor<TimeSpan>(InternalInfluenceFactorName.TimeSinceLastInterrupt.ToString(), null, Environment.Now - lastInterruptEndTime));
+
+            LastObservedValuesOfInfluencingFactors = new Dictionary<string, object>();
+            foreach (var factor in influencingFactors)
+            {
+                LastObservedValuesOfInfluencingFactors.Add(factor.Key, factor.Value.GetCurrentValue());
+            }
+
+            return influencingFactors;
         }
     }
 }
