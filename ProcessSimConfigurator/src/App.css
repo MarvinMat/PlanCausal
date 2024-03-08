@@ -1,0 +1,109 @@
+.App {
+	display: flex;
+	flex-direction: row;
+	height: 100vh;
+	overflow: auto;
+}
+
+nav {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	margin: 10px;
+	border-right: 1px solid black;
+	width: fit-content;
+	white-space: nowrap;
+	height: auto;
+}
+
+nav a {
+	margin: 5px;
+	padding: 10px;
+	background: #f0f0f0;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+}
+
+nav a:hover {
+	background: #e0e0e0;
+}
+
+nav a:active {
+	background: #d0d0d0;
+}
+
+nav a.active {
+	background: #c0c0c0;
+}
+
+.content {
+	width: 100%;
+	padding: 10px;
+}
+
+.input {
+	margin-bottom: 25px;
+}
+
+.heading {
+	font-size: 1.5em;
+	font-weight: bold;
+	text-align: center;
+}
+
+input[type="text"],
+input[type="number"] {
+	margin: 5px;
+	padding: 10px;
+	background: #fff;
+	border: 1px solid black;
+}
+
+input[type="text"] {
+	width: 250px;
+}
+
+input[type="number"] {
+	width: 100px;
+}
+
+select {
+	margin: 5px;
+	padding: 10px;
+	background: #f5f5f5;
+	border: 1px solid black;
+	width: 272px; /* 250px + 2*10px (padding) + 2*1px (border) */
+}
+
+.export-button {
+	width: 100%;
+}
+
+.preview {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+}
+
+.preview div {
+	width: calc(33.33% - 10px);
+	margin-bottom: 20px;
+	max-height: 75vh;
+	overflow: auto;
+	border: 1px solid black;
+	box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+.preview h3 {
+	margin-top: 0;
+	position: sticky;
+	top: 0;
+	background-color: white;
+	z-index: 1;
+	text-align: center;
+}
+
+.nowrap {
+	white-space: nowrap;
+}

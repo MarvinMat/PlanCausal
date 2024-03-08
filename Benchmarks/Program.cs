@@ -22,7 +22,6 @@ Log.Logger = new LoggerConfiguration()
  .Enrich.FromLogContext()
  .CreateLogger();
 
-
 // var productionScenario = new ProductionScenario(
 //     quantity: 5,
 //     new MachineProviderJson($"../../../../Machines.json").Load(),

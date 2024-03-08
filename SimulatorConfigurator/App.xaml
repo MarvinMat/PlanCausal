@@ -1,0 +1,29 @@
+﻿<Application x:Class="SimulatorConfigurator.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SimulatorConfigurator"
+             xmlns:view="clr-namespace:SimulatorConfigurator.MVVM.View"
+             xmlns:viewModels="clr-namespace:SimulatorConfigurator.MVVM.ViewModels.Implementation"
+             xmlns:converters="clr-namespace:SimulatorConfigurator.Core.Converter"
+>
+    <Application.Resources>
+        
+        <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">
+             <view:HomeView /> 
+         </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type viewModels:MachineViewModel}">
+            <view:MachineView /> 
+        </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type viewModels:ToolsViewModel}">
+            <view:ToolsView /> 
+        </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type viewModels:WorkPlanViewModel}">
+            <view:WorkPlanView /> 
+        </DataTemplate>
+        <converters:ToolIdToToolNameConverter x:Key="converter" />
+
+    </Application.Resources>
+</Application>

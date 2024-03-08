@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net6.0-windows</TargetFramework>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <Nullable>enable</Nullable>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="MVVM\Model\NewFolder\**" />
+      <EmbeddedResource Remove="MVVM\Model\NewFolder\**" />
+      <None Remove="MVVM\Model\NewFolder\**" />
+      <Page Remove="MVVM\Model\NewFolder\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Core\NewFile1.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0-preview.5.23280.8" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-preview.5.23280.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core.Abstraction\Core.Abstraction.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="MVVM\View\MainWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
+</Project>

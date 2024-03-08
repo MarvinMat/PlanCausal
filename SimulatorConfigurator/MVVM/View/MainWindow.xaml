@@ -1,0 +1,33 @@
+﻿<Window x:Class="SimulatorConfigurator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SimulatorConfigurator"
+        xmlns:converters="clr-namespace:SimulatorConfigurator.Core.Converter"
+        mc:Ignorable="d"
+        Title="Simulator Configurator" Height="450" Width="800"
+        >
+        <Window.Resources>
+        </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch">
+            <Button BorderThickness="0" Background="Transparent" Height="25" Command="{Binding NavigateToHomeCommand}" Content="Home" ></Button>
+            <Button BorderThickness="0" Background="Transparent" Height="25" Command="{Binding NavigateToMachinesCommand}" Content="Machines"></Button>
+            <Button BorderThickness="0" Background="Transparent" Height="25" Command="{Binding NavigateToToolsCommand}" Content="Tools"></Button>
+            <Button BorderThickness="0" Background="Transparent" Height="25" Command="{Binding NavigateToWorkPlansCommand}" Content="Workplans"></Button>
+        </StackPanel>
+        
+        <ContentControl Grid.Column="1" Grid.Row="1" Content="{Binding NavigationService.CurrentView}"></ContentControl>
+        
+    </Grid>
+   
+</Window>
