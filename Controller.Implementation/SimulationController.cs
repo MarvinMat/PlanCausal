@@ -42,7 +42,7 @@ public class SimulationController : IController
         _logger.Information("Scheduling operations done.");
 
         _simulation = simulator;
-        _simulation.SimulationEventHandler += InterruptHandler;
+        _simulation.SimulationEventHandler += SimulationEventHandler;
         _simulation.CreateSimulationResources(machines);
         Feedbacks = new List<IFeedback>();
     }
@@ -58,11 +58,11 @@ public class SimulationController : IController
     }
 
     /// <summary>
-    /// Handles events that interrupt the simulation process, such as re-planning or completion of an operation.
+    /// Handles events that are emitted from the simulation, such as re-planning or completion of an operation.
     /// </summary>
     /// <param name="sender">The object that raised the event.</param>
     /// <param name="e">The event arguments.</param>
-    private void InterruptHandler(object? sender, EventArgs e)
+    private void SimulationEventHandler(object? sender, EventArgs e)
     {
         //TODO: possibly refactor this to use a separate method as it collides with the purpose of this method
         if (e is OperationCompletedEvent operationCompletedEvent)

@@ -50,14 +50,8 @@ public class FeedbackWriter
 
     public static async Task WriteFeedbacksToCsvAsync(List<ProductionFeedback> feedbackList, string filePath)
     {
-        var csv = new StringBuilder();
-        csv.AppendLine("Operation;Planned Start;Planned Finish;Actual Start;Actual End;Machine;Tool;DonePercent");
-        foreach (var feedback in feedbackList)
-        {
-            var operation = feedback.WorkOperation;
-            var newLine = $"{operation.WorkPlanPosition.Name};{operation.PlannedStart};{operation.PlannedFinish};{operation.ActualStart};{operation.ActualFinish};{operation.Machine?.Description};{operation.WorkPlanPosition.ToolId};{feedback.DoneInPercent}";
-            csv.AppendLine(newLine);
-        }
+        var csv = GetCsvStringFromFeedbacks(feedbackList);
+        
         try
         {
             await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8);
@@ -70,7 +64,7 @@ public class FeedbackWriter
 
     public static void WriteFeedbacksToCsv(List<ProductionFeedback> feedbackList, string filePath)
     {
-        var csv = GetCsvStringFromFeedbacks(feedbackList, filePath);
+        var csv = GetCsvStringFromFeedbacks(feedbackList);
         
         try { 
             File.WriteAllText(filePath, csv, Encoding.UTF8);
@@ -79,10 +73,9 @@ public class FeedbackWriter
         {
             Log.ForContext<FeedbackWriter>().Error("Production feedbacks could not be written: " + ex.Message);
         }
-        File.WriteAllText(filePath, csv, Encoding.UTF8);
     }
 
-    private static string GetCsvStringFromFeedbacks(List<ProductionFeedback> feedbackList, string filePath)
+    private static string GetCsvStringFromFeedbacks(List<ProductionFeedback> feedbackList)
     {
         var csv = new StringBuilder();
         var headerLine = "Operation;Planned Start;Planned Finish;Actual Start;Actual End;Machine;Tool;DonePercent";

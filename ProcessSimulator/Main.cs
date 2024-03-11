@@ -27,7 +27,7 @@ PythonEngine.Initialize();
 
 var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
 {
-    Duration = TimeSpan.FromDays(1),
+    Duration = TimeSpan.FromDays(30),
     Seed = 42,
     RePlanningInterval = TimeSpan.FromHours(8),
     StartTime = DateTime.Now,
@@ -141,7 +141,7 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenari
 
     if (simProcess is MachineModel machineModel)
     {
-        var waitFor = Distributions.POS(Distributions.N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
+        var waitFor = POS(N(TimeSpan.FromHours(2), TimeSpan.FromMinutes(30)));
         var start = simulator.CurrentSimulationTime;
 
         Log.Logger.Warning("Interrupted {Machine} at {Time}",

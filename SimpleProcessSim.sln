@@ -42,7 +42,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		examples\main.py = examples\main.py
 		readme.md = readme.md
-		doc\Diagramme\Sequenzdiagramm.svg = doc\Diagramme\Sequenzdiagramm.svg
 		customers.json = customers.json
 		data.csv = data.csv
 		Machines.json = Machines.json
@@ -51,6 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Tools_11Machines.json = Tools_11Machines.json
 		WorkPlans.json = WorkPlans.json
 		Workplans_11Machines.json = Workplans_11Machines.json
+		doc\diagrams\Sequenzdiagramm.svg = doc\diagrams\Sequenzdiagramm.svg
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{BF6529DA-D716-4D6A-B6D4-1A1115E9E391}"
