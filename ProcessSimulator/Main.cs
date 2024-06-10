@@ -11,6 +11,7 @@ using ProcessSim.Implementation.Core.InfluencingFactors;
 using ProcessSim.Abstraction.Domain.Interfaces;
 using ProcessSimulator;
 using Python.Runtime;
+using System.Runtime.InteropServices;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -20,7 +21,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 
-Runtime.PythonDLL = "python311.dll";
+Runtime.PythonDLL = "/usr/lib/x86_64-linux-gnu/libpython3.11.so";
 PythonEngine.Initialize();
 
 //var inferenceModel = new InferenceModel();
@@ -33,11 +34,11 @@ var scenario = new ProductionScenario("ElevenMachinesProblem", "Test")
     StartTime = DateTime.Now,
     InitialCustomerOrdersGenerated = 10
 }
-    .WithEntityLoader(new MachineProviderJson($"../../../../Machines_11Machines.json"))
-    .WithEntityLoader(new WorkPlanProviderJson($"../../../../Workplans_11Machines.json"))
+    .WithEntityLoader(new MachineProviderJson($"../Machines_11Machines.json"))
+    .WithEntityLoader(new WorkPlanProviderJson($"../Workplans_11Machines.json"))
     //.WithEntityLoader(new MachineProviderCsv($"../../../../data_machines.csv"))
     //.WithEntityLoader(new WorkPlanProviderCsv($"../../../../data.csv", 5))
-    .WithEntityLoader(new CustomerProviderJson("../../../../Customers.json"))
+    .WithEntityLoader(new CustomerProviderJson("../customers.json"))
     .WithInterrupt(
         predicate: process => new Random().NextDouble() < 0.7,
         distribution: () => TimeSpan.FromHours(new MathNet.Numerics.Distributions.Exponential(1.0/20.0).Sample()),
@@ -88,10 +89,18 @@ double CalculateDurationFactor(Dictionary<string, IFactor> influencingFactors)
     double factor;
     using (Py.GIL())
     {
+        // Import os module to get current directory
+        dynamic os = Py.Import("os");
+        string currentDirectory = os.getcwd();
+
         // Put the path to the folder containing the inference model into the sys.path so that it can be imported
         dynamic sys = Py.Import("sys");
         // Assuming the executable for this C# program is e.g. in ./bin/Debug/net6.0/ and the python file is three directories up from there (in ./)
         sys.path.append("../../.."); 
+        sys.path.append(currentDirectory);
+        sys.path.append(os.path.abspath(os.path.join(currentDirectory, "..")));
+
+
 
         // Import the module containing the inference model and infer a value for the duration factor
         dynamic test = Py.Import("bayesianNetwork1");
@@ -155,6 +164,12 @@ IEnumerable<Event> InterruptAction(ActiveObject<Simulation> simProcess, IScenari
 scenario.Run();
 scenario.CollectStats();
 
-
 Log.CloseAndFlush();
-PythonEngine.Shutdown();
+try
+{
+    PythonEngine.Shutdown();
+}
+catch (NotSupportedException)
+{
+    Log.Logger.Warning("{PythonEngine NotSupportedException}");
+}

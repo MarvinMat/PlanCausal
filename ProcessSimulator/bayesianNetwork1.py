@@ -40,7 +40,6 @@ def calculate_duration_factor(temperature_str, isWorkingDay_str, daysSinceLastIn
     duration_factor = temperature_factor * daysSinceLastInterrupt_factor * night_shift_weekend_factor
     possible_duration_factors = [0.8, 0.9, 1, 1.1, 1.2, 1.3]
     
-    
     # calculate the closest possible duration factor to the calculated duration factor and set the probability of that duration factor to 1, all other probabilities are 0
     # result = np.zeros(6)
     # result[np.argmin(np.abs(np.array(possible_duration_factors) - duration_factor))] = 1
