@@ -1,13 +1,15 @@
 import pandas as pd
 import numpy as np
 import simpy
+from io import StringIO
 from production_simulation import Machine, ProductionProcess, run_simulation
 
 def load_order_data(filename):
     return pd.read_csv(filename)
 
 def main():
-    order_data_file = input('Enter the path to the order data file (default is "order_data.csv"): ') or 'order_data.csv'
+    #order_data_file = input('Enter the path to the order data file (default is "order_data.csv"): ') or 'data/order_data.csv'
+    order_data_file = 'data/order_data.csv'
 
     try:
         df = load_order_data(order_data_file)
@@ -27,7 +29,10 @@ def main():
     interarrival_time_mean = 7.0
     interarrival_time_std = 2.0
 
-    run_simulation(machines, interarrival_time_mean, interarrival_time_std, orders)
+    output = StringIO()  # Create a buffer for output
+    run_simulation(machines, interarrival_time_mean, interarrival_time_std, orders, output)
+
+    print(output.getvalue())  # Print the simulation results
 
 if __name__ == "__main__":
     main()
