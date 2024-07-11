@@ -12,6 +12,11 @@ class Machine:
         #self.resource = simpy.PriorityResource(env, capacity=1)
         self.resource = simpy.Resource(env, capacity=1)
 
+    def process_order(self, order, results):
+        with self.resource.request() as request:
+            yield request  # Wait until the machine is available
+            yield self.env.process(self.process(order, results))
+
     def process(self, order, output, results):
         start_time = self.env.now
         planned_process_time = np.random.normal(self.process_time_mean, self.process_time_std)
@@ -45,6 +50,7 @@ class ProductionProcess:
     def process_order(self, order):
         machine = self.machines[order['PreferredMachine'] - 1]
         print(f"Order {order['OrderID']} requesting Machine {machine.machine_id} with priority {order['Priority']}")
+        print_stats(machine.resource)
         with machine.resource.request() as request: #priority=float(order['Priority'])
             print_stats(machine.resource)
             yield request
@@ -66,15 +72,12 @@ def generate_orders(env, production_process, interarrival_time_mean, interarriva
 def run_simulation(machines, interarrival_time_mean, interarrival_time_std, orders, output):
     env = simpy.Environment()
     results = []
-    for machine in machines:
-        machine.env = env
     production_process = ProductionProcess(env, machines, output, results)
     env.process(generate_orders(env, production_process, interarrival_time_mean, interarrival_time_std, orders))
-    env.run()  # Removed the 'until=order_process' to let it run indefinitely
+    env.run(until=100)  # Removed the 'until=order_process' to let it run indefinitely
     print("Simulation started")
     output_results(results)
     print("Simulation ended")
-
 
 def output_results(results):
     print("Outputting results...")  # Debug print
@@ -97,7 +100,7 @@ if __name__ == "__main__":
 
     orders = [
         {'OrderID': i, 'Priority': np.random.randint(1, 3), 'PreferredMachine': np.random.choice([1, 2])}
-        for i in range(1)
+        for i in range(20)
     ]
 
     interarrival_time_mean = 7.0
@@ -105,3 +108,5 @@ if __name__ == "__main__":
 
     run_simulation(machines, interarrival_time_mean, interarrival_time_std, orders, output)
     print(output.getvalue())
+
+
