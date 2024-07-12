@@ -9,7 +9,6 @@ class GifflerThompson:
         self.priority_rule = priority_rule
         self.inference = inference
 
-
     def update_priorities(self, ready_operations):
         temp_heap = []
         while ready_operations:

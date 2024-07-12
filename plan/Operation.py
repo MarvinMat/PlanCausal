@@ -1,12 +1,12 @@
 class Operation:
-    """Operation with job id, operation id, machine, time, next operation"""
-    def __init__(self, job_id, operation_id, machine, duration, succ, plan_start):
+    """Operation with job id, operation id, machine, duration, next operation"""
+    def __init__(self, job_id, operation_id, machine, duration, succ):
         self.job_id = job_id
         self.operation_id = operation_id
         self.machine = machine
         self.duration = duration
         self.successor = succ
-        self.plan_start = plan_start
+        self.plan_start = None
         self.plan_end = None
         self.successor_operation = None
         self.predecessor_operations = []
