@@ -11,6 +11,48 @@ programmer: Michael R. Gibbs
 
 import simpy
 
+
+class Task:
+    """Task with
+     job id, task id, machine, time, next task"""
+    def __init__(self, env, name, id, machine, duration, succ, plan_start):
+        self.env = env
+        self.name = name
+        self.id = id
+        self.machine = machine
+        self.duration = duration
+        self.successor = succ
+        self.plan_start = plan_start
+
+def task(env, job_id, task_id, machine_pool, time, precedent_tasks, plan_start):
+    """
+    hart of the processing
+
+    waits for the completions of pressidenct tasks (list can be empty)
+    grabs a resouce
+    spend some time doing the task
+    """
+
+    delay =  plan_start - env.now 
+    print(f'{env.now}, job: {job_id}, task_id: {task_id}, created; waiting for start {delay}')    
+
+    yield env.timeout(delay)
+
+    print(f'{env.now}, job: {job_id}, task_id: {task_id}, waiting for presedents')
+    
+    yield env.all_of(precedent_tasks)
+
+    print(f'{env.now}, job: {job_id}, task_id: {task_id}, getting resource')
+    with machine_pool.request() as req:
+        
+        yield req
+
+        print(f'{env.now}, job: {job_id}, task_id: {task_id}, starting task')
+
+        yield env.timeout(time)
+
+    print(f'{env.now}, job: {job_id}, task_id: {task_id}, finished task')
+
 # each machine type has it own resource pool
 # This allows testing the addition of 
 # machines to relieve a bottle necks
@@ -28,44 +70,18 @@ machine_pools_data = [
 # each task uses a machine for x amount of time
 # and it output goes to a next task.
 jobs_data = [
-    # job id, task id, machine, time, next task
-    ['p1', 1, 'a1', 17, 2],
-    ['p1', 2, 'a2', 30, 4],
-    ['p1', 3, 'a3', 14, 4],
-    ['p1', 4, 'a4', 15, 5],
-    ['p1', 5, 'a5', 25, -1],
+    # job id, task id, machine, time, next task, earlyiest start
+    ['p1', 1, 'a1', 17, 2, 5],
+    ['p1', 2, 'a2', 30, 4, 50],
+    ['p1', 3, 'a3', 14, 4, 100 ],
+    ['p1', 4, 'a4', 15, 5, 150],
+    ['p1', 5, 'a5', 25, -1, 200],
 
-    ['p2', 1, 'a1', 13, 3],
-    ['p2', 2, 'a3', 15, 3],
-    ['p2', 3, 'a2', 10, 4],
-    ['p2', 4, 'a6', 20, -1],
+    ['p2', 1, 'a1', 13, 3, 10],
+    ['p2', 2, 'a3', 15, 3, 60],
+    ['p2', 3, 'a2', 10, 4, 110],
+    ['p2', 4, 'a6', 20, -1, 160],
 ]
-
-
-def task(env, job_id, task_id, machine_pool, time, precedent_tasks):
-    """
-    hart of the processing
-
-    waits for the completions of pressidenct tasks (list can be empty)
-    grabs a resouce
-    spend some time doing the task
-    """
-        
-    print(f'{env.now}, job: {job_id}, task_id: {task_id}, waiting for presedents')
-    
-    yield env.all_of(precedent_tasks)
-
-    print(f'{env.now}, job: {job_id}, task_id: {task_id}, getting resource')
-    with machine_pool.request() as req:
-        
-        yield req
-
-        print(f'{env.now}, job: {job_id}, task_id: {task_id}, starting task')
-
-        yield env.timeout(time)
-
-    print(f'{env.now}, job: {job_id}, task_id: {task_id}, finished task')
-
 
 def build_pools(env, pool_data):
     """
@@ -137,7 +153,7 @@ def build_tasks(env, tasks, node, pools):
         press_tasks.append(build_tasks(env, tasks, press_node, pools))
 
     # create the task process
-    t = task(env, node[0], node[1], pools[node[2]], node[3], press_tasks)
+    t = task(env, node[0], node[1], pools[node[2]], node[3], press_tasks, node[5])
 
     # retrun the process to the parent, which the parent
     # will wait on as a pressident
@@ -147,12 +163,14 @@ def build_tasks(env, tasks, node, pools):
 
 
 # boot up
+# schedule your shit, creating jobs_data with shape 
+
 env = simpy.Environment()
 
 pools = build_pools(env, machine_pools_data)
 
 build_jobs(env, pools, jobs_data)
-
-env.run(100)
+ 
+env.run(300)
 
 print('done')
