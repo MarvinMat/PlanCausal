@@ -58,9 +58,9 @@ def task(env, job_id, task_id, machine_pool, time, precedent_tasks, plan_start):
 # machines to relieve a bottle necks
 machine_pools_data = [
     # machine name, qty
-    ['a1', 1],
+    ['a1', 2],
     ['a2', 1],
-    ['a3', 1],
+    ['a3', 2],
     ['a4', 1],
     ['a5', 1],
     ['a6', 1],    
@@ -70,17 +70,17 @@ machine_pools_data = [
 # each task uses a machine for x amount of time
 # and it output goes to a next task.
 jobs_data = [
-    # job id, task id, machine, time, next task, earlyiest start
-    ['p1', 1, 'a1', 17, 2, 5],
-    ['p1', 2, 'a2', 30, 4, 50],
-    ['p1', 3, 'a3', 14, 4, 100 ],
-    ['p1', 4, 'a4', 15, 5, 150],
-    ['p1', 5, 'a5', 25, -1, 200],
+    # job id, task id, machine, time, next task, planned start
+    ['p1', 1, 'a1', 17, 2, None],
+    ['p1', 2, 'a2', 30, 4, None],
+    ['p1', 3, 'a3', 14, 4, None ],
+    ['p1', 4, 'a4', 15, 5, None],
+    ['p1', 5, 'a5', 25, -1, None],
 
-    ['p2', 1, 'a1', 13, 3, 10],
-    ['p2', 2, 'a3', 15, 3, 60],
-    ['p2', 3, 'a2', 10, 4, 110],
-    ['p2', 4, 'a6', 20, -1, 160],
+    ['p2', 1, 'a1', 13, 3, None],
+    ['p2', 2, 'a3', 15, 3, None],
+    ['p2', 3, 'a2', 10, 4, None],
+    ['p2', 4, 'a6', 20, -1, None],
 ]
 
 def build_pools(env, pool_data):
