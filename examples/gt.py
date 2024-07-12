@@ -24,6 +24,14 @@ def calculate_dynamic_priority(task):
     else:
         return max(pred.plan_start for pred in task.predecessor_tasks) + task.duration
 
+def update_priorities(ready_operations):
+    temp_heap = []
+    while ready_operations:
+        _,_, task = heapq.heappop(ready_operations)
+        new_priority = calculate_dynamic_priority(task)
+        heapq.heappush(temp_heap, (new_priority, (str(task.job_id) + str(task.task_id)), task))
+    return temp_heap
+
 def giffen_thompson(tasks, machine_pools):
     ready_operations = []
     inserted_tasks = set()
@@ -49,6 +57,11 @@ def giffen_thompson(tasks, machine_pools):
     schedule = []
 
     while ready_operations:
+
+        # Aktualisiere alle Prioritäten in der ready_operations Heap
+        ready_operations = update_priorities(ready_operations)
+        # !Potentielle optimierung: kann bei Statischen Prioritäten übersprungen werden, 
+        # kann übersprungen werden wenn die Zeit nicht vorrangeschritten ist.
         _, _, current_task = heapq.heappop(ready_operations)
 
         # Überprüfe die Maschinenverfügbarkeit
