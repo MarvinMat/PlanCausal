@@ -32,9 +32,6 @@ class GifflerThompson:
                 next_operation = operation_dict[(operation.job_id, operation.successor)]
                 operation.successor_operation = next_operation
                 next_operation.predecessor_operations.append(operation)
-
-        # Initialisiere die ersten Operationen jedes Jobs
-        for operation in operations:
             if not operation.predecessor_operations:
                 priority = self.priority_rule(operation)
                 heapq.heappush(ready_operations, (priority, (str(operation.job_id) + str(operation.operation_id)), operation))

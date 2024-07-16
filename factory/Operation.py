@@ -27,5 +27,6 @@ class Operation:
                 , 'machine': self.plan_machine_id
                 , 'start_time': self.plan_start
                 , 'duration' : self.duration
+                , 'plan_duration' : self.plan_duration
                 , 'end_time': self.plan_end }
 ## Simulation relevant 
