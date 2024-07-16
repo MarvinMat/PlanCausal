@@ -8,6 +8,7 @@ class GifflerThompson:
     def __init__(self, priority_rule, inference):
         self.priority_rule = priority_rule
         self.inference = inference
+        self.schedule = []
 
     def update_priorities(self, ready_operations):
         temp_heap = []
@@ -39,8 +40,6 @@ class GifflerThompson:
                 heapq.heappush(ready_operations, (priority, (str(operation.job_id) + str(operation.operation_id)), operation))
                 inserted_operations.add(operation)
 
-        schedule = []
-
         while ready_operations:
 
             # Aktualisiere alle Prioritäten in der ready_operations Heap
@@ -59,10 +58,10 @@ class GifflerThompson:
                 if available_times[i] < earliest_start_time:
                     earliest_start_time = max(available_times[i], current_operation.plan_start if current_operation.plan_start is not None else 0)
                     selected_machine_idx = i
+            current_operation.plan_start = earliest_start_time
             current_duration = self.inference(current_operation)    
             end_time = earliest_start_time + current_duration
             current_operation.plan_end = end_time
-            current_operation.plan_start = earliest_start_time
             current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + '_' + str(selected_machine_idx)
             available_times[selected_machine_idx] = end_time
 
@@ -79,6 +78,6 @@ class GifflerThompson:
                     inserted_operations.add(successor)
 
             # Füge die Aufgabe zur Zeitplanung hinzu
-            schedule.append(current_operation)
+            self.schedule.append(current_operation)
 
-        return schedule
+        return self.schedule

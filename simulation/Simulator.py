@@ -52,6 +52,8 @@ class Simulator:
 
             yield self.env.timeout(self.inference(operation)) # durchführung
 
+        operation.machine.current_operation = None
+        operation.machine.history.append(operation)
         print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
 
 
@@ -67,7 +69,7 @@ class Simulator:
         for pool in pool_data:
             for idx in range(0, pool[1]):
                 id = str(pool[0]) + '_' + str(idx)
-                pools[id] = Machine(id=id, name=id, tools=pool[2], env=self.env)
+                pools[id] = Machine(id=id, group=str(pool[0]), tools=pool[2], env=self.env)
                 patch_resource(pools[id], post=self.post_resource_monitor)  # Patches (only) this resource instance
         return pools
 

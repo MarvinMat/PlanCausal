@@ -10,6 +10,7 @@ class Operation:
         self.successor = succ
         self.plan_start = None
         self.plan_end = None
+        self.plan_duration = duration
         self.successor_operation = None
         self.predecessor_operations = []
 
