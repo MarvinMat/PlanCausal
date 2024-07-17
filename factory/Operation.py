@@ -11,6 +11,9 @@ class Operation:
         self.plan_start = None
         self.plan_end = None
         self.plan_duration = duration
+        self.sim_start = None
+        self.sim_duration = None
+        self.sim_end = None
         self.successor_operation = None
         self.predecessor_operations = []
 
@@ -29,4 +32,14 @@ class Operation:
                 , 'duration' : self.duration
                 , 'plan_duration' : self.plan_duration
                 , 'end_time': self.plan_end }
+    
+    def to_dict_sim(self):
+        """ used to create gantt charts """
+        return {'job_id': self.job_id
+                , 'operation_id': self.operation_id
+                , 'machine': self.plan_machine_id
+                , 'start_time': self.sim_start
+                , 'duration' : self.sim_duration
+                , 'plan_duration' : self.plan_duration
+                , 'end_time': self.sim_end }
 ## Simulation relevant 

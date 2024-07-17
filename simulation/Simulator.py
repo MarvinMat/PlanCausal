@@ -44,14 +44,15 @@ class Simulator:
 
         print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
         with operation.machine.request() as req:
-            
             yield req
-
+            operation.sim_start = self.env.now
             print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             operation.machine.current_operation = operation
-
+            operation.sim_duration = self.inference(operation)
+            
             yield self.env.timeout(self.inference(operation)) # durchführung
 
+        operation.sim_end = self.env.now
         operation.machine.current_operation = None
         operation.machine.history.append(operation)
         print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
