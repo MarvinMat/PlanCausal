@@ -1,9 +1,10 @@
 class Operation:
     """Operation with job id, operation id, machine, duration, next operation"""
-    def __init__(self, job_id, operation_id, machine_group_id, duration, succ):
+    def __init__(self, job_id, operation_id, machine_group_id, tool, duration, succ):
         self.job_id = job_id
         self.operation_id = operation_id
         self.req_machine_group_id = machine_group_id
+        self.tool = tool
         self.plan_machine_id = None
         self.machine = None
         self.duration = duration

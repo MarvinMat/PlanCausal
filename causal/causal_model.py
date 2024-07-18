@@ -1,4 +1,10 @@
+import os
+import sys
+sys.path.insert(0, os.getcwd())
+
 import pandas as pd
+from factory.Operation import Operation
+from simulation.Simulator import Simulator
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD, DiscreteFactor
 from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator
@@ -13,27 +19,29 @@ class CausalModel:
 
     def create_predefined_model(self):
         model = BayesianNetwork([
-            ('has_lots_operations', 'is_shorter_than_15'), 
-            ('is_shorter_than_15', 'duration'), 
-            ('one_working', 'duration')
+            ('operation_pres_count', 'operation_duration'), 
+            ('operation_req_machine', 'operation_duration')
         ])
 
-        cpd_has_lots_operations = TabularCPD(variable='has_lots_operations', variable_card=2, values=[[0.5], [0.5]], state_names={'has_lots_operations': [False, True]})
+        cpd_operation_pres_count = TabularCPD(variable='operation_pres_count', variable_card=4, values=[[0.25], [0.25], [0.25], [0.25]], state_names={'operation_pres_count': [0, 1, 2, 3]})
 
-        cpd_is_shorter_than_15 = TabularCPD(variable='is_shorter_than_15', variable_card=2,
-                                            values=[[0.7, 0.2], [0.3, 0.8]],
-                                            evidence=['has_lots_operations'],
-                                            evidence_card=[2],
-                                            state_names={'is_shorter_than_15': [False, True], 'has_lots_operations': [False, True]})
+        cpd_operation_req_machine = TabularCPD(variable='operation_req_machine', variable_card=4, values=[[0.25], [0.25], [0.25], [0.25]], state_names={'operation_req_machine': ['a1', 'a2', 'a3', 'a4']})
 
-        cpd_one_working = TabularCPD(variable='one_working', variable_card=2, values=[[0.5], [0.5]], state_names={'one_working': [False, True]})
+        duration_values = np.zeros((6, 16))
+        def calculate_duration_factor(operation_pres_count, operation_req_machine):
+            pres_count_factor = 1.0 + 0.1 * operation_pres_count
+            req_machine_factor = 1.0
+            
+            if operation_req_machine == 'a1':
+                req_machine_factor = 0.9
+            elif operation_req_machine == 'a2':
+                req_machine_factor = 1.0
+            elif operation_req_machine == 'a3':
+                req_machine_factor = 1.1
+            elif operation_req_machine == 'a4':
+                req_machine_factor = 1.2
 
-        duration_values = np.zeros((6, 4))
-        def calculate_duration_factor(is_shorter_than_15, one_working):
-            is_shorter_than_15_factor = 0.9 if is_shorter_than_15 else 1.1
-            one_working_factor = 1.1 if one_working else 1.0
-
-            duration_factor = is_shorter_than_15_factor * one_working_factor
+            duration_factor = pres_count_factor * req_machine_factor
             possible_duration_factors = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3]
 
             result = []
@@ -47,20 +55,20 @@ class CausalModel:
             return result
 
         cur_col = 0
-        for is_shorter in [False, True]:
-            for working in [False, True]:
-                duration_values[:,cur_col] = calculate_duration_factor(is_shorter, working)
+        for pres_count in range(4):
+            for req_machine in ['a1', 'a2', 'a3', 'a4']:
+                duration_values[:,cur_col] = calculate_duration_factor(pres_count, req_machine)
                 cur_col += 1
 
-        cpd_duration = TabularCPD(variable='duration', variable_card=6,
-                                  values=duration_values,
-                                  evidence=['is_shorter_than_15', 'one_working'],
-                                  evidence_card=[2, 2],
-                                  state_names={'duration': ['0.8', '0.9', '1.0', '1.1', '1.2', '1.3'],
-                                               'is_shorter_than_15': [False, True],
-                                               'one_working': [False, True]})
+        cpd_operation_duration = TabularCPD(variable='operation_duration', variable_card=6,
+                                            values=duration_values,
+                                            evidence=['operation_pres_count', 'operation_req_machine'],
+                                            evidence_card=[4, 4],
+                                            state_names={'operation_duration': ['0.8', '0.9', '1.0', '1.1', '1.2', '1.3'],
+                                                         'operation_pres_count': [0, 1, 2, 3],
+                                                         'operation_req_machine': ['a1', 'a2', 'a3', 'a4']})
 
-        model.add_cpds(cpd_has_lots_operations, cpd_is_shorter_than_15, cpd_one_working, cpd_duration)
+        model.add_cpds(cpd_operation_pres_count, cpd_operation_req_machine, cpd_operation_duration)
         assert model.check_model()
         return model
     
@@ -78,28 +86,13 @@ class CausalModel:
         assert model.check_model()
         return model
 
-    def infer_duration(self, use_predefined, has_lots_operations, is_shorter_than_15, one_working):
+    def infer_duration(self, use_predefined, operation:Operation):
         model = self.predefined_model if use_predefined else self.learned_model
         inference = VariableElimination(model)
         evidence = {
-            'has_lots_operations': has_lots_operations,
-            'is_shorter_than_15': is_shorter_than_15,
-            'one_working': one_working
+            'operation_pres_count': len(operation.predecessor_operations),
+            #'operation_duration': operation.duration,
+            'operation_req_machine': operation.req_machine_group_id
         }
-        result = inference.query(['duration'], evidence=evidence)
-        return float(result.sample(1)["duration"][0])
-
-# Example usage
-csv_file = 'data/observed_data.csv'  # Path to your CSV file
-
-model = CausalModel(csv_file=csv_file)
-
-has_lots_operations = len([1, 2]) > 1
-is_shorter_than_15 = 10 < 15
-one_working = False
-
-# Decide which model to use for inference
-use_predefined = True  # Set this to False to use the learned model
-
-duration = model.infer_duration(use_predefined, has_lots_operations, is_shorter_than_15, one_working)
-print("Inferred duration factor:", duration)
+        result = inference.query(['operation_duration'], evidence=evidence)
+        return float(result.sample(1)["operation_duration"][0])

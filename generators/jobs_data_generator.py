@@ -4,7 +4,7 @@ import random
 
 class JobsDataGenerator:
     def __init__(self, jobs_data):
-        self.jobs_data = pd.DataFrame(jobs_data, columns=['product', 'sequence', 'operation', 'duration', 'next'])
+        self.jobs_data = pd.DataFrame(jobs_data, columns=['product', 'sequence', 'operation', 'tool', 'duration', 'next'])
     
     def split_by_product(self):
         self.product_groups = self.jobs_data.groupby('product')
