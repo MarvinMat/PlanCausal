@@ -1,14 +1,18 @@
 import pandas as pd
+from factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator
 from pgmpy.inference import VariableElimination, CausalInference
 
-class CausalModel:
+class CausalModelCBN:
     def __init__(self, csv_file=None):
         # Initialisierung des gelernten Modells basierend auf CSV-Daten
-        self.learned_model = self.learn_model_from_csv(csv_file) if csv_file is not None else None
+        csv_file = 'data/NonCausalVsCausal.csv'  # Hier den Pfad zur CSV-Datei angeben
+        data = self.read_from_csv(csv_file)        
+        self.predefined_model = self.create_predefined_model(data)
+        self.learned_model = self.learn_model_from_data(data) if data is not None else None
 
-    def learn_model_from_csv(self, csv_file):
+    def read_from_csv(self, csv_file):
         # CSV-Datei einlesen
         data = pd.read_csv(csv_file, sep=';')
         
@@ -26,9 +30,9 @@ class CausalModel:
         data['previous_machine_pause'] = data['previous_machine_pause'].map({'Ja': 1, 'Nein': 0})
         data['pre_processing'] = data['pre_processing'].map({'Ja': 1, 'nein': 0})
 
-        return self.set_truth_edges(data)
+        return data
 
-    def set_truth_edges(self, data):
+    def create_predefined_model(self, data):
         print("Set edges by user")
             # Defining the Bayesian network structure manually based on your specified edges
         model = BayesianNetwork([
@@ -69,7 +73,7 @@ class CausalModel:
         model_graphviz.draw("causal/causal_model.png", prog="dot")
         return model_graphviz
 
-    def infer(self, variable={}, evidence={}, do={}):
+    def infer(self, model, variable={}, evidence={}, do={}):
         """
         Führt eine Inferenz auf dem gelernten Modell durch.
 
@@ -77,7 +81,7 @@ class CausalModel:
         :param do_intervention: Wenn True, führt eine "do"-Intervention auf die `pre_processing`-Variable durch
         :return: Wahrscheinlichkeiten für alle Variablen
         """
-        if not self.learned_model:
+        if not model:
             raise ValueError("Es wurde kein Modell gelernt. Bitte laden Sie ein CSV und erstellen Sie ein Modell.")
         
         if not variable:
@@ -86,10 +90,10 @@ class CausalModel:
             all_model_variables = variable
         
         # VariableElimination für reguläre Inferenz
-        inference = VariableElimination(self.learned_model)
+        inference = VariableElimination(model)
 
         # CausalInference-Objekt für kausale Abfragen (do-Operator)
-        causal_inference = CausalInference(self.learned_model)
+        causal_inference = CausalInference(model)
 
         result = {}     
 
@@ -112,26 +116,46 @@ class CausalModel:
 
         return result
 
+    def infer_duration(self, use_predefined, operation:Operation):
+        # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
+        model = self.predefined_model if use_predefined else self.learned_model
+        evidence = {
+            'previous_machine_pause': len(operation.predecessor_operations) > 0,
+            #'operation_duration': operation.duration,
+            #'pre_processing': operation.req_machine_group_id
+        }
+        #model = self.predefined_model if use_predefined else self.learned_model
+        
+        result = self.infer(model, evidence=evidence)
+        
+        # Check if the 'delay' variable is present in the result
+        if 'delay' in result:
+            delay_values = result['delay'].values  # Get the values array from the DiscreteFactor
+            if len(delay_values) == 2:
+                # Return True if probability of delay=1 is greater than delay=0, else False
+                has_delay = delay_values[1] > delay_values[0]
+        
+        return operation.duration + 5 if has_delay else operation.duration
 
+    def example_implementation(self):
+        # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
+        csv_file = 'data/NonCausalVsCausal.csv'  # Hier den Pfad zur CSV-Datei angeben
+        model = CausalModelCBN(csv_file)
 
-# Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
-csv_file = 'data/NonCausalVsCausal.csv'  # Hier den Pfad zur CSV-Datei angeben
-model = CausalModel(csv_file)
+        # Beispielhafte Inferenz durchführen mit Beweisen (ohne do-Operator)
+        #evidence = {'pre_processing': 1}  # Beispielhafte Evidenz
+        # Assuming inference is the model you've already set up
 
-# Beispielhafte Inferenz durchführen mit Beweisen (ohne do-Operator)
-#evidence = {'pre_processing': 1}  # Beispielhafte Evidenz
-# Assuming inference is the model you've already set up
+        # Non-Causal Inference: Conditional probability of delay given pre_processing
+        non_causal_delay_given_preprocessing_0 = model.infer(model, evidence={'pre_processing': 0})
+        non_causal_delay_given_preprocessing_1 = model.infer(model, evidence={'pre_processing': 1})
 
-# Non-Causal Inference: Conditional probability of delay given pre_processing
-non_causal_delay_given_preprocessing_0 = model.infer(evidence={'pre_processing': 0})
-non_causal_delay_given_preprocessing_1 = model.infer(evidence={'pre_processing': 1})
+        print("Non-Causal Probability of delay given pre_processing=0:", non_causal_delay_given_preprocessing_0['delay'])
+        print("Non-Causal Probability of delay given pre_processing=1:", non_causal_delay_given_preprocessing_1['delay'])
 
-print("Non-Causal Probability of delay given pre_processing=0:", non_causal_delay_given_preprocessing_0['delay'])
-print("Non-Causal Probability of delay given pre_processing=1:", non_causal_delay_given_preprocessing_1['delay'])
+        # Causal Inference: Do-Intervention on pre_processing
+        causal_delay_given_preprocessing_0 = model.infer(model, variable={'delay'}, do={'pre_processing': 0})
+        causal_delay_given_preprocessing_1 = model.infer(model, variable={'delay'}, do={'pre_processing': 1})
 
-# Causal Inference: Do-Intervention on pre_processing
-causal_delay_given_preprocessing_0 = model.infer(variable={'delay'}, do={'pre_processing': 0})
-causal_delay_given_preprocessing_1 = model.infer(variable={'delay'}, do={'pre_processing': 1})
-
-print("Causal Probability of delay after do(pre_processing=0):", causal_delay_given_preprocessing_0['delay'])
-print("Causal Probability of delay after do(pre_processing=1):", causal_delay_given_preprocessing_1['delay'])
+        print("Causal Probability of delay after do(pre_processing=0):", causal_delay_given_preprocessing_0['delay'])
+        print("Causal Probability of delay after do(pre_processing=1):", causal_delay_given_preprocessing_1['delay'])
