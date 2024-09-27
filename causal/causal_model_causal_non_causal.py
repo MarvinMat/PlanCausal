@@ -116,11 +116,12 @@ class CausalModelCBN:
 
         return result
 
-    def infer_duration(self, use_predefined, operation:Operation):
+    def infer_duration(self, use_predefined, operation:Operation, tool):
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
         model = self.predefined_model if use_predefined else self.learned_model
         evidence = {
-            'previous_machine_pause': len(operation.predecessor_operations) > 0,
+            'previous_machine_pause': operation.tool != tool
+            #'previous_machine_pause': len(operation.predecessor_operations) > 0,
             #'operation_duration': operation.duration,
             #'pre_processing': operation.req_machine_group_id
         }
@@ -135,7 +136,7 @@ class CausalModelCBN:
                 # Return True if probability of delay=1 is greater than delay=0, else False
                 has_delay = delay_values[1] > delay_values[0]
         
-        return operation.duration + 5 if has_delay else operation.duration
+        return 1.2 if has_delay else 1.0
 
     def example_implementation(self):
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)

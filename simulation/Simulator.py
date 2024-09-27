@@ -48,10 +48,11 @@ class Simulator:
             operation.sim_start = self.env.now
             print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             operation.machine.current_operation = operation
-            operation.sim_duration = self.inference(operation)
+            operation.sim_duration = self.inference(operation, operation.machine.current_tool)
+            operation.machine.current_tool = operation.machine.current_operation.tool
             
-            yield self.env.timeout(self.inference(operation)) # durchführung
-
+            yield self.env.timeout(operation.sim_duration) # durchführung
+        
         operation.sim_end = self.env.now
         operation.machine.current_operation = None
         operation.machine.history.append(operation)

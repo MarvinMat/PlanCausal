@@ -22,7 +22,8 @@ class GifflerThompson:
     def giffen_thompson(self, operations, machine_pools):
         ready_operations = []
         inserted_operations = set()
-        machine_available_time = {machine: [0] * qty for machine, qty, _ in machine_pools}
+        # [available time, setup]
+        machine_available_time = {machine: [[0, None]] * qty for machine, qty, _ in machine_pools}
 
         # Dictionary zur Verwaltung der Operation-Objekte über (job_id, operation_id)
         operation_dict = {(operation.job_id, operation.operation_id): operation for operation in operations}
@@ -49,25 +50,25 @@ class GifflerThompson:
             # Überprüfe die Maschinenverfügbarkeit
             machine = current_operation.req_machine_group_id
             available_times = machine_available_time[machine]
-            earliest_start_time = max(available_times[0], current_operation.plan_start if current_operation.plan_start is not None else 0)
+            earliest_start_time = max(available_times[0][0], current_operation.plan_start if current_operation.plan_start is not None else 0)
             selected_machine_idx = 0
 
             for i in range(1, len(available_times)):
-                if available_times[i] < earliest_start_time:
-                    earliest_start_time = max(available_times[i], current_operation.plan_start if current_operation.plan_start is not None else 0)
+                if available_times[i][0] < earliest_start_time:
+                    earliest_start_time = max(available_times[i][0], current_operation.plan_start if current_operation.plan_start is not None else 0)
                     selected_machine_idx = i
             #ready_count_req_machine = len([op for op in ready_operations if op[2].req_machine_group_id == current_operation.req_machine_group_id])
             if current_operation.successor != -1:
                 qleng = len([op for op in self.schedule if current_operation.successor_operation.req_machine_group_id == op.req_machine_group_id and earliest_start_time < op.plan_start])
                 self.qlength.append([n, current_operation.successor_operation.req_machine_group_id, qleng])
                 n = n + 1
-            current_duration = self.inference(current_operation)    
+            current_duration = self.inference(current_operation, available_times[selected_machine_idx][1])    
             end_time = earliest_start_time + current_duration
             current_operation.plan_duration = current_duration
             current_operation.plan_start = earliest_start_time
             current_operation.plan_end = end_time
             current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + '_' + str(selected_machine_idx)
-            available_times[selected_machine_idx] = end_time
+            available_times[selected_machine_idx] = [end_time, current_operation.tool]
 
             # Aktualisiere die geplante Startzeit für die Nachfolgeaufgaben
             if current_operation.successor_operation:
