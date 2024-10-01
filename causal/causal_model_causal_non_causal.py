@@ -1,38 +1,85 @@
 import pandas as pd
+import numpy as np
 from factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
-from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator
+from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator, BDeuScore, TreeSearch, ExhaustiveSearch, K2Score, StructureScore, BDsScore, AICScore
 from pgmpy.inference import VariableElimination, CausalInference
 
 class CausalModelCBN:
     def __init__(self, csv_file=None):
         # Initialisierung des gelernten Modells basierend auf CSV-Daten
-        csv_file = 'data/NonCausalVsCausal.csv'  # Hier den Pfad zur CSV-Datei angeben
-        data = self.read_from_csv(csv_file)        
-        self.predefined_model = self.create_predefined_model(data)
-        self.learned_model = self.learn_model_from_data(data) if data is not None else None
+        csv_file = 'data/NonCausalVsCausal_CausalPlan.xlsx'  # Hier den Pfad zur CSV-Datei angeben
+        self.data = self.read_from_csv(csv_file)        
+        self.truth_model = self.create_truth_model(self.data)       
+        self.true_adj_matrix = self.get_adjacency_matrix(self.truth_model.edges(), self.data.columns)
+        successful_combinations = self.test_algorithms(self.data)
+        print("successful_combinations", len(successful_combinations))
+        self.learned_model = self.learn_model_from_data(self.data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.data is not None else None
 
     def read_from_csv(self, csv_file):
         # CSV-Datei einlesen
-        data = pd.read_csv(csv_file, sep=';')
+        #data = pd.read_csv(csv_file, sep=';')
         
-        # Spaltennamen anpassen und kategorische Daten in numerische Werte umwandeln
-        data = data.rename(columns={
-            'Maschinenstatus': 'machine_status',
-            'Verzögerung': 'delay',
-            'vorher Maschinenpause': 'previous_machine_pause',
-            'Vorverarbeitung': 'pre_processing'
-        })
+        data = pd.read_excel(csv_file)
+        # # Spaltennamen anpassen und kategorische Daten in numerische Werte umwandeln
+        # data = data.rename(columns={
+        #     'Maschinenstatus': 'machine_status',
+        #     'Verzögerung': 'delay',
+        #     'vorher Maschinenpause': 'previous_machine_pause',
+        #     'Vorverarbeitung': 'pre_processing'
+        # })
 
-        # Kategorische Daten in numerische Werte umwandeln
-        data['machine_status'] = data['machine_status'].map({'Schlecht': 0, 'Gut': 1})
-        data['delay'] = data['delay'].map({'Ja': 1, 'Nein': 0})
-        data['previous_machine_pause'] = data['previous_machine_pause'].map({'Ja': 1, 'Nein': 0})
-        data['pre_processing'] = data['pre_processing'].map({'Ja': 1, 'nein': 0})
+        # # Kategorische Daten in numerische Werte umwandeln
+        # data['machine_status'] = data['machine_status'].map({'Schlecht': 0, 'Gut': 1})
+        # data['delay'] = data['delay'].map({'Ja': 1, 'Nein': 0})
+        # data['previous_machine_pause'] = data['previous_machine_pause'].map({'Ja': 1, 'Nein': 0})
+        # data['pre_processing'] = data['pre_processing'].map({'Ja': 1, 'nein': 0})
 
         return data
+    
+    def hamming_distance(self, matrix1, matrix2):
+        """
+        Calculate the Hamming distance between two adjacency matrices.
 
-    def create_predefined_model(self, data):
+        :param matrix1: First adjacency matrix (numpy array).
+        :param matrix2: Second adjacency matrix (numpy array).
+        :return: Hamming distance (int).
+        """
+        # Check that both matrices have the same shape
+        assert matrix1.shape == matrix2.shape, "Matrices must have the same shape"
+        return np.sum(matrix1 != matrix2)  # Count number of differing elements
+    
+    def get_adjacency_matrix(self, edges, nodes):
+        """
+        Converts an edge list to an adjacency matrix.
+
+        :param edges: List of tuples representing the edges in the graph.
+        :param nodes: List of nodes in the graph.
+        :return: Adjacency matrix as a numpy array.
+        """
+        adj_matrix = np.zeros((len(nodes), len(nodes)), dtype=int)
+        node_index = {node: i for i, node in enumerate(nodes)}
+        
+        for parent, child in edges:
+            adj_matrix[node_index[parent], node_index[child]] = 1
+
+        return adj_matrix
+
+    def compare_structures(self, learned_model):
+        """
+        Compares the learned structure to the true structure using the Hamming distance.
+
+        :param learned_model: The learned Bayesian Network model.
+        :return: True if the structures match, False otherwise.
+        """
+        # Get adjacency matrix of the learned model
+        learned_adj_matrix = self.get_adjacency_matrix(learned_model.edges(), self.data.columns)
+
+        # Calculate Hamming distance (number of different entries)
+        distance =  self.hamming_distance(self.true_adj_matrix, learned_adj_matrix)
+        return distance == 0
+
+    def create_truth_model(self, data):
         print("Set edges by user")
             # Defining the Bayesian network structure manually based on your specified edges
         model = BayesianNetwork([
@@ -42,6 +89,8 @@ class CausalModelCBN:
             ('pre_processing', 'delay')
         ])
         
+        model.name = "Predefined_Causal_Model"  # Add model name attribute
+
         # Learn the parameters (CPDs) of the Bayesian network from the data
         model.fit(data, estimator=BayesianEstimator, prior_type="BDeu")
         
@@ -53,24 +102,113 @@ class CausalModelCBN:
         # Save and return the learned model
         return model
 
-    def learn_model_from_data(self, data):
-        print('Learn edges from data')
-        # Bayesian Network lernen mittels HillClimbSearch und BicScore
-        hc = HillClimbSearch(data)
-        best_model = hc.estimate(scoring_method=BicScore(data))
+    def learn_model_from_data(self, data, algorithm='hill_climb', score_type='BDeu', equivalent_sample_size=5):
+        """
+        Lerne ein kausales Modell aus den gegebenen Daten mit verschiedenen Algorithmen und Score-Funktionen.
+
+        :param data: Eingabedaten als Pandas DataFrame.
+        :param algorithm: Algorithmus zur Strukturfindung ('hill_climb', 'tree_search', 'exhaustive', 'pc').
+        :param score_type: Bewertungsmethode für das Modell ('BDeu', 'Bic', 'K2').
+        :param equivalent_sample_size: Äquivalente Stichprobengröße für BDeu-Score (nur relevant für 'BDeu').
+        :return: Gelerntes BayesianNetwork-Modell.
+        """
+        
+        print(f"Lerne Modell mit {algorithm}-Algorithmus und {score_type}-Score")
+
+        # Wähle die Scoring-Methode basierend auf den Parametern
+        if score_type == 'BDeu':
+            scoring_method = BDeuScore(data, equivalent_sample_size=equivalent_sample_size)
+        elif score_type == 'Bic':
+            scoring_method = BicScore(data)
+        elif score_type == 'K2':
+            scoring_method = K2Score(data)
+        elif score_type == 'StructureScore':
+            scoring_method = StructureScore(data)
+        elif score_type == 'BDsScore':
+            scoring_method = BDsScore(data)
+        elif score_type == 'AICScore':
+            scoring_method = AICScore(data)    
+        else:
+            raise ValueError(f"Unbekannter Score-Typ: {score_type}")
+
+        # Algorithmusauswahl
+        if algorithm == 'hill_climb':
+            search_alg = HillClimbSearch(data)
+        elif algorithm == 'tree_search':
+            search_alg = TreeSearch(data, root_node='delay')  # Beispiel für TreeSearch (root_node definieren)
+        elif algorithm == 'exhaustive':
+            search_alg = ExhaustiveSearch(data, scoring_method=scoring_method)
+        elif algorithm == 'pc':
+            from pgmpy.estimators import PC
+            search_alg = PC(data)
+            search_alg.max_cond_vars = 4  # Maximale Anzahl bedingter Variablen (einstellbar)
+            best_model = search_alg.estimate()
+            return BayesianNetwork(best_model.edges())
+        else:
+            raise ValueError(f"Unbekannter Algorithmus: {algorithm}")
+
+        # Struktur mit der gewählten Suchmethode lernen
+        best_model = search_alg.estimate(scoring_method=scoring_method)
         model = BayesianNetwork(best_model.edges())
 
+        model.name = f"Learned_Model_{algorithm}_{score_type}"  # Setzt den Modellnamen für die spätere Speicherung
+        
         # Anpassung der CPDs für das Modell basierend auf den Daten
         model.fit(data, estimator=BayesianEstimator, prior_type="BDeu")
         
         # Modellüberprüfung
         assert model.check_model()
+        
+        # compare with truth graph
+        model_check = self.compare_structures(learned_model=model)
+        
+        if not model_check:
+            print('Learned model does not represent truth model')
+        
         self.safe_model(model)
         return model
     
+    def test_algorithms(self, data):
+        """
+        Testet verschiedene Algorithmus- und Scoring-Kombinationen und gibt diejenigen zurück,
+        die das 'truth model' korrekt nachbilden.
+
+        :param data: Eingabedaten als Pandas DataFrame.
+        :return: Liste der erfolgreichen (Algorithmus, Score)-Kombinationen.
+        """
+        successful_combinations = []
+
+        # Definiere mögliche Algorithmen und Scores
+        algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
+        scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
+
+        # Iteriere über alle Algorithmus- und Score-Kombinationen
+        for algorithm in algorithms:
+            for score in scores:
+                try:
+                    print(f"Testing combination: Algorithm={algorithm}, Score={score}")
+
+                    # Versuche, das Modell mit der aktuellen Kombination zu lernen
+                    learned_model = self.learn_model_from_data(data, algorithm=algorithm, score_type=score)
+                    
+                    # Überprüfe, ob das gelernte Modell der Wahrheit entspricht
+                    model_check = self.compare_structures(learned_model=learned_model)
+
+                    if model_check:
+                        print(f"Successful combination: Algorithm={algorithm}, Score={score}")
+                        successful_combinations.append((algorithm, score))
+                    else:
+                        print(f"Failed combination: Algorithm={algorithm}, Score={score}")
+
+                except Exception as e:
+                    print(f"Error with combination Algorithm={algorithm}, Score={score}: {e}")
+
+        return successful_combinations
+    
     def safe_model(self, model):
+        model_filename = f"causal/{model.name}.png" if hasattr(model, 'name') else "causal/causal_model.png"
         model_graphviz = model.to_graphviz()
-        model_graphviz.draw("causal/causal_model.png", prog="dot")
+        model_graphviz.draw(model_filename, prog="dot")
         return model_graphviz
 
     def infer(self, model, variable={}, evidence={}, do={}):
@@ -116,27 +254,77 @@ class CausalModelCBN:
 
         return result
 
-    def infer_duration(self, use_predefined, operation:Operation, tool):
+    def infer_duration(self, use_truth_model, operation: Operation, tool):
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
-        model = self.predefined_model if use_predefined else self.learned_model
+        model = self.truth_model if use_truth_model else self.learned_model
+        
+        previous_machine_pause =  operation.tool != tool
         evidence = {
-            'previous_machine_pause': operation.tool != tool
-            #'previous_machine_pause': len(operation.predecessor_operations) > 0,
-            #'operation_duration': operation.duration,
-            #'pre_processing': operation.req_machine_group_id
+            'previous_machine_pause': previous_machine_pause
+            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
         }
-        #model = self.predefined_model if use_predefined else self.learned_model
-        
+
+        # Inferenz durchführen
         result = self.infer(model, evidence=evidence)
-        
-        # Check if the 'delay' variable is present in the result
+
+        # Variablen für delay, machine_status und pre_processing initialisieren
+        has_delay = False
+        machine_status = None
+        pre_processing = None
+
+        # Sampling für die delay-Variable
         if 'delay' in result:
-            delay_values = result['delay'].values  # Get the values array from the DiscreteFactor
+            delay_values = result['delay'].values
             if len(delay_values) == 2:
-                # Return True if probability of delay=1 is greater than delay=0, else False
-                has_delay = delay_values[1] > delay_values[0]
+                # Wahrscheinlichkeiten extrahieren
+                delay_probabilities = delay_values / delay_values.sum()  # Normalisieren
+                # Zustand für delay basierend auf den Wahrscheinlichkeiten würfeln
+                has_delay = np.random.choice([0, 1], p=delay_probabilities)
         
-        return 1.2 if has_delay else 1.0
+        # Sampling für die machine_status-Variable
+        if 'machine_status' in result:
+            machine_status_values = result['machine_status'].values
+            machine_status_probabilities = machine_status_values / machine_status_values.sum()  # Normalisieren
+            machine_status = np.random.choice([0, 1], p=machine_status_probabilities)
+        
+        # Sampling für die pre_processing-Variable
+        if 'pre_processing' in result:
+            pre_processing_values = result['pre_processing'].values
+            pre_processing_probabilities = pre_processing_values / pre_processing_values.sum()  # Normalisieren
+            pre_processing = np.random.choice([0, 1], p=pre_processing_probabilities)
+        
+        # Berechnung des Multiplikators
+        delay = 1.2 if has_delay else 1.0
+
+        # Rückgabe eines Dictionaries mit allen relevanten Informationen
+        return {
+            'previous_machine_pause': previous_machine_pause,
+            'delay': delay,
+            'machine_status': machine_status,
+            'pre_processing': pre_processing
+        }
+
+    # def infer_duration(self, use_truth_model, operation:Operation, tool):
+    #     # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
+    #     model = self.truth_model if use_truth_model else self.learned_model
+    #     evidence = {
+    #         'previous_machine_pause': operation.tool != tool
+    #         #'previous_machine_pause': len(operation.predecessor_operations) > 0,
+    #         #'operation_duration': operation.duration,
+    #         #'pre_processing': operation.req_machine_group_id
+    #     }
+    #     #model = self.predefined_model if use_predefined else self.learned_model
+        
+    #     result = self.infer(model, evidence=evidence)
+        
+    #     # Check if the 'delay' variable is present in the result
+    #     if 'delay' in result:
+    #         delay_values = result['delay'].values  # Get the values array from the DiscreteFactor
+    #         if len(delay_values) == 2:
+    #             # Return True if probability of delay=1 is greater than delay=0, else False
+    #             has_delay = delay_values[1] > delay_values[0]
+        
+    #     return 1.2 if has_delay else 1.0
 
     def example_implementation(self):
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
