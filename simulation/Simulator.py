@@ -42,6 +42,9 @@ class Simulator:
         
         yield self.env.all_of(precedent_tasks)
 
+        # TODO: 
+        # Yield all prececent operations on resource q
+
         print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
         with operation.machine.request() as req:
             yield req

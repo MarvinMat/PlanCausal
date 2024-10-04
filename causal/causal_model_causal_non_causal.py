@@ -9,6 +9,7 @@ class CausalModelCBN:
     def __init__(self, csv_file=None):
         # Initialisierung des gelernten Modells basierend auf CSV-Daten
         csv_file = 'data/NonCausalVsCausal_CausalPlan.xlsx'  # Hier den Pfad zur CSV-Datei angeben
+        self.pc_did_run = False
         self.data = self.read_from_csv(csv_file)        
         self.truth_model = self.create_truth_model(self.data)       
         self.true_adj_matrix = self.get_adjacency_matrix(self.truth_model.edges(), self.data.columns)
@@ -21,6 +22,7 @@ class CausalModelCBN:
         #data = pd.read_csv(csv_file, sep=';')
         
         data = pd.read_excel(csv_file)
+        data.drop(columns=data.columns[0], axis=1, inplace=True)
         # # Spaltennamen anpassen und kategorische Daten in numerische Werte umwandeln
         # data = data.rename(columns={
         #     'Maschinenstatus': 'machine_status',
@@ -133,22 +135,25 @@ class CausalModelCBN:
 
         # Algorithmusauswahl
         if algorithm == 'hill_climb':
-            search_alg = HillClimbSearch(data)
+            search_alg = HillClimbSearch(data, use_cache=False)
+            best_model = search_alg.estimate(scoring_method=scoring_method)
         elif algorithm == 'tree_search':
-            search_alg = TreeSearch(data, root_node='delay')  # Beispiel für TreeSearch (root_node definieren)
+            search_alg = TreeSearch(data, root_node='previous_machine_pause')  # Beispiel für TreeSearch (root_node definieren)
+            best_model = search_alg.estimate()
         elif algorithm == 'exhaustive':
-            search_alg = ExhaustiveSearch(data, scoring_method=scoring_method)
+            search_alg = ExhaustiveSearch(data, scoring_method=scoring_method, use_cache=False)
+            best_model = search_alg.estimate()
         elif algorithm == 'pc':
             from pgmpy.estimators import PC
             search_alg = PC(data)
-            search_alg.max_cond_vars = 4  # Maximale Anzahl bedingter Variablen (einstellbar)
-            best_model = search_alg.estimate()
-            return BayesianNetwork(best_model.edges())
+            search_alg.max_cond_vars = 3  # Maximale Anzahl bedingter Variablen (einstellbar)
+            best_model = search_alg.estimate(significance_level=0.05)
+            #return BayesianNetwork(best_model.edges())
         else:
             raise ValueError(f"Unbekannter Algorithmus: {algorithm}")
 
         # Struktur mit der gewählten Suchmethode lernen
-        best_model = search_alg.estimate(scoring_method=scoring_method)
+              
         model = BayesianNetwork(best_model.edges())
 
         model.name = f"Learned_Model_{algorithm}_{score_type}"  # Setzt den Modellnamen für die spätere Speicherung
@@ -179,8 +184,11 @@ class CausalModelCBN:
         successful_combinations = []
 
         # Definiere mögliche Algorithmen und Scores
-        algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
-        scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
+        # algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
+        # scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
+
+        algorithms = ['exhaustive']
+        scores = ['K2']
 
         # Iteriere über alle Algorithmus- und Score-Kombinationen
         for algorithm in algorithms:
