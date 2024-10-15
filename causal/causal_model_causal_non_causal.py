@@ -8,20 +8,31 @@ from pgmpy.inference import VariableElimination, CausalInference
 class CausalModelCBN:
     def __init__(self, csv_file=None):
         # Initialisierung des gelernten Modells basierend auf CSV-Daten
-        csv_file = 'data/NonCausalVsCausal_CausalPlan.xlsx'  # Hier den Pfad zur CSV-Datei angeben
+        pre_csv_file = 'data/NonCausalVsCausal_CausalPlan.xlsx'  # Hier den Pfad zur CSV-Datei angeben
+        csv_file = csv_file
         self.pc_did_run = False
-        self.data = self.read_from_csv(csv_file)        
+        
+        self.data = self.read_from_pre_xlsx(pre_csv_file)     
+        self.observed_data = self.read_from_observed_csv(csv_file) 
+        # Check if observed_data is empty or None
+        if self.observed_data is None or self.observed_data.empty:
+            print("No observed data found, using pre-existing data.")
+            self.observed_data = self.data  # Use the pre-existing data instead
+
+        self.avg_duration = self.get_avg_duration_from_df(self.observed_data)       
+              
         self.truth_model = self.create_truth_model(self.data)       
         self.true_adj_matrix = self.get_adjacency_matrix(self.truth_model.edges(), self.data.columns)
         successful_combinations = self.test_algorithms(self.data)
         print("successful_combinations", len(successful_combinations))
-        self.learned_model = self.learn_model_from_data(self.data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.data is not None else None
+        self.learned_model = successful_combinations[0][2]
+        #self.learned_model = self.learn_model_from_data(self.observed_data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.observed_data is not None else None
 
-    def read_from_csv(self, csv_file):
+    def read_from_pre_xlsx(self, file):
         # CSV-Datei einlesen
         #data = pd.read_csv(csv_file, sep=';')
         
-        data = pd.read_excel(csv_file)
+        data = pd.read_excel(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)
         # # Spaltennamen anpassen und kategorische Daten in numerische Werte umwandeln
         # data = data.rename(columns={
@@ -38,6 +49,14 @@ class CausalModelCBN:
         # data['pre_processing'] = data['pre_processing'].map({'Ja': 1, 'nein': 0})
 
         return data
+    
+    def read_from_observed_csv(self, file): 
+        data = pd.read_csv(file)
+        data.drop(columns=data.columns[0], axis=1, inplace=True)
+        return data
+    
+    def get_avg_duration_from_df(self, data):
+        return data['delay'].mean()
     
     def hamming_distance(self, matrix1, matrix2):
         """
@@ -204,7 +223,7 @@ class CausalModelCBN:
 
                     if model_check:
                         print(f"Successful combination: Algorithm={algorithm}, Score={score}")
-                        successful_combinations.append((algorithm, score))
+                        successful_combinations.append((algorithm, score, learned_model))
                     else:
                         print(f"Failed combination: Algorithm={algorithm}, Score={score}")
 
