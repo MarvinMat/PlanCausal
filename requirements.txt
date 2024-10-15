@@ -8,7 +8,6 @@ black==19.3b0
 blinker==1.8.2
 cachetools==5.4.0
 casymda==0.2.29
-causalai==2.0
 CCIT==0.4
 certifi==2024.7.4
 cftime==1.6.4
