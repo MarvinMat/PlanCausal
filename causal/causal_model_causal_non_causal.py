@@ -24,30 +24,14 @@ class CausalModelCBN:
         self.truth_model = self.create_truth_model(self.data)       
         self.true_adj_matrix = self.get_adjacency_matrix(self.truth_model.edges(), self.data.columns)
         successful_combinations = self.test_algorithms(self.data)
-        print("successful_combinations", len(successful_combinations))
+        print("Anzahl der erfolgreich gelernten Modelle: ", len(successful_combinations))
+        # Nimm die erste erfolgreiche Kombination
         self.learned_model = successful_combinations[0][2]
         #self.learned_model = self.learn_model_from_data(self.observed_data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.observed_data is not None else None
 
     def read_from_pre_xlsx(self, file):
-        # CSV-Datei einlesen
-        #data = pd.read_csv(csv_file, sep=';')
-        
         data = pd.read_excel(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)
-        # # Spaltennamen anpassen und kategorische Daten in numerische Werte umwandeln
-        # data = data.rename(columns={
-        #     'Maschinenstatus': 'machine_status',
-        #     'Verzögerung': 'delay',
-        #     'vorher Maschinenpause': 'previous_machine_pause',
-        #     'Vorverarbeitung': 'pre_processing'
-        # })
-
-        # # Kategorische Daten in numerische Werte umwandeln
-        # data['machine_status'] = data['machine_status'].map({'Schlecht': 0, 'Gut': 1})
-        # data['delay'] = data['delay'].map({'Ja': 1, 'Nein': 0})
-        # data['previous_machine_pause'] = data['previous_machine_pause'].map({'Ja': 1, 'Nein': 0})
-        # data['pre_processing'] = data['pre_processing'].map({'Ja': 1, 'nein': 0})
-
         return data
     
     def read_from_observed_csv(self, file): 
@@ -206,6 +190,8 @@ class CausalModelCBN:
         # algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
         # scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
 
+        # exhaustive Search einziges Modell, bei dem zuverlässig der truth Graph gefunden wird
+
         algorithms = ['exhaustive']
         scores = ['K2']
 
@@ -241,13 +227,9 @@ class CausalModelCBN:
     def infer(self, model, variable={}, evidence={}, do={}):
         """
         Führt eine Inferenz auf dem gelernten Modell durch.
-
-        :param evidence: Ein Dictionary mit den Beweisen für die Inferenz, z.B. {'machine_status': 1, 'delay': 0}
-        :param do_intervention: Wenn True, führt eine "do"-Intervention auf die `pre_processing`-Variable durch
-        :return: Wahrscheinlichkeiten für alle Variablen
         """
         if not model:
-            raise ValueError("Es wurde kein Modell gelernt. Bitte laden Sie ein CSV und erstellen Sie ein Modell.")
+            raise ValueError("Kein Modell zur Inference vorhanden.")
         
         if not variable:
             all_model_variables = self.learned_model.nodes()
@@ -330,48 +312,3 @@ class CausalModelCBN:
             'machine_status': machine_status,
             'pre_processing': pre_processing
         }
-
-    # def infer_duration(self, use_truth_model, operation:Operation, tool):
-    #     # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
-    #     model = self.truth_model if use_truth_model else self.learned_model
-    #     evidence = {
-    #         'previous_machine_pause': operation.tool != tool
-    #         #'previous_machine_pause': len(operation.predecessor_operations) > 0,
-    #         #'operation_duration': operation.duration,
-    #         #'pre_processing': operation.req_machine_group_id
-    #     }
-    #     #model = self.predefined_model if use_predefined else self.learned_model
-        
-    #     result = self.infer(model, evidence=evidence)
-        
-    #     # Check if the 'delay' variable is present in the result
-    #     if 'delay' in result:
-    #         delay_values = result['delay'].values  # Get the values array from the DiscreteFactor
-    #         if len(delay_values) == 2:
-    #             # Return True if probability of delay=1 is greater than delay=0, else False
-    #             has_delay = delay_values[1] > delay_values[0]
-        
-    #     return 1.2 if has_delay else 1.0
-
-    def example_implementation(self):
-        # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
-        csv_file = 'data/NonCausalVsCausal.csv'  # Hier den Pfad zur CSV-Datei angeben
-        model = CausalModelCBN(csv_file)
-
-        # Beispielhafte Inferenz durchführen mit Beweisen (ohne do-Operator)
-        #evidence = {'pre_processing': 1}  # Beispielhafte Evidenz
-        # Assuming inference is the model you've already set up
-
-        # Non-Causal Inference: Conditional probability of delay given pre_processing
-        non_causal_delay_given_preprocessing_0 = model.infer(model, evidence={'pre_processing': 0})
-        non_causal_delay_given_preprocessing_1 = model.infer(model, evidence={'pre_processing': 1})
-
-        print("Non-Causal Probability of delay given pre_processing=0:", non_causal_delay_given_preprocessing_0['delay'])
-        print("Non-Causal Probability of delay given pre_processing=1:", non_causal_delay_given_preprocessing_1['delay'])
-
-        # Causal Inference: Do-Intervention on pre_processing
-        causal_delay_given_preprocessing_0 = model.infer(model, variable={'delay'}, do={'pre_processing': 0})
-        causal_delay_given_preprocessing_1 = model.infer(model, variable={'delay'}, do={'pre_processing': 1})
-
-        print("Causal Probability of delay after do(pre_processing=0):", causal_delay_given_preprocessing_0['delay'])
-        print("Causal Probability of delay after do(pre_processing=1):", causal_delay_given_preprocessing_1['delay'])
