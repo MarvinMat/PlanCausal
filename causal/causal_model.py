@@ -86,7 +86,7 @@ class CausalModel:
         assert model.check_model()
         return model
 
-    def infer_duration(self, use_predefined, operation:Operation):
+    def infer_duration(self, use_predefined, operation:Operation, tool):
         model = self.predefined_model if use_predefined else self.learned_model
         inference = VariableElimination(model)
         evidence = {

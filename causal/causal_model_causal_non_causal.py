@@ -186,11 +186,12 @@ class CausalModelCBN:
         """
         successful_combinations = []
 
+        # option to check mulitple models
         # Definiere mögliche Algorithmen und Scores
         # algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
         # scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
 
-        # exhaustive Search einziges Modell, bei dem zuverlässig der truth Graph gefunden wird
+        # Hinweis: exhaustive Search einziges Modell, bei dem zuverlässig der truth Graph gefunden wird
 
         algorithms = ['exhaustive']
         scores = ['K2']
