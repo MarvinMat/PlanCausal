@@ -1,0 +1,125 @@
+import pandas as pd
+import numpy as np
+import xgboost as xgb
+from factory.Operation import Operation
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
+class XGBoost:
+    def __init__(self, csv_file=None):
+        # Initialization with pre-existing data and observed data
+        csv_file = csv_file
+        self.pc_did_run = False
+        
+        self.data = self.read_from_pre_xlsx(pre_csv_file)
+
+        self.observed_data = self.read_from_observed_csv(csv_file)
+        if self.observed_data is None or self.observed_data.empty:
+            print("No observed data found, using pre-existing data.")
+            self.observed_data = self.data  # Use the pre-existing data instead
+
+        # Train XGBoost model
+        self.model = None
+        self.train_xgboost_model(self.observed_data)
+
+    def read_from_observed_csv(self, file):
+        data = pd.read_csv(file)
+        data.drop(columns=data.columns[0], axis=1, inplace=True)
+        return data
+    
+    def train_xgboost_model(self, data):
+        """
+        Trains an XGBoost model on the provided data.
+        
+        :param data: The input data for training the model (as pandas DataFrame).
+        """
+        # Prepare features and target
+        features = data.drop(columns=['delay'])  # Assuming 'delay' is the target variable
+        target = data['delay']
+        
+        # Train-test split
+        X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+
+        # XGBoost DMatrix
+        dtrain = xgb.DMatrix(X_train, label=y_train)
+        dtest = xgb.DMatrix(X_test, label=y_test)
+
+        # Specify model parameters
+        params = {
+            'objective': 'reg:squarederror',  # Regression problem
+            'max_depth': 6,
+            'eta': 0.1,
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+            'eval_metric': 'rmse'
+        }
+        
+        # Train the model
+        self.model = xgb.train(params, dtrain, num_boost_round=100, evals=[(dtest, 'test')], early_stopping_rounds=10)
+        
+        # Evaluate model
+        predictions = self.model.predict(dtest)
+        mse = mean_squared_error(y_test, predictions)
+        print(f"Model MSE: {mse}")
+        
+    def predict(self, features):
+        """
+        Makes predictions using the trained XGBoost model.
+
+        :param features: The input features for which to make predictions (as pandas DataFrame).
+        :return: The predicted target values.
+        """
+        if self.model is None:
+            raise ValueError("Model is not trained yet.")
+        
+        dfeatures = xgb.DMatrix(features)
+        predictions = self.model.predict(dfeatures)
+        return predictions
+
+    def save_model(self, model_filename='xgboost_model.json'):
+        """
+        Saves the trained XGBoost model to a file.
+        
+        :param model_filename: Path to the file where the model will be saved.
+        """
+        if self.model is None:
+            raise ValueError("Model is not trained yet.")
+        
+        self.model.save_model(model_filename)
+        print(f"Model saved to {model_filename}")
+    
+    def load_model(self, model_filename='xgboost_model.json'):
+        """
+        Loads an XGBoost model from a file.
+        
+        :param model_filename: Path to the file where the model is stored.
+        """
+        self.model = xgb.Booster()
+        self.model.load_model(model_filename)
+        print(f"Model loaded from {model_filename}")
+
+    def infer_duration(self, operation: Operation, tool, use_truth_model=False):
+        """
+        Infers the processing duration using the trained XGBoost model.
+        
+        :param operation: Operation object containing the relevant features for inference.
+        :param tool: The tool used for the operation.
+        :param use_truth_model: Whether to use the truth model or the learned model.
+        :return: Predicted processing duration.
+        """
+        if not self.model:
+            raise ValueError("Model is not trained yet.")
+        
+        previous_machine_pause =  operation.tool != tool
+        features = {
+            'previous_machine_pause': previous_machine_pause
+            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
+        }
+
+        # Convert to DataFrame
+        feature_df = pd.DataFrame([features])
+
+        # Predict duration
+        predicted_duration = self.predict(feature_df)
+        return predicted_duration[0]
+

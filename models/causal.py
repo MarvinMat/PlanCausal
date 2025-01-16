@@ -1,18 +1,20 @@
 import pandas as pd
 import numpy as np
+import os
 from factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator, BDeuScore, TreeSearch, ExhaustiveSearch, K2Score, StructureScore, BDsScore, AICScore
 from pgmpy.inference import VariableElimination, CausalInference
 
-class CausalModelCBN:
+class CausalModel:
     def __init__(self, csv_file=None):
         # Initialisierung des gelernten Modells basierend auf CSV-Daten
         pre_csv_file = 'data/NonCausalVsCausal_CausalPlan.xlsx'  # Hier den Pfad zur CSV-Datei angeben
         csv_file = csv_file
-        self.pc_did_run = False
-        
-        self.data = self.read_from_pre_xlsx(pre_csv_file)     
+
+        # Load pre-existing data
+        self.data = self.read_from_pre_xlsx(pre_csv_file)
+         
         self.observed_data = self.read_from_observed_csv(csv_file) 
         # Check if observed_data is empty or None
         if self.observed_data is None or self.observed_data.empty:
@@ -22,6 +24,16 @@ class CausalModelCBN:
         self.avg_duration = self.get_avg_duration_from_df(self.observed_data)       
               
         self.truth_model = self.create_truth_model(self.data)       
+        # Load observed data if provided
+        self.observed_data = self.read_from_observed_csv(csv_file)
+
+        # Use observed_data if available, otherwise fall back to self.data
+        self.observed_data = self.observed_data if self.observed_data is not None and not self.observed_data.empty else self.data
+        
+        self.avg_duration = self.get_avg_duration_from_df(self.observed_data)
+
+        # Create truth model based on pre-existing data
+        self.truth_model = self.create_truth_model(self.data)
         self.true_adj_matrix = self.get_adjacency_matrix(self.truth_model.edges(), self.data.columns)
         successful_combinations = self.test_algorithms(self.data)
         print("Anzahl der erfolgreich gelernten Modelle: ", len(successful_combinations))
@@ -29,15 +41,38 @@ class CausalModelCBN:
         self.learned_model = successful_combinations[0][2]
         #self.learned_model = self.learn_model_from_data(self.observed_data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.observed_data is not None else None
 
+        # Test algorithms and select the first successful combination
+        successful_combinations = self.test_algorithms(self.data)
+        print("Number of successful learned models: ", len(successful_combinations))
+        
+        if successful_combinations:
+            # Use the first successful model
+            #self.learned_model = self.learn_model_from_data(self.observed_data, algorithm=successful_combinations[0][0], score_type=successful_combinations[0][1]) if self.observed_data is not None else None
+            self.learned_model = successful_combinations[0][2]
+        else:
+            self.learned_model = None
+            print("No successful models were found.")
+            
+
     def read_from_pre_xlsx(self, file):
         data = pd.read_excel(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)
         return data
     
     def read_from_observed_csv(self, file): 
-        data = pd.read_csv(file)
-        data.drop(columns=data.columns[0], axis=1, inplace=True)
-        return data
+        # Check if file path is provided and file exists
+        if not file or not os.path.exists(file):
+            print(f"File not found: {file}. Using truth data.")
+            return None
+
+        try:
+            # Attempt to read the CSV file
+            data = pd.read_csv(file)
+            data.drop(columns=data.columns[0], axis=1, inplace=True)
+            return data
+        except Exception as e:
+            print(f"Error reading file {file}: {e}")
+            return None
     
     def get_avg_duration_from_df(self, data):
         return data['delay'].mean()
