@@ -17,10 +17,9 @@ def compare_metrics(df_truth, df_sim):
         'makespan_diff': calculate_makespan(df_sim) - calculate_makespan(df_truth)
     }
 
-def calculate_makespan_old(df_schedule, schedule_name):
+def calculate_makespan(df_schedule, schedule_name):
     # Convert the list of operation objects to a DataFrame
     
-
     # Calculate start and end times for each job
     grouped_schedule = df_schedule.groupby('job_id').agg({'start_time': 'min', 'end_time': 'max'})
 

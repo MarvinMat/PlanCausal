@@ -1,15 +1,12 @@
 import pandas as pd
 import numpy as np
-import os
 from models.abstract.pgmpy import PGMPYModel
 from modules.factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
-from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator, BDeuScore, TreeSearch, ExhaustiveSearch, K2Score, StructureScore, BDsScore, AICScore
-from pgmpy.inference import VariableElimination, CausalInference
 
 class TruthModel(PGMPYModel):
-    def __init__(self, csv_file=None):            
+    def __init__(self):            
         self.model = self.create_model()
 
     def inference(self, operation: Operation) -> int:
@@ -26,14 +23,8 @@ class TruthModel(PGMPYModel):
         data = pd.read_excel(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)
         return data
-
-    def create_model(self):
-        model = self.predefined_structure()
-        self.safe_model(model)
-        # Save and return the learned model
-        return model
     
-    def predefined_structure(self):
+    def create_model(self):
         print("Set edges by user")
         # Defining the Bayesian network structure manually
         model = BayesianNetwork([
@@ -103,7 +94,11 @@ class TruthModel(PGMPYModel):
     def infer_duration(self, operation: Operation) -> list:
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
 
-        previous_machine_pause =  operation.tool != operation.machine.current_tool
+        if operation.machine is not None:
+            previous_machine_pause =  operation.tool != operation.machine.current_tool
+        else:
+            previous_machine_pause = True
+            
         evidence = {
             'previous_machine_pause': previous_machine_pause
             # Weitere Evidenzen können hier hinzugefügt werden, falls nötig

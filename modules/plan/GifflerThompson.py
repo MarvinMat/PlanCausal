@@ -1,5 +1,5 @@
 import heapq
-from factory.Operation import Operation
+from modules.factory.Operation import Operation
 
 class GifflerThompson:
     """GT with
@@ -62,7 +62,7 @@ class GifflerThompson:
                 qleng = len([op for op in self.schedule if current_operation.successor_operation.req_machine_group_id == op.req_machine_group_id and earliest_start_time < op.plan_start])
                 self.qlength.append([n, current_operation.successor_operation.req_machine_group_id, qleng])
                 n = n + 1
-            current_duration = self.inference(current_operation, available_times[selected_machine_idx][1])    
+            current_duration = self.inference(current_operation) #, available_times[selected_machine_idx][1])    
             end_time = earliest_start_time + current_duration
             current_operation.plan_duration = current_duration
             current_operation.plan_start = earliest_start_time

@@ -8,27 +8,29 @@ class PGMPYModel(Model):
     """
     Base class for all inference models.
     """
+    def __init__(self, model):
+        super().__init__(model)
 
     def infer_duration(self, operation: Operation) -> list:
         pass
 
-    def sample(self, model, variable={}, evidence={}, do={}) -> list:
+    def sample(self, variable={}, evidence={}, do={}) -> list:
             """
             Führt eine Inferenz auf dem gelernten Modell durch.
             """
-            if not model:
+            if not self.model:
                 raise ValueError("Kein Modell zur Inference vorhanden.")
             
             if not variable:
-                all_model_variables = self.learned_model.nodes()
+                all_model_variables = self.model.nodes()
             else:
                 all_model_variables = variable
             
             # VariableElimination für reguläre Inferenz
-            inference = VariableElimination(model)
+            inference = VariableElimination(self.model)
 
             # CausalInference-Objekt für kausale Abfragen (do-Operator)
-            causal_inference = CausalInference(model)
+            causal_inference = CausalInference(self.model)
 
             result = {}     
 
