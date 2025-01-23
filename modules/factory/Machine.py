@@ -1,4 +1,4 @@
-from factory.MachineState import State
+from modules.factory.MachineState import State
 import simpy
 
 class Machine(simpy.Resource):

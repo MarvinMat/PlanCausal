@@ -1,27 +1,29 @@
 import pandas as pd
 import numpy as np
 import xgboost as xgb
-from factory.Operation import Operation
+from modules.factory.Operation import Operation
+from models.abstract.model import Model
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
-class XGBoost:
+class XGBoost(Model):
     def __init__(self, csv_file=None):
-        # Initialization with pre-existing data and observed data
-        csv_file = csv_file
-        self.pc_did_run = False
-        
-        self.data = self.read_from_pre_xlsx(pre_csv_file)
-
         self.observed_data = self.read_from_observed_csv(csv_file)
         if self.observed_data is None or self.observed_data.empty:
-            print("No observed data found, using pre-existing data.")
-            self.observed_data = self.data  # Use the pre-existing data instead
-
+            raise ImportError("No observed data found, using pre-existing data.")
+        
         # Train XGBoost model
         self.model = None
         self.train_xgboost_model(self.observed_data)
 
+    def inference(self, operation: Operation) -> int:
+        
+        inferenced_variables = self.infer_duration(operation)
+
+        new_duration = round(operation.duration * inferenced_variables['delay'],0)
+
+        return new_duration
+    
     def read_from_observed_csv(self, file):
         data = pd.read_csv(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)

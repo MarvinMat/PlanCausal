@@ -1,9 +1,10 @@
 """
 Simpy simulation for Causal Inferencing
 """
-from factory.Machine import Machine
-from simulation.Wrapper import patch_resource
-from simulation.Monitoring.BasicMonitor import monitorResource
+from modules.factory.Machine import Machine
+from modules.simulator.Wrapper import patch_resource
+from modules.simulator.Monitoring.BasicMonitor import monitorResource
+from models.abstract.model import Model
 import simpy
 
 class Simulator:
@@ -11,12 +12,12 @@ class Simulator:
     machines = [[id, name, tools]] machine array with [id, name , array_tools]
     schedule = [Operation], array containing all scheduled operations
     monitor_data = resource monitor [0] pre , [1] post monitor
-    inference = func(operation) returning an int, as operation Duration 
+    model = includes a inference(operation) returning an int, as operation Duration 
     """
-    def __init__(self, machines, schedule, monitor_data, inference):
+    def __init__(self, machines, schedule, monitor_data, model: Model ):
         self.schedule = schedule
         self.machines = machines
-        self.inference = inference
+        self.model = model
         self.pre_resource_monitor = monitor_data[0]
         self.post_resource_monitor =  monitor_data[1]
         self.env = simpy.Environment()
@@ -51,7 +52,7 @@ class Simulator:
             operation.sim_start = self.env.now
             print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             operation.machine.current_operation = operation
-            operation.sim_duration = self.inference(operation, operation.machine.current_tool)
+            operation.sim_duration = self.model.inference(operation)
             operation.machine.current_tool = operation.machine.current_operation.tool
             
             yield self.env.timeout(operation.sim_duration) # durchführung
