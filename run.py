@@ -8,8 +8,13 @@ from models.implementations.average import AverageModel
 from modules.plan.GifflerThompson import GifflerThompson
 from modules.plan.PriorityRules import calculate_dynamic_priority, calculate_fcfs_priority
 from modules.vizualisation import GanttSchedule
+from modules.logger import Logger
 import pandas as pd
 import matplotlib.pyplot as plt
+import logging
+
+# Setting the log level for a specific category
+logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="app.log")
 
 priority_rule = calculate_dynamic_priority
 
@@ -21,13 +26,14 @@ output_plot = './output/plots'
 models = []
 try:
     models.append(TruthModel())  
-    models.append(TruthModel())  
     models.append(CausalModel(csv_file=oberserved_data_path))
     models.append(BasicModel())
     models.append(AverageModel(csv_file=oberserved_data_path))
     
 except Exception as e:
     print(f"Error initializing models: {e}")
+
+logger.debug("Start model iteration.")
 
 for model in models: 
     

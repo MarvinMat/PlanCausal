@@ -1,6 +1,7 @@
 # inference.py
 from abc import ABC, abstractmethod
 from modules.factory.Operation import Operation
+from modules.logger import Logger
 
 class Model(ABC):
     """

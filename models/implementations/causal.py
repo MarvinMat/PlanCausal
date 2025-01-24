@@ -61,7 +61,7 @@ class CausalModel(PGMPYModel):
         :return: Gelerntes BayesianNetwork-Modell.
         """
         
-        print(f"Lerne Modell mit {algorithm}-Algorithmus und {score_type}-Score")
+        #print(f"Lerne Modell mit {algorithm}-Algorithmus und {score_type}-Score")
 
         # Wähle die Scoring-Methode basierend auf den Parametern
         if score_type == 'BDeu':
