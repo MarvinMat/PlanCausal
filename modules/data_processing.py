@@ -1,6 +1,6 @@
 from modules.generators.jobs_data_generator import JobsDataGenerator
 from modules.factory.Operation import Operation
-import pandas as pd
+import os
 import random
 
 def generate_data(num_instances = 150, seed = 1):
@@ -48,11 +48,14 @@ def load_data(data, input_path):
     """
     data.from_csv(input_path, index=False)
 
-def save_data(data, output_path):
+def save_data(data, output_dir, model_name):
     """
     Save data to a CSV file.
     """
-    data.to_csv(output_path, index=False)
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, f'schedule_{model_name}.csv')
+    data.to_csv(output_file, index=False)
+    return output_file
 
 def prepare_data(jobs_data):
     """

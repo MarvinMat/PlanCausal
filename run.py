@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import logging
 
 # Setting the log level for a specific category
-logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="app.log")
+logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
 
 priority_rule = calculate_dynamic_priority
 
@@ -58,7 +58,7 @@ for model in models:
         schedule_results = pd.DataFrame([op.to_dict() for op in schedule])
         
     # Step 3: Save schedule data
-    save_data(schedule_results, "{model_name}_{output_path_schedule}" )
+    output_path = save_data(schedule_results, output_path_schedule, model_name)
 
     # Step 4: Calculate metrics
     makespan = calculate_makespan(schedule_results, model_name)
