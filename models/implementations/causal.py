@@ -3,35 +3,35 @@ import numpy as np
 import os
 from modules.factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
+from models.abstract.model import Model
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator, BDeuScore, TreeSearch, ExhaustiveSearch, K2Score, StructureScore, BDsScore, AICScore
 from models.abstract.pgmpy import PGMPYModel
 
+from models.utils import compare_structures
+
 class CausalModel(PGMPYModel):
-    def __init__(self, csv_file=None):        
-        self.observed_data = self.read_from_observed_csv(csv_file)
-
-        # Test algorithms and select the first successful combination
-        successful_combinations = self.test_algorithms(self.observed_data)
-        print("Number of successful learned models: ", len(successful_combinations))
+    def __init__(self, csv_file, truth_model=None):        
+        self.data = self.read_from_csv(csv_file)
+        self.truth_model = truth_model
         
-        if successful_combinations:
-            self.model = successful_combinations[0][2]
+        if self.truth_model is not None: 
+            # Test algorithms and select the first successful combination
+            successful_combinations = self.learn_truth_causal_model()
+            print("Number of successful learned models: ", len(successful_combinations))
+            
+            if successful_combinations:
+                self.model = successful_combinations[0][2]
+            else:
+                raise ValueError("No successful models were found.")
         else:
-            self.model = None
-            print("No successful models were found.")
-
-    
-    def inference(self, operation: Operation) -> int:
-        inferenced_variables = self.infer_duration(operation)
-        new_duration = round(operation.duration * inferenced_variables['delay'],0)
-        return new_duration
-
-    def read_from_observed_csv(self, file): 
+            self.model = self.learn_causal_model()
+        super().__init__()
+        
+    def read_from_csv(self, file): 
         # Check if file path is provided and file exists
         if not file or not os.path.exists(file):
-            print(f"File not found: {file}. Using truth data.")
-            return None
+            raise FileExistsError(f"File not found: {file}.")
 
         try:
             # Attempt to read the CSV file
@@ -39,10 +39,9 @@ class CausalModel(PGMPYModel):
             data.drop(columns=data.columns[0], axis=1, inplace=True)
             return data
         except Exception as e:
-            print(f"Error reading file {file}: {e}")
-            return None
+            raise ImportError(f"Error reading file {file}: {e}")
 
-    def learn_causal_model(self, data, algorithm='hill_climb', score_type='BDeu', equivalent_sample_size=5):
+    def learn_causal_model(self, algorithm='exhaustive', score_type='K2', equivalent_sample_size=5):
         """
         Lerne ein kausales Modell aus den gegebenen Daten mit verschiedenen Algorithmen und Score-Funktionen.
 
@@ -57,33 +56,33 @@ class CausalModel(PGMPYModel):
 
         # Wähle die Scoring-Methode basierend auf den Parametern
         if score_type == 'BDeu':
-            scoring_method = BDeuScore(data, equivalent_sample_size=equivalent_sample_size)
+            scoring_method = BDeuScore(self.data, equivalent_sample_size=equivalent_sample_size)
         elif score_type == 'Bic':
-            scoring_method = BicScore(data)
+            scoring_method = BicScore(self.data)
         elif score_type == 'K2':
-            scoring_method = K2Score(data)
+            scoring_method = K2Score(self.data)
         elif score_type == 'StructureScore':
-            scoring_method = StructureScore(data)
+            scoring_method = StructureScore(self.data)
         elif score_type == 'BDsScore':
-            scoring_method = BDsScore(data)
+            scoring_method = BDsScore(self.data)
         elif score_type == 'AICScore':
-            scoring_method = AICScore(data)    
+            scoring_method = AICScore(self.data)    
         else:
             raise ValueError(f"Unbekannter Score-Typ: {score_type}")
 
         # Algorithmusauswahl
         if algorithm == 'hill_climb':
-            search_alg = HillClimbSearch(data, use_cache=False)
+            search_alg = HillClimbSearch(self.data, use_cache=False)
             best_model = search_alg.estimate(scoring_method=scoring_method)
         elif algorithm == 'tree_search':
-            search_alg = TreeSearch(data, root_node='previous_machine_pause')  # Beispiel für TreeSearch (root_node definieren)
+            search_alg = TreeSearch(self.data, root_node='previous_machine_pause')  # Beispiel für TreeSearch (root_node definieren)
             best_model = search_alg.estimate()
         elif algorithm == 'exhaustive':
-            search_alg = ExhaustiveSearch(data, scoring_method=scoring_method, use_cache=False)
+            search_alg = ExhaustiveSearch(self.data, scoring_method=scoring_method, use_cache=False)
             best_model = search_alg.estimate()
         elif algorithm == 'pc':
             from pgmpy.estimators import PC
-            search_alg = PC(data)
+            search_alg = PC(self.data)
             search_alg.max_cond_vars = 3  # Maximale Anzahl bedingter Variablen (einstellbar)
             best_model = search_alg.estimate(significance_level=0.05)
             #return BayesianNetwork(best_model.edges())
@@ -97,21 +96,15 @@ class CausalModel(PGMPYModel):
         model.name = f"Learned_Model_{algorithm}_{score_type}"  # Setzt den Modellnamen für die spätere Speicherung
         
         # Anpassung der CPDs für das Modell basierend auf den Daten
-        model.fit(data, estimator=BayesianEstimator, prior_type="BDeu")
+        model.fit(self.data, estimator=BayesianEstimator, prior_type="BDeu")
         
         # Modellüberprüfung
         assert model.check_model()
         
-        # compare with truth graph
-        model_check = self.compare_structures(learned_model=model)
-        
-        if not model_check:
-            print('Learned model does not represent truth model')
-        
         self.safe_model(model)
         return model
     
-    def test_algorithms(self, data):
+    def learn_truth_causal_model(self):
         """
         Testet verschiedene Algorithmus- und Scoring-Kombinationen und gibt diejenigen zurück,
         die das 'truth model' korrekt nachbilden.
@@ -122,13 +115,12 @@ class CausalModel(PGMPYModel):
         successful_combinations = []
 
         # Definiere mögliche Algorithmen und Scores
-        # algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
-        # scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
+        algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
+        scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
 
         # exhaustive Search einziges Modell, bei dem zuverlässig der truth Graph gefunden wird
 
-        algorithms = ['exhaustive']
-        scores = ['K2']
+        
 
         # Iteriere über alle Algorithmus- und Score-Kombinationen
         for algorithm in algorithms:
@@ -137,10 +129,10 @@ class CausalModel(PGMPYModel):
                     print(f"Testing combination: Algorithm={algorithm}, Score={score}")
 
                     # Versuche, das Modell mit der aktuellen Kombination zu lernen
-                    learned_model = self.learn_causal_model(data, algorithm=algorithm, score_type=score)
+                    learned_model = self.learn_causal_model(self.data, algorithm=algorithm, score_type=score)
                     
                     # Überprüfe, ob das gelernte Modell der Wahrheit entspricht
-                    model_check = self.compare_structures(learned_model=learned_model)
+                    model_check = compare_structures(truth_graph=self.truth_model ,learned_model=learned_model)
 
                     if model_check:
                         print(f"Successful combination: Algorithm={algorithm}, Score={score}")
@@ -158,16 +150,25 @@ class CausalModel(PGMPYModel):
         model_graphviz = model.to_graphviz()
         model_graphviz.draw(model_filename, prog="dot")
         return model_graphviz
-
-    def infer_duration(self, operation: Operation):      
-        previous_machine_pause =  operation.tool != operation.machine.current_tool
+    
+    def get_new_duration(self, operation, inferenced_variables) -> int:
+        new_duration = round(operation.duration * inferenced_variables['delay'],0)
+        return new_duration
+    
+    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:      
+        
+        if operation.machine is not None:
+            previous_machine_pause =  operation.tool != operation.machine.current_tool
+        else:
+            previous_machine_pause = True
+            
         evidence = {
             'previous_machine_pause': previous_machine_pause
             # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
         }
 
         # Inferenz durchführen
-        result = self.infer(evidence=evidence)
+        result = self.sample(evidence=evidence)
 
         # Variablen für delay, machine_status und pre_processing initialisieren
         has_delay = False
@@ -198,12 +199,11 @@ class CausalModel(PGMPYModel):
         # Berechnung des Multiplikators
         delay = 1.2 if has_delay else 1.0
 
-        sample = {
+        inferenced_variables = {
             'previous_machine_pause': previous_machine_pause,
             'delay': delay,
             'machine_status': machine_status,
             'pre_processing': pre_processing
         }
-
-        # Rückgabe eines Dictionaries mit allen relevanten Informationen
-        return sample
+            
+        return self.get_new_duration(operation=operation, inferenced_variables=inferenced_variables), inferenced_variables

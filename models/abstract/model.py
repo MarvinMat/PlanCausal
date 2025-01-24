@@ -6,17 +6,15 @@ class Model(ABC):
     """
     Base class for all inference models.
     """
-    def __init__(self, model):
-        self.model = model
+    def __init__(self):
+        pass
     
     @abstractmethod
-    def sample(self, model) -> list:
-        pass
-
-    @abstractmethod
-    def inference(self) -> int:
-        pass
-
-    @abstractmethod
-    def infer_duration(self, operation: Operation) -> list:
+    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:
+        """
+        Inference method for planning
+        
+        Parameter 1: the new duration based on the delay
+        Parameter 2: the influencing variables, important to build the observed data
+        """
         pass

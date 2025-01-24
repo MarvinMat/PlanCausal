@@ -1,24 +1,49 @@
 import pandas as pd
 import numpy as np
 from models.abstract.pgmpy import PGMPYModel
+from models.abstract.model import Model
 from modules.factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
 class TruthModel(PGMPYModel):
-    def __init__(self):            
+    def __init__(self):    
         self.model = self.create_model()
-
-    def inference(self, operation: Operation) -> int:
- 
-        inferenced_variables = self.infer_duration(operation)
-
-        new_duration = round(operation.duration * inferenced_variables['delay'],0)
+        super().__init__()   
         
-        print(f"Operation duration was: {operation.duration} and has been changed to {new_duration}")
-        # muss noch irgendwo hin: inferenced_variables
-        return new_duration
+    
+    def sample(self, variable={}, evidence={}, do={}) -> list:
+        """
+        Führt eine Inferenz auf dem gelernten Modell durch.
+        """
+        if not self.model:
+            raise ValueError("No model for inference.")
         
+        if not variable:
+            all_model_variables = self.model.nodes()
+        else:
+            all_model_variables = variable
+
+        result = {}     
+
+        # Reguläre Inferenz ohne "do"-Intervention
+        if not any(do):
+            for variable in all_model_variables:
+                if variable not in evidence:
+                    # Nur Variablen abfragen, die nicht in der Evidenz enthalten sind
+                    query_result = self.variable_elemination.query(variables=[variable], evidence=evidence, joint=True)
+                    result[variable] = query_result
+
+        # Kausale Inferenz (do-Intervention)
+        else:
+            #print(f"Durchführung einer 'do'-Intervention: Setze 'pre_processing' auf {do}")
+            for variable in all_model_variables:
+                if variable not in evidence:
+                    do_result = self.causal_inference.query(variables=[variable], do=do, joint=True)
+                    result[variable] = do_result
+
+        return result
+            
     def read_from_pre_xlsx(self, file):
         data = pd.read_excel(file)
         data.drop(columns=data.columns[0], axis=1, inplace=True)
@@ -90,8 +115,12 @@ class TruthModel(PGMPYModel):
         model.check_model()
         
         return model
+    
+    def get_new_duration(self, operation: Operation, inferenced_variables) -> int:
+        new_duration = round(operation.duration * inferenced_variables['delay'],0)
+        return new_duration
 
-    def infer_duration(self, operation: Operation) -> list:
+    def inference(self, operation: Operation) -> list:
         # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
 
         if operation.machine is not None:
@@ -136,12 +165,11 @@ class TruthModel(PGMPYModel):
         # Berechnung des Multiplikators
         delay = 1.2 if has_delay else 1.0
 
-        sample = {
+        inferenced_variables = {
             'previous_machine_pause': previous_machine_pause,
             'delay': delay,
             'machine_status': machine_status,
             'pre_processing': pre_processing
         }
-
-        # Rückgabe eines Dictionaries mit allen relevanten Informationen
-        return sample
+        
+        return self.get_new_duration(operation, inferenced_variables), inferenced_variables

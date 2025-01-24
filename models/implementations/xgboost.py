@@ -100,7 +100,7 @@ class XGBoost(Model):
         self.model.load_model(model_filename)
         print(f"Model loaded from {model_filename}")
 
-    def infer_duration(self, operation: Operation, tool, use_truth_model=False):
+    def inference_duration(self, operation: Operation, tool, use_truth_model=False):
         """
         Infers the processing duration using the trained XGBoost model.
         

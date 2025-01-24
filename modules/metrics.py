@@ -1,14 +1,5 @@
 import pandas as pd
 
-def calculate_makespan(df_schedule):
-    """
-    Calculate makespan for a given schedule.
-    """
-    grouped_schedule = df_schedule.groupby('job_id')
-    start_times = grouped_schedule['start_time'].min()
-    end_times = grouped_schedule['end_time'].max()
-    return (end_times - start_times).max()
-
 def compare_metrics(df_truth, df_sim):
     """
     Compare metrics between truth and simulated schedules.
@@ -31,3 +22,5 @@ def calculate_makespan(df_schedule, schedule_name):
 
     # Output the results with the schedule name
     print(f"{schedule_name} | {average_makespan} time units")
+    
+    return average_makespan

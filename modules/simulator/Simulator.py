@@ -14,8 +14,10 @@ class Simulator:
     monitor_data = resource monitor [0] pre , [1] post monitor
     model = includes a inference(operation) returning an int, as operation Duration 
     """
-    def __init__(self, machines, schedule, monitor_data, model: Model ):
+    def __init__(self, machines, schedule, monitor_data, model: Model , oberserved_data_path):
         self.schedule = schedule
+        self.oberserved_data_path = oberserved_data_path
+        self.observed_data = []
         self.machines = machines
         self.model = model
         self.pre_resource_monitor = monitor_data[0]
@@ -34,7 +36,7 @@ class Simulator:
         spend some time doing the operation
         """
         plan_start = operation.plan_start if operation.plan_start is not None else 0 
-        print(plan_start)
+        #print(plan_start)
         delay =  plan_start - self.env.now 
         #print(f'{env.now}, job: {job_id}, task_id: {task_id}, created; waiting for start {delay}')    
         yield self.env.timeout(delay)
@@ -46,13 +48,14 @@ class Simulator:
         # TODO: 
         # Yield all prececent operations on resource q
 
-        print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
+        #print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
         with operation.machine.request() as req:
             yield req
             operation.sim_start = self.env.now
-            print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
+            #print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             operation.machine.current_operation = operation
-            operation.sim_duration = self.model.inference(operation)
+            operation.sim_duration, influenced_variables = self.model.inference(operation)
+            self.observed_data.append(influenced_variables)
             operation.machine.current_tool = operation.machine.current_operation.tool
             
             yield self.env.timeout(operation.sim_duration) # durchführung
@@ -60,7 +63,7 @@ class Simulator:
         operation.sim_end = self.env.now
         operation.machine.current_operation = None
         operation.machine.history.append(operation)
-        print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
+        #print(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
 
 
     def build_pools(self, pool_data):

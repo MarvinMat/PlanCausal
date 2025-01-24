@@ -1,8 +1,9 @@
 from modules.simulator.Simulator import Simulator
 from modules.simulator.Monitoring.BasicMonitor import monitorResource
 from functools import partial
+from modules.factory.Operation import Operation
 
-def run_simulation(machines, operations, inference_func, plan_name="plan"):
+def run_simulation(machines, operations, model, oberserved_data_path) -> list[Operation]:
     """
     Execute a simulation using a given plan and operations.
     """
@@ -15,8 +16,9 @@ def run_simulation(machines, operations, inference_func, plan_name="plan"):
     sim = Simulator(machines
                     , operations
                     , monitor
-                    , inference_func)
+                    , model,
+                    oberserved_data_path)
 
     sim.env.run(12000)
     
-    return data 
+    return sim.schedule 
