@@ -12,8 +12,16 @@ from models.utils import compare_structures
 
 class CausalModel(PGMPYModel):
     def __init__(self, csv_file, truth_model=None):        
-        self.data = self.read_from_csv(csv_file)
+        super().__init__()
+        self.csv_file = csv_file
         self.truth_model = truth_model
+        self.model = None
+        self.variable_elemination = None
+        self.belief_propagation = None
+        self.causal_inference = None
+        
+    def initialize(self):
+        self.data = self.read_from_csv(self.csv_file)
         
         if self.truth_model is not None: 
             # Test algorithms and select the first successful combination
@@ -26,7 +34,8 @@ class CausalModel(PGMPYModel):
                 raise ValueError("No successful models were found.")
         else:
             self.model = self.learn_causal_model()
-        super().__init__()
+        
+        super().initialize()
         
     def read_from_csv(self, file): 
         # Check if file path is provided and file exists

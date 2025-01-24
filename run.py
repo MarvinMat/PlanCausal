@@ -7,14 +7,20 @@ from models.implementations.basic import BasicModel
 from models.implementations.average import AverageModel
 from modules.plan.GifflerThompson import GifflerThompson
 from modules.plan.PriorityRules import calculate_dynamic_priority, calculate_fcfs_priority
+from modules.vizualisation import GanttSchedule
 import pandas as pd
+import matplotlib.pyplot as plt
+
+priority_rule = calculate_dynamic_priority
 
 # File paths
-output_path_schedule = "output/results/simulation_results.csv"
-oberserved_data_path = "input/observed_data.csv"
+output_path_schedule = "./output/results/"
+oberserved_data_path = "./data/data_observe.csv"
+output_plot = './output/plots'
 
 models = []
 try:
+    models.append(TruthModel())  
     models.append(TruthModel())  
     models.append(CausalModel(csv_file=oberserved_data_path))
     models.append(BasicModel())
@@ -25,12 +31,14 @@ except Exception as e:
 
 for model in models: 
     
+    model.initialize()
+    
     # Load and prepare data
     operations, machines = generate_data(num_instances=150)
     model_name = type(model).__name__
 
     # Step 1: Create plan    
-    plan = GifflerThompson(calculate_dynamic_priority, model.inference)
+    plan = GifflerThompson(priority_rule, model.inference)
     schedule = plan.giffen_thompson(operations, machines)
     
     schedule_results = None
@@ -44,8 +52,10 @@ for model in models:
         schedule_results = pd.DataFrame([op.to_dict() for op in schedule])
         
     # Step 3: Save schedule data
-    save_data(schedule_results, "{model_name}_{output_path_schedule} " )
+    save_data(schedule_results, "{model_name}_{output_path_schedule}" )
 
     # Step 4: Calculate metrics
     makespan = calculate_makespan(schedule_results, model_name)
-    print(f"Simulation Makespan: {makespan}")
+    
+    # Step 5: Calculate metrics
+    output_path = GanttSchedule.create(schedule_results, output_plot, model_name)

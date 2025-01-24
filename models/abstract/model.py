@@ -10,6 +10,13 @@ class Model(ABC):
         pass
     
     @abstractmethod
+    def initialize(self):
+        """
+        Create the model if required
+        """
+        pass
+    
+    @abstractmethod
     def inference(self, operation: Operation) -> tuple[int, list[tuple]]:
         """
         Inference method for planning

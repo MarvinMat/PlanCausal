@@ -8,9 +8,15 @@ from pgmpy.factors.discrete import TabularCPD
 
 class TruthModel(PGMPYModel):
     def __init__(self):    
-        self.model = self.create_model()
-        super().__init__()   
+        self.model = None
+        self.variable_elemination = None
+        self.belief_propagation = None
+        self.causal_inference = None
+        super().__init__() 
         
+    def initialize(self):
+        self.model = self.create_model()
+        super().initialize()
     
     def sample(self, variable={}, evidence={}, do={}) -> list:
         """
@@ -50,7 +56,6 @@ class TruthModel(PGMPYModel):
         return data
     
     def create_model(self):
-        print("Set edges by user")
         # Defining the Bayesian network structure manually
         model = BayesianNetwork([
             ('previous_machine_pause', 'machine_status'),

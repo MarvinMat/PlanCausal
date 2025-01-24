@@ -1,11 +1,15 @@
 from modules.generators.jobs_data_generator import JobsDataGenerator
 from modules.factory.Operation import Operation
 import pandas as pd
+import random
 
-def generate_data(num_instances = 150):
+def generate_data(num_instances = 150, seed = 1):
     """
     Generate data from a template.
     """
+    
+    random.seed(42)
+    
     # Beispielhafte Datenstruktur
     # Produkt, Arbeitsgang, Maschinengruppe, Tool, geplante Dauer, Nachfolger
     template_jobs_data = [

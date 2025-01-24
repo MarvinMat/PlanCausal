@@ -2,27 +2,37 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from modules.factory.Operation import Operation
 import math
+import os
 
 class GanttSchedule:
 
-    def create(schedule: list[Operation]) -> plt:
-        # Daten in ein DataFrame konvertieren
-        df = pd.DataFrame([op.to_dict_sim() for op in schedule])
+    @staticmethod
+    def create(schedule: pd.DataFrame, output_dir: str, model_name: str) -> str:
+        """
+        Create a Gantt chart and save it to a configurable path with the model name included.
 
-        size_height = math.ceil(df["machine"].count().itemsize / 3)
+        Args:
+            schedule (list[Operation]): List of operations to plot.
+            output_dir (str): Base directory for saving the output.
+            model_name (str): Name of the model, used in the output filename.
+
+        Returns:
+            str: Full path to the saved Gantt chart.
+        """
+        size_height = math.ceil(schedule["machine"].count().itemsize / 3)
         # Gantt-Diagramm erstellen
         fig, ax = plt.subplots(figsize=(24, size_height))
 
         # Maschinen als y-Werte für die Balken
-        machines = df['machine'].unique()
+        machines = schedule['machine'].unique()
         machine_to_y = {machine: i for i, machine in enumerate(machines)}
 
         # Erstelle eine Colormap für die job_ids
-        unique_jobs = df['job_id'].unique()
+        unique_jobs = schedule['job_id'].unique()
         job_colors = {job_id: plt.cm.get_cmap('tab20')(i / len(unique_jobs)) for i, job_id in enumerate(unique_jobs)}
 
         # Iteriere über jede Zeile des DataFrames
-        for i, row in df.iterrows():
+        for i, row in schedule.iterrows():
             start = row['start_time']
             duration = row['duration']
             job_id = row['job_id']
@@ -44,13 +54,20 @@ class GanttSchedule:
         ax.set_yticks(list(machine_to_y.values()))
         ax.set_yticklabels(list(machine_to_y.keys()))
         ax.set_title('Gantt Chart')
-        max_time = df['start_time'].max() + df['duration'].max()  # Determine max time to cover full range
+        max_time = schedule['start_time'].max() + schedule['duration'].max()  # Determine max time to cover full range
         ax.set_xticks(range(0, math.ceil(max_time) + 1, 5))
 
         # Grid anzeigen
         ax.grid(True)
 
-        # Diagramm anzeigen
-        plt.show()
+        # Ensure the output directory exists
+        os.makedirs(output_dir, exist_ok=True)
 
-        return plt
+        # Construct the output filename and path
+        output_file = os.path.join(output_dir, f'gantt_chart_{model_name}.png')
+
+        # Save the figure
+        fig.savefig(output_file, dpi=300, bbox_inches='tight')
+
+        # Return the full path to the saved chart
+        return output_file

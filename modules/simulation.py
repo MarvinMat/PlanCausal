@@ -21,4 +21,6 @@ def run_simulation(machines, operations, model, oberserved_data_path) -> list[Op
 
     sim.env.run(12000)
     
+    sim.write_data()
+    
     return sim.schedule 

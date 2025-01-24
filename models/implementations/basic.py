@@ -5,6 +5,9 @@ class BasicModel(Model):
 
     def __init__(self):
         super().__init__()
+    
+    def initialize(self):
+        return super().initialize()
 
     def get_new_duration(self, operation: Operation) -> int:
         return operation.duration

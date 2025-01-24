@@ -5,6 +5,7 @@ from modules.factory.Machine import Machine
 from modules.simulator.Wrapper import patch_resource
 from modules.simulator.Monitoring.BasicMonitor import monitorResource
 from models.abstract.model import Model
+import pandas as pd
 import simpy
 
 class Simulator:
@@ -123,3 +124,8 @@ class Simulator:
         t = self.env.process(t)
 
         return t
+
+    def write_data(self):
+        df_observed_data = pd.DataFrame(self.observed_data)
+        return df_observed_data.to_csv(self.oberserved_data_path)
+        

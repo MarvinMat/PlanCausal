@@ -9,12 +9,15 @@ class PGMPYModel(Model):
     """
     def __init__(self):
         super().__init__()
+        
+    def initialize(self):
         # Inference-Objekte für reguläre Inferenz
         self.variable_elemination = VariableElimination(self.model)
         self.belief_propagation = BeliefPropagation(self.model)
 
         # CausalInference-Objekt für kausale Abfragen (do-Operator)
         self.causal_inference = CausalInference(self.model)
+        return super().initialize()
 
     def inference(self) -> tuple[int, list[tuple]]:
         raise NotImplementedError("This method must be implemented in derived classes.")
