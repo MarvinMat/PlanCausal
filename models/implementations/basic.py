@@ -2,6 +2,9 @@ from models.abstract.model import Model
 from modules.factory.Operation import Operation
 
 class BasicModel(Model):
+    """
+    Model using the opertion fix times
+    """
 
     def __init__(self):
         super().__init__()

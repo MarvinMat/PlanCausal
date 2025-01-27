@@ -10,7 +10,7 @@ from models.abstract.pgmpy import PGMPYModel
 
 from models.utils import compare_structures
 
-class CausalModel(PGMPYModel):
+class CausalModel(PGMPYModel):    
     def __init__(self, csv_file, truth_model=None):        
         super().__init__()
         self.csv_file = csv_file

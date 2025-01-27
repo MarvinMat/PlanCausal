@@ -10,7 +10,6 @@ from modules.plan.PriorityRules import calculate_dynamic_priority, calculate_fcf
 from modules.vizualisation import GanttSchedule
 from modules.logger import Logger
 import pandas as pd
-import matplotlib.pyplot as plt
 import logging
 
 # Setting the log level for a specific category
@@ -44,6 +43,7 @@ for model in models:
     model_name = type(model).__name__
 
     # Step 1: Create plan    
+    # TODO: must this be the basic giffler thompson plan - but with inferencing while simulation with something the truth?
     plan = GifflerThompson(priority_rule, model.inference)
     schedule = plan.giffen_thompson(operations, machines)
     
@@ -63,5 +63,5 @@ for model in models:
     # Step 4: Calculate metrics
     makespan = calculate_makespan(schedule_results, model_name)
     
-    # Step 5: Calculate metrics
+    # Step 5: Create GanttCharts
     output_path = GanttSchedule.create(schedule_results, output_plot, model_name)

@@ -1,13 +1,16 @@
-# PlanCausal-Framework
+<p align="center">
+  <img src="docs/Logo_PlanCausal.png" alt="PlanCausal Framework Logo" width="250">
+</p>
+
+# PlanCausal
+
+[![Python](https://img.shields.io/badge/python-%3E%3D3.8-blue)](https://www.python.org/downloads/)
+[![Platform](https://img.shields.io/badge/platform-Ubuntu%2020.04-orange)](https://releases.ubuntu.com/20.04/)
+[![License](https://img.shields.io/github/license/MarvinMat/PlanCausal)](LICENSE)
 
 Tooling to create, learn and integrate causality into production planning.
 
 # Getting Started
-
-## Prerequisites
-
-Python > 3.8
-(tested) Ubuntu 20.4
 
 ## Installation
 
@@ -29,4 +32,7 @@ git clone https://github.com/MarvinMat/PlanCausal.git
     ```
     pip install -r requirements.txt
     ```
-3. Execute simulation.ipynb
+3. Execute run.py
+    ```
+    python3 run.py
+    ```
