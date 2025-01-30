@@ -1,12 +1,13 @@
 import heapq
 from modules.factory.Operation import Operation
+from modules.plan.PriorityRules import get_priority
 
 class GifflerThompson:
     """GT with
     priority rule = func(args...) # implement required (spt, mdd, spr...)
     inference = func(task) # inference module to predict times default inference is = """
-    def __init__(self, priority_rule, inference):
-        self.priority_rule = priority_rule
+    def __init__(self, rule_name, inference):
+        self.rule_name = rule_name
         self.inference = inference
         self.schedule = []
         self.qlength = []
@@ -15,7 +16,7 @@ class GifflerThompson:
         temp_heap = []
         while ready_operations:
             _,_, operation = heapq.heappop(ready_operations)
-            new_priority = self.priority_rule(operation)
+            new_priority = get_priority(operation=operation,rule_name=self.rule_name)
             heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + str(operation.operation_id)), operation))
         return temp_heap
 
@@ -35,7 +36,7 @@ class GifflerThompson:
                 operation.successor_operation = next_operation
                 next_operation.predecessor_operations.append(operation)
             if not operation.predecessor_operations:
-                priority = self.priority_rule(operation)
+                priority = get_priority(operation=operation,rule_name=self.rule_name)
                 heapq.heappush(ready_operations, (priority, (str(operation.job_id) + str(operation.operation_id)), operation))
                 inserted_operations.add(operation)
         n = 0
@@ -78,7 +79,7 @@ class GifflerThompson:
                     earliest_start = max(pred.plan_end for pred in successor.predecessor_operations)
                     successor.plan_start = max(earliest_start, end_time)
                     # Füge die Nachfolgeaufgabe zur Heap-Warteschlange hinzu
-                    priority = self.priority_rule(successor)
+                    priority = get_priority(operation=successor,rule_name=self.rule_name)
                     heapq.heappush(ready_operations, (priority, (str(current_operation.job_id) + str(current_operation.operation_id)), successor))
                     inserted_operations.add(successor)
 

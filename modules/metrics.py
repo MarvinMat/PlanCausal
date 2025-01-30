@@ -1,14 +1,14 @@
 import pandas as pd
 
-def compare_metrics(df_truth, df_sim):
+def compare_metrics(schedule_truth, schedule_compare):
     """
     Compare metrics between truth and simulated schedules.
     """
     return {
-        'makespan_diff': calculate_makespan(df_sim) - calculate_makespan(df_truth)
+        'makespan_diff': round(calculate_makespan(schedule_compare) - calculate_makespan(schedule_truth),0)
     }
 
-def calculate_makespan(df_schedule, schedule_name):
+def calculate_makespan(df_schedule):
     # Convert the list of operation objects to a DataFrame
     
     # Calculate start and end times for each job
@@ -19,8 +19,5 @@ def calculate_makespan(df_schedule, schedule_name):
 
     # Calculate the average makespan across all jobs
     average_makespan = grouped_schedule['makespan'].mean()
-
-    # Output the results with the schedule name
-    print(f"{schedule_name} | {average_makespan} time units")
     
     return average_makespan

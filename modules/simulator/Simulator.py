@@ -6,6 +6,7 @@ from modules.simulator.Wrapper import patch_resource
 from modules.simulator.Monitoring.BasicMonitor import monitorResource
 from models.abstract.model import Model
 from modules.logger import Logger
+import logging
 import pandas as pd
 import simpy
 
@@ -28,7 +29,7 @@ class Simulator:
         self.pools = self.build_pools(machines)
         self.build_jobs()
         # Now, only warnings and errors will be displayed for "Module1"
-        self.sim_logger = Logger.get_logger(category="Simulation")
+        self.logger = Logger.get_logger(category="Simulation", level=logging.DEBUG, log_to_file=False, log_filename="output/logs/simulation.log")
         
     def operation(self, operation, precedent_tasks):
         """
@@ -42,21 +43,21 @@ class Simulator:
         plan_start = operation.plan_start if operation.plan_start is not None else 0 
         #print(plan_start)
         delay =  plan_start - self.env.now 
-        #self.sim_logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, created; waiting for start {delay}')    
+        #self.logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, created; waiting for start {delay}')    
         yield self.env.timeout(delay)
 
-        #self.sim_logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, waiting for presedents')
+        #self.logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, waiting for presedents')
         
         yield self.env.all_of(precedent_tasks)
 
         # TODO: 
         # Yield all prececent operations on resource q
 
-        self.sim_logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
+        self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
         with operation.machine.request() as req:
             yield req
             operation.sim_start = self.env.now
-            self.sim_logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
+            self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             operation.machine.current_operation = operation
             operation.sim_duration, influenced_variables = self.model.inference(operation)
             self.observed_data.append(influenced_variables)
@@ -67,7 +68,7 @@ class Simulator:
         operation.sim_end = self.env.now
         operation.machine.current_operation = None
         operation.machine.history.append(operation)
-        self.sim_logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
+        self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
 
 
     def build_pools(self, pool_data):

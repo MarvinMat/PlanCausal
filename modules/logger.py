@@ -48,19 +48,19 @@ class Logger:
 
     @classmethod
     def get_logger(cls, category="General", level=logging.INFO, log_to_file=False, log_filename=None):
-        """
-        Returns a logger instance, configured per category.
-        """
-        # Configure the logger if it's not already done
-        if not hasattr(cls, "_global_logger"):
-            cls._configure_default_logger(level, log_to_file, log_filename)
-
         logger = logging.getLogger(category)
-
-        # Set the log level for each category (individual category levels)
+        logger.propagate = False  # Disable propagation
         logger.setLevel(level)
 
-        # Return the configured logger instance
+        if not logger.handlers:  # Add handlers only once
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            console_handler = logging.StreamHandler()
+            console_handler.setFormatter(formatter)
+            logger.addHandler(console_handler)
+            if log_to_file and log_filename:
+                file_handler = logging.FileHandler(log_filename)
+                file_handler.setFormatter(formatter)
+                logger.addHandler(file_handler)
         return logger
 
     @classmethod
