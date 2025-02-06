@@ -7,8 +7,8 @@ class PGMPYModel(Model):
     """
     Base class for all inference models.
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, seed = None):
+        super().__init__(seed=seed)
         
     def initialize(self):
         # Inference-Objekte für reguläre Inferenz

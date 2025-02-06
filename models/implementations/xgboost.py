@@ -100,18 +100,27 @@ class XGBoost(Model):
         self.model.load_model(model_filename)
         print(f"Model loaded from {model_filename}")
 
-    def inference_duration(self, operation: Operation, tool, use_truth_model=False):
+    def inference_duration(self, operation: Operation):
         """
         Infers the processing duration using the trained XGBoost model.
         
         :param operation: Operation object containing the relevant features for inference.
-        :param tool: The tool used for the operation.
         :param use_truth_model: Whether to use the truth model or the learned model.
         :return: Predicted processing duration.
         """
         if not self.model:
             raise ValueError("Model is not trained yet.")
         
+        if operation.machine is not None:
+            previous_machine_pause =  operation.tool != operation.machine.current_tool
+        else:
+            previous_machine_pause = True
+            
+        evidence = {
+            'previous_machine_pause': previous_machine_pause
+            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
+        }
+
         previous_machine_pause =  operation.tool != tool
         features = {
             'previous_machine_pause': previous_machine_pause

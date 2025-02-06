@@ -7,16 +7,19 @@ from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
 class TruthModel(PGMPYModel):
-    def __init__(self):    
+    def __init__(self, seed = None):    
+        super().__init__(seed=seed) 
         self.model = None
         self.variable_elemination = None
         self.belief_propagation = None
         self.causal_inference = None
-        super().__init__() 
+        self.seed = seed
+        
         
     def initialize(self):
         self.model = self.create_model()
         super().initialize()
+
     
     def sample(self, variable={}, evidence={}, do={}) -> list:
         """

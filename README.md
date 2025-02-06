@@ -10,6 +10,14 @@
 
 Tooling to create, learn and integrate causality into production planning.
 
+# What you get
+
+Implement your own inference model and compare it!
+
+<p align="center">
+  <img src="docs/result_table.png" alt="PlanCausal Framework Logo" width="500">
+</p>
+
 # Getting Started
 
 ## Installation
@@ -21,7 +29,7 @@ Steps to install or set up the project locally.
 git clone https://github.com/MarvinMat/PlanCausal.git
 ```
 
-## How to run?
+## Quickstart
 
 1. Create and activate .venv
     ```
@@ -36,3 +44,4 @@ git clone https://github.com/MarvinMat/PlanCausal.git
     ```
     python3 run.py
     ```
+

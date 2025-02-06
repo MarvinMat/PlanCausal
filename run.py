@@ -1,10 +1,13 @@
-from modules.data_processing import generate_data, save_data, prepare_data
+from modules.data_processing import generate_data, save_data
 from modules.simulation import run_simulation
-from modules.metrics import calculate_makespan, compare_metrics
+from modules.metrics import calculate_makespan, compare_all_schedules, print_comparison_table
 from models.implementations.causal import CausalModel
 from models.implementations.truth import TruthModel
 from models.implementations.basic import BasicModel
 from models.implementations.average import AverageModel
+from models.implementations.normal_distribution import NormalDistributionModel
+from models.implementations.exponential_distribution import ExponentialDistributionModel
+from models.implementations.kde_distribution import KDEDistributionModel
 from modules.plan.GifflerThompson import GifflerThompson
 from modules.vizualisation import GanttSchedule
 from modules.logger import Logger
@@ -29,7 +32,9 @@ def parse_arguments():
     parser.add_argument("--priority_rule", type=str, default="dynamic", choices=["dynamic", "fcfs"], help="Priority rule to use: 'dynamic' or 'fcfs'.")
     parser.add_argument("--instances", type=int, default=150, help="Number of instances for data generation.")
     parser.add_argument("--output", type=str, default="./output/results/", help="Output path for schedule data.")
+    parser.add_argument("--seed", type=int, help="Seed for random generators.")
     parser.add_argument("--observed_data", type=str, default="./data/data_observe.csv", help="Path to observed data CSV.")
+    parser.add_argument("--result_data", type=str, default="./output/results/schedule_TruthModel.csv", help="Path to result data CSV.")
     parser.add_argument("--plots", type=str, default="./output/plots", help="Output path for Gantt plots.")
     return parser.parse_args()
 
@@ -39,10 +44,13 @@ def main():
     
     models = []
     try:
-        models.append(TruthModel())  
+        models.append(TruthModel(seed=args.seed))  
         models.append(CausalModel(csv_file=args.observed_data))
         models.append(BasicModel())
         models.append(AverageModel(csv_file=args.observed_data)) 
+        models.append(NormalDistributionModel(csv_file=args.result_data, seed=args.seed))
+        models.append(ExponentialDistributionModel(csv_file=args.result_data, seed=args.seed))
+        models.append(KDEDistributionModel(csv_file=args.result_data, seed= args.seed))
     except Exception as e:
         logger.error(f"Error initializing models: {e}")
         return
@@ -91,9 +99,7 @@ def main():
     # Perform evaluation
     if args.evaluate:
         logger.debug("Comapre each schedule with the simulated one.")
-        for schedule in schedules:
-            makespan_dif = compare_metrics(schedules[TruthModel.__name__], schedules[schedule])
-            logger.debug(f"{TruthModel.__name__} vs {schedule} | {makespan_dif} dif time units")
+        print_comparison_table(compare_all_schedules(schedules=schedules, truth_model_name=TruthModel.__name__))
             
 if __name__ == "__main__":
     main()

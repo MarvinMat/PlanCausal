@@ -1,7 +1,7 @@
 
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
-from models.core.model import Model
+from models.abstract.model import Model
 import numpy as np
 
 class HybridModel(Model):

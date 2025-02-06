@@ -1,6 +1,7 @@
 from modules.generators.jobs_data_generator import JobsDataGenerator
 from modules.factory.Operation import Operation
 import os
+from typing import List
 import random
 
 def generate_data(num_instances = 150, seed = 1):
@@ -57,7 +58,7 @@ def save_data(data, output_dir, model_name):
     data.to_csv(output_file, index=False)
     return output_file
 
-def prepare_data(jobs_data):
+def prepare_data(jobs_data) -> List[Operation]:
     """
     Convert raw jobs data into Operation objects.
     """

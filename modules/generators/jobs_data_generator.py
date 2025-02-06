@@ -27,7 +27,8 @@ class JobsDataGenerator:
         for i in range(3, 3 + num_instances):
             product_type = random.choices(product_types, weights=[relation[p] for p in product_types])[0]
             product_data = self.product_groups.get_group(product_type).copy()
-            product_data['product'] = f'p{i}'
+            product_data['product'] = f'job{i}'
+            product_data['product_type'] = product_type
             new_jobs_data.append(product_data)
         
         new_jobs_data = pd.concat(new_jobs_data).reset_index(drop=True)
