@@ -3,7 +3,7 @@ from modules.factory.Operation import Operation
 
 class BasicModel(Model):
     """
-    Model using the opertion fix times
+    Model using the opertion fix times / no changes
     """
 
     def __init__(self):

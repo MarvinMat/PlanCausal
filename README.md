@@ -42,6 +42,6 @@ git clone https://github.com/MarvinMat/PlanCausal.git
     ```
 3. Execute run.py
     ```
-    python3 run.py
+    python3 run.py --priority_rule fcfs --seed 447 --evaluate
     ```
 

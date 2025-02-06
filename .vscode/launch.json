@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--evaluate"]
+            "args": ["--seed", "447", "--priority_rule", "fcfs", "--evaluate"]
         }
     ]
 }

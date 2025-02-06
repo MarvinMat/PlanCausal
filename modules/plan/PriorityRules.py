@@ -1,3 +1,6 @@
+from modules.factory.Operation import Operation
+import re
+
 # Define a priority rule
 def calculate_dynamic_priority(operation) -> int:
     # Priorität basierend auf der geplanten Startzeit der Vorgängeraufgaben
@@ -7,7 +10,7 @@ def calculate_dynamic_priority(operation) -> int:
         return max(pred.plan_start for pred in operation.predecessor_operations) + operation.duration
 
 # Define a priority rule
-def calculate_fcfs_priority(operation) -> int:
+def calculate_fcfs_priority(operation: Operation) -> int:
      """
      Calculate the First-Come-First-Serve (FCFS) priority for the given operation.
      
@@ -19,7 +22,7 @@ def calculate_fcfs_priority(operation) -> int:
      """
      # Use the planned start time as the FCFS priority, assuming earlier times have higher priority.
      # If plan_start is None, return a large number to deprioritize unscheduled operations.
-     return int(operation.job_id[1:] + str(operation.operation_id))
+     return int(re.sub(r"\D", "", operation.job_id) + str(operation.operation_id))
      #return operation.plan_start if operation.plan_start is not None else float('inf')
      
 # Mapping of priority rules

@@ -9,7 +9,7 @@ def generate_data(num_instances = 150, seed = 1):
     Generate data from a template.
     """
     
-    random.seed(42)
+    random.seed(seed)
     
     # Beispielhafte Datenstruktur
     # Produkt, Arbeitsgang, Maschinengruppe, Tool, geplante Dauer, Nachfolger
