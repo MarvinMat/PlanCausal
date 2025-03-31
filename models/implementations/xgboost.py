@@ -20,7 +20,7 @@ class XGBoost(Model):
         
         inferenced_variables = self.infer_duration(operation)
 
-        new_duration = round(operation.duration * inferenced_variables['delay'],0)
+        new_duration = round(operation.duration * inferenced_variables['relative_processing_time_deviation'],0)
 
         return new_duration
     
@@ -36,8 +36,8 @@ class XGBoost(Model):
         :param data: The input data for training the model (as pandas DataFrame).
         """
         # Prepare features and target
-        features = data.drop(columns=['delay'])  # Assuming 'delay' is the target variable
-        target = data['delay']
+        features = data.drop(columns=['relative_processing_time_deviation'])  # Assuming 'relative_processing_time_deviation' is the target variable
+        target = data['relative_processing_time_deviation']
         
         # Train-test split
         X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)

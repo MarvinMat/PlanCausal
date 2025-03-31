@@ -4,6 +4,7 @@ from modules.factory.Operation import Operation
 from modules.logger import Logger
 import random
 import numpy as np
+import logging
 
 class Model(ABC):
     """
@@ -11,6 +12,8 @@ class Model(ABC):
     """
     def __init__(self, seed=None):
         self.seed = seed
+        self.logger = Logger.get_global_logger(category="Model", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
+
     
     @abstractmethod
     def initialize(self):

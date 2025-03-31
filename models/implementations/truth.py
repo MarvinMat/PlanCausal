@@ -19,39 +19,6 @@ class TruthModel(PGMPYModel):
     def initialize(self):
         self.model = self.create_model()
         super().initialize()
-
-    
-    def sample(self, variable={}, evidence={}, do={}) -> list:
-        """
-        Führt eine Inferenz auf dem gelernten Modell durch.
-        """
-        if not self.model:
-            raise ValueError("No model for inference.")
-        
-        if not variable:
-            all_model_variables = self.model.nodes()
-        else:
-            all_model_variables = variable
-
-        result = {}     
-
-        # Reguläre Inferenz ohne "do"-Intervention
-        if not any(do):
-            for variable in all_model_variables:
-                if variable not in evidence:
-                    # Nur Variablen abfragen, die nicht in der Evidenz enthalten sind
-                    query_result = self.variable_elemination.query(variables=[variable], evidence=evidence, joint=True)
-                    result[variable] = query_result
-
-        # Kausale Inferenz (do-Intervention)
-        else:
-            #print(f"Durchführung einer 'do'-Intervention: Setze 'pre_processing' auf {do}")
-            for variable in all_model_variables:
-                if variable not in evidence:
-                    do_result = self.causal_inference.query(variables=[variable], do=do, joint=True)
-                    result[variable] = do_result
-
-        return result
             
     def read_from_pre_xlsx(self, file):
         data = pd.read_excel(file)
@@ -61,62 +28,63 @@ class TruthModel(PGMPYModel):
     def create_model(self):
         # Defining the Bayesian network structure manually
         model = BayesianNetwork([
-            ('previous_machine_pause', 'machine_status'),
-            ('machine_status', 'delay'),
-            ('machine_status', 'pre_processing'),
-            ('pre_processing', 'delay')
+            ('last_tool_change', 'machine_state'),
+            ('machine_state', 'relative_processing_time_deviation'),
+            ('machine_state', 'cleaning'),
+            ('cleaning', 'relative_processing_time_deviation')
         ])
         
         # Define CPDs
-        # CPD for 'previous_machine_pause' (root node, no parents)
-        cpd_previous_machine_pause = TabularCPD(
-            variable='previous_machine_pause', 
+        # CPD for 'last_tool_change' (root node, no parents)
+        cpd_last_tool_change = TabularCPD(
+            variable='last_tool_change', 
             variable_card=2,  # 2 states: 0 and 1
-            values=[[0.8], [0.2]]  # P(previous_machine_pause=0)=0.8, P(previous_machine_pause=1)=0.2
+            values=[[0.8], [0.2]]  # P(last_tool_change=0)=0.8, P(last_tool_change=1)=0.2
         )
         
-        # CPD for 'machine_status' (dependent on 'previous_machine_pause')
-        cpd_machine_status = TabularCPD(
-            variable='machine_status', 
+        # CPD for 'machine_state' (dependent on 'last_tool_change')
+        cpd_machine_state = TabularCPD(
+            variable='machine_state', 
             variable_card=2,  # 2 states: 0 and 1
             values=[
-                [0.9, 0.3],  # P(machine_status=0 | previous_machine_pause)
-                [0.1, 0.7]   # P(machine_status=1 | previous_machine_pause)
+                [0.9, 0.4],  # P(machine_state=0 | last_tool_change)
+                [0.1, 0.6]   # P(machine_state=1 | last_tool_change)
             ],
-            evidence=['previous_machine_pause'],  # Parent node
+            evidence=['last_tool_change'],  # Parent node
             evidence_card=[2]  # Number of states of parent
         )
         
-        # CPD for 'pre_processing' (dependent on 'machine_status')
-        cpd_pre_processing = TabularCPD(
-            variable='pre_processing', 
+        # CPD for 'cleaning' (dependent on 'machine_state')
+        cpd_cleaning = TabularCPD(
+            variable='cleaning', 
             variable_card=2,  # 2 states: 0 and 1
             values=[
-                [0.6, 0.4],  # P(pre_processing=0 | machine_status)
-                [0.4, 0.6]   # P(pre_processing=1 | machine_status)
+                [0.95, 0.15],  # P(cleaning=0 | machine_state)
+                [0.05, 0.85]   # P(cleaning=1 | machine_state)
             ],
-            evidence=['machine_status'],  # Parent node
+            evidence=['machine_state'],  # Parent node
             evidence_card=[2]  # Number of states of parent
         )
         
-        # CPD for 'delay' (dependent on 'machine_status' and 'pre_processing')
-        cpd_delay = TabularCPD(
-            variable='delay', 
-            variable_card=2,  # 2 states: 1.0 and 1.2
+        # CPD for 'relative_processing_time_deviation' (dependent on 'machine_state' and 'cleaning')
+        cpd_relative_processing_time_deviation = TabularCPD(
+            variable='relative_processing_time_deviation', 
+            variable_card=3,  # 2 states: 0.9, 1.0 and 1.2
             values=[
-                [0.7, 0.5, 0.4, 0.2],  # P(delay=1.0 | machine_status, pre_processing)
-                [0.3, 0.5, 0.6, 0.8]   # P(delay=1.2 | machine_status, pre_processing)
+                [0.08, 0.10, 0.02, 0.04],  # P(relative_processing_time_deviation=0.9 | machine_state, cleaning)
+                [0.60, 0.85, 0.31, 0.40],  # P(relative_processing_time_deviation=1.0 | machine_state, cleaning)
+                [0.32, 0.05, 0.67, 0.56]   # P(relative_processing_time_deviation=1.2 | machine_state, cleaning)
             ],
-            evidence=['machine_status', 'pre_processing'],  # Parent nodes
+            evidence=['machine_state', 'cleaning'],  # Parent nodes
             evidence_card=[2, 2]  # Number of states for each parent
         )
         
         # Add CPDs to the model
         model.add_cpds(
-            cpd_previous_machine_pause, 
-            cpd_machine_status, 
-            cpd_pre_processing, 
-            cpd_delay
+            cpd_last_tool_change, 
+            cpd_machine_state, 
+            cpd_cleaning, 
+            cpd_relative_processing_time_deviation
         )
         
         # Validate the model (ensures the structure and CPDs are consistent)
@@ -125,59 +93,59 @@ class TruthModel(PGMPYModel):
         return model
     
     def get_new_duration(self, operation: Operation, inferenced_variables) -> int:
-        new_duration = round(operation.duration * inferenced_variables['delay'],0)
-        return new_duration
+        base_duration = operation.duration * inferenced_variables['relative_processing_time_deviation']
 
-    def inference(self, operation: Operation) -> list:
-        # Beispielaufruf mit CSV-Datei (Dateipfad anpassen)
+        # Generate log-normal noise around base duration
+        log_normal_factor = np.random.lognormal(mean=0, sigma=0.00)  # Small deviation
 
+        new_duration = base_duration * log_normal_factor  # Introduce log-normal variation
+
+        return round(new_duration, 0)
+    
+    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:      
+        
         if operation.machine is not None:
-            previous_machine_pause =  operation.tool != operation.machine.current_tool
+            last_tool_change =  operation.tool != operation.machine.current_tool
         else:
-            previous_machine_pause = True
+            last_tool_change = True
             
         evidence = {
-            'previous_machine_pause': previous_machine_pause
+            'last_tool_change': last_tool_change
             # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
         }
-
-        # Inferenz durchführen
+                     
         result = self.sample(evidence=evidence)
 
-        # Variablen für delay, machine_status und pre_processing initialisieren
-        has_delay = False
-        machine_status = None
-        pre_processing = None
+        # Variablen für relative_processing_time_deviation, machine_state und cleaning initialisieren
+        machine_state = None
+        cleaning = None
 
-        # Sampling für die delay-Variable
-        if 'delay' in result:
-            delay_values = result['delay'].values
-            if len(delay_values) == 2:
-                # Wahrscheinlichkeiten extrahieren
-                delay_probabilities = delay_values / delay_values.sum()  # Normalisieren
-                # Zustand für delay basierend auf den Wahrscheinlichkeiten würfeln
-                has_delay = np.random.choice([0, 1], p=delay_probabilities)
+        # Sampling for the relative_processing_time_deviation variable
+        if 'relative_processing_time_deviation' in result:
+            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
+            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
+
+            # Three possible states: 0.9, 1.0, 1.2
+            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
         
-        # Sampling für die machine_status-Variable
-        if 'machine_status' in result:
-            machine_status_values = result['machine_status'].values
-            machine_status_probabilities = machine_status_values / machine_status_values.sum()  # Normalisieren
-            machine_status = np.random.choice([0, 1], p=machine_status_probabilities)
+        # Sampling für die machine_state-Variable
+        if 'machine_state' in result:
+            machine_state_values = result['machine_state'].values
+            machine_state_probabilities = machine_state_values / machine_state_values.sum()  # Normalisieren
+            machine_state = np.random.choice([0, 1], p=machine_state_probabilities)
         
-        # Sampling für die pre_processing-Variable
-        if 'pre_processing' in result:
-            pre_processing_values = result['pre_processing'].values
-            pre_processing_probabilities = pre_processing_values / pre_processing_values.sum()  # Normalisieren
-            pre_processing = np.random.choice([0, 1], p=pre_processing_probabilities)
+        # Sampling für die cleaning-Variable
+        if 'cleaning' in result:
+            cleaning_values = result['cleaning'].values
+            cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalisieren
+            cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
         
-        # Berechnung des Multiplikators
-        delay = 1.2 if has_delay else 1.0
 
         inferenced_variables = {
-            'previous_machine_pause': previous_machine_pause,
-            'delay': delay,
-            'machine_status': machine_status,
-            'pre_processing': pre_processing
+            'last_tool_change': last_tool_change,
+            'relative_processing_time_deviation': relative_processing_time_deviation,
+            'machine_state': machine_state,
+            'cleaning': cleaning
         }
-        
-        return self.get_new_duration(operation, inferenced_variables), inferenced_variables
+            
+        return self.get_new_duration(operation=operation, inferenced_variables=inferenced_variables), inferenced_variables

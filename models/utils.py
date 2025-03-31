@@ -1,4 +1,7 @@
 import numpy as np
+import logging
+from modules.logger import Logger
+
 
 def hamming_distance(matrix1, matrix2):
     """
@@ -28,16 +31,29 @@ def get_adjacency_matrix(edges, nodes):
 
     return adj_matrix
 
-def compare_structures(truth_graph, learned_graph, nodes):
+def compare_structures(truth_model, learned_model):
     """
     Compares the learned structure to the true structure using the Hamming distance.
 
     :param learned_model: The learned Bayesian Network model.
     :return: True if the structures match, False otherwise.
-    """
-    # Get adjacency matrix of the learned model
-    learned_adj_matrix = get_adjacency_matrix(learned_graph.edges(), learned_graph.nodes())
+    """  
+    truth_edges = set(truth_model.edges())
+    learned_edges = set(learned_model.edges())
+    truth_nodes = set(learned_model.nodes())
+    learned_nodes = set(learned_model.nodes())
+    
+    logger = Logger.get_global_logger(category="Model", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
 
+    if truth_edges == learned_edges:
+        logger.debug(f"The models have the same structure.")
+    else:
+        logger.debug(f"The models are different.")
+        logger.debug(f"Edges only in truth model: {truth_edges - learned_edges}")
+        logger.debug(f"Edges only in learned model: {learned_edges}")
+        logger.debug(f"Edges only in truth model: {learned_edges}")
+        logger.debug(f"Nodes only in model1: {truth_nodes - learned_nodes}")
+    
     # Calculate Hamming distance (number of different entries)
-    distance =  hamming_distance(truth_graph.adjacency, learned_adj_matrix)
+    distance =  hamming_distance(get_adjacency_matrix(truth_edges,truth_nodes), get_adjacency_matrix(learned_edges, learned_nodes))
     return distance == 0

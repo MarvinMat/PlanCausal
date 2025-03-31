@@ -10,7 +10,7 @@ class AverageModel(Model):
         
     def initialize(self):
         data = pd.read_csv(self.csv_file)
-        self.avg_delay = data['delay'].mean()
+        self.avg_delay = data['relative_processing_time_deviation'].mean()
         return
     
     def get_new_duration(self, operation: Operation) -> int:

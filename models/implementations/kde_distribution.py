@@ -7,6 +7,9 @@ from models.abstract.model import Model
 class KDEDistributionModel(DistributionModel):
     """
     A distribution model assuming Kernel Density Estimation (KDE) for durations.
+    non-parametric method Kernel Density Estimation does not assume a specific shape (like Gaussian)
+    smooths a continuous probability distribution based on the data
+    
     """
     def __init__(self, csv_file, seed, bandwidth=0.2):
         super().__init__(csv_file, seed=seed)

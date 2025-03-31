@@ -19,7 +19,7 @@ def run_simulation(machines, operations, model, oberserved_data_path) -> list[Op
                     , model,
                     oberserved_data_path)
 
-    sim.env.run(12000)
+    sim.env.run(10000000)
     
     sim.write_data()
     

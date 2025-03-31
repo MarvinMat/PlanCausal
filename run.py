@@ -1,6 +1,6 @@
 from modules.data_processing import generate_data, save_data
 from modules.simulation import run_simulation
-from modules.metrics import calculate_makespan, compare_all_schedules, print_comparison_table
+from modules.metrics import calculate_makespan, compare_job_flow_times, calculate_duration_deviation, print_comparison_table, extended_compare_all_schedules
 from models.implementations.causal import CausalModel
 from models.implementations.truth import TruthModel
 from models.implementations.basic import BasicModel
@@ -8,22 +8,23 @@ from models.implementations.average import AverageModel
 from models.implementations.normal_distribution import NormalDistributionModel
 from models.implementations.exponential_distribution import ExponentialDistributionModel
 from models.implementations.kde_distribution import KDEDistributionModel
+from models.implementations.log_normal_distribution import LogNormalDistributionModel
 from modules.plan.GifflerThompson import GifflerThompson
 from modules.vizualisation import GanttSchedule
 from modules.logger import Logger
 import argparse
-import pandas as pd
+import pandas as pd 
 import logging
 
 # Define the logger
 logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
 # Set the log level for modules 
-#Logger.set_log_level(category="General", level=logging.DEBUG)
-#Logger.set_log_filter(category="General", level=logging.NOTSET)
+Logger.set_log_level(category="General", level=logging.DEBUG)
+Logger.set_log_filter(category="General", level=logging.DEBUG)
 Logger.set_log_level(category="Simulation", level=logging.ERROR)
 Logger.set_log_filter(category="Simulation", level=logging.ERROR)
-#Logger.set_log_level(category="Model", level=logging.ERROR)
-#Logger.set_log_filter(category="Model", level=logging.NOTSET)
+Logger.set_log_level(category="Model", level=logging.ERROR)
+Logger.set_log_filter(category="Model", level=logging.ERROR)
 
 # Command-line argument parser
 def parse_arguments():
@@ -45,12 +46,13 @@ def main():
     models = []
     try:
         models.append(TruthModel(seed=args.seed))  
-        models.append(CausalModel(csv_file=args.observed_data))
-        models.append(BasicModel())
         models.append(AverageModel(csv_file=args.observed_data)) 
-        models.append(NormalDistributionModel(csv_file=args.result_data, seed=args.seed))
-        models.append(ExponentialDistributionModel(csv_file=args.result_data, seed=args.seed))
-        models.append(KDEDistributionModel(csv_file=args.result_data, seed= args.seed))
+        #models.append(LogNormalDistributionModel(csv_file=args.result_data, seed=args.seed))
+        models.append(CausalModel(csv_file=args.observed_data, truth_model=models[0]))
+        #models.append(BasicModel())
+        #models.append(NormalDistributionModel(csv_file=args.result_data, seed=args.seed))
+        #models.append(ExponentialDistributionModel(csv_file=args.result_data, seed=args.seed))
+        #models.append(KDEDistributionModel(csv_file=args.result_data, seed= args.seed))
     except Exception as e:
         logger.error(f"Error initializing models: {e}")
         return
@@ -91,15 +93,23 @@ def main():
         makespan = calculate_makespan(schedule_results)
         
         # Output the results with the schedule name
-        logger.debug(f"{model_name} | {makespan} time units")
+        logger.debug(f"{model_name} | avg_makespan | {makespan}")
+
+        job_flow_times = compare_job_flow_times(schedules[TruthModel.__name__], schedules[model_name])
+
+        logger.debug(f"{model_name} | avg_job_flow_times | {job_flow_times['avg_flow_time_diff']}")
+
+        duration_deviation = calculate_duration_deviation(schedules[model_name])
+
+        logger.debug(f"{model_name} | avg_duration_deviation | {duration_deviation['avg_duration_deviation']}")
         
         # Step 6: Create GanttCharts
         output_path = GanttSchedule.create(schedule_results, args.plots, model_name)
     
     # Perform evaluation
     if args.evaluate:
-        logger.debug("Comapre each schedule with the simulated one.")
-        print_comparison_table(compare_all_schedules(schedules=schedules, truth_model_name=TruthModel.__name__))
+        logger.debug("Compare each schedule with the simulated one.")
+        print_comparison_table(extended_compare_all_schedules(schedules=schedules, truth_model_name=TruthModel.__name__))
             
 if __name__ == "__main__":
     main()

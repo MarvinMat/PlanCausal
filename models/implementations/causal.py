@@ -1,218 +1,145 @@
 import pandas as pd
-import numpy as np
 import os
-from modules.factory.Operation import Operation
+import numpy as np
+import networkx as nx
 from pgmpy.models import BayesianNetwork
-from models.abstract.model import Model
-from pgmpy.factors.discrete import TabularCPD
-from pgmpy.estimators import HillClimbSearch, BicScore, BayesianEstimator, BDeuScore, TreeSearch, ExhaustiveSearch, K2Score, StructureScore, BDsScore, AICScore
+from pgmpy.estimators import BayesianEstimator
+from castle.algorithms import PC, GES, CORL, DAG_GNN
 from models.abstract.pgmpy import PGMPYModel
-
 from models.utils import compare_structures
 
 class CausalModel(PGMPYModel):    
-    def __init__(self, csv_file, truth_model=None):        
+    def __init__(self, csv_file, truth_model=None, structure_learning_method='CORL', estimator='BDeu', **kwargs):        
         super().__init__()
         self.csv_file = csv_file
         self.truth_model = truth_model
+        self.structure_learning_method = structure_learning_method  # Can be 'PC', 'GES', or a custom function
+        self.estimator = estimator  # Bayesian Estimation method
         self.model = None
-        self.variable_elemination = None
-        self.belief_propagation = None
-        self.causal_inference = None
-        
+        self.kwargs = kwargs  # Additional arguments for learning algorithms
+
     def initialize(self):
         self.data = self.read_from_csv(self.csv_file)
         
-        if self.truth_model is not None: 
-            # Test algorithms and select the first successful combination
-            successful_combinations = self.learn_truth_causal_model()
-            print("Number of successful learned models: ", len(successful_combinations))
-            
-            if successful_combinations:
-                self.model = successful_combinations[0][2]
-            else:
-                raise ValueError("No successful models were found.")
+        if self.truth_model:
+            successful_models = self.learn_truth_causal_model()
+            self.logger.debug(f"Number of successful learned models: {len(successful_models)}")
+            self.model = successful_models[0] if successful_models else self.truth_model.model
         else:
             self.model = self.learn_causal_model()
         
         super().initialize()
-        
+
+    def gcastle_structure_learning(self, method='PC', **kwargs):
+        """ Wrapper for gCastle's structure learning algorithms. """
+        colum_names = self.data.columns.tolist()
+        data_array = np.array(self.data, dtype=float)
+
+        if method == 'PC':
+            model = PC(**kwargs)
+        elif method == 'GES':
+            model = GES(**kwargs)
+        elif method == 'CORL':
+            model = CORL(device_type="gpu", iteration=1000)
+        elif method == 'DAG_GNN':
+            model = DAG_GNN(**kwargs)
+        else:
+            raise ValueError(f"Unsupported method: {method}")
+
+        model.learn(data_array)
+        edges = [(colum_names[i], colum_names[j]) for i in range(len(colum_names)) 
+                 for j in range(len(colum_names)) if model.causal_matrix[i, j] != 0]
+        return edges
+
     def read_from_csv(self, file): 
-        # Check if file path is provided and file exists
+        """ Read dataset from CSV, handling errors gracefully. """
         if not file or not os.path.exists(file):
             raise FileExistsError(f"File not found: {file}.")
 
         try:
-            # Attempt to read the CSV file
             data = pd.read_csv(file)
             data.drop(columns=data.columns[0], axis=1, inplace=True)
             return data
         except Exception as e:
             raise ImportError(f"Error reading file {file}: {e}")
 
-    def learn_causal_model(self, algorithm='exhaustive', score_type='K2', equivalent_sample_size=5):
-        """
-        Lerne ein kausales Modell aus den gegebenen Daten mit verschiedenen Algorithmen und Score-Funktionen.
+    def learn_causal_model(self):
+        """ Learn a causal model dynamically based on the chosen method. """
+        method = self.structure_learning_method
 
-        :param data: Eingabedaten als Pandas DataFrame.
-        :param algorithm: Algorithmus zur Strukturfindung ('hill_climb', 'tree_search', 'exhaustive', 'pc').
-        :param score_type: Bewertungsmethode für das Modell ('BDeu', 'Bic', 'K2').
-        :param equivalent_sample_size: Äquivalente Stichprobengröße für BDeu-Score (nur relevant für 'BDeu').
-        :return: Gelerntes BayesianNetwork-Modell.
-        """
+        learned_structure = self.gcastle_structure_learning(method=method, **self.kwargs)
         
-        #print(f"Lerne Modell mit {algorithm}-Algorithmus und {score_type}-Score")
+        #elif callable(method):  
+        #    learned_structure = method(self.data, **self.kwargs)  # Custom function
+        #else:
+        #    raise ValueError(f"Unsupported structure learning method: {method}")
 
-        # Wähle die Scoring-Methode basierend auf den Parametern
-        if score_type == 'BDeu':
-            scoring_method = BDeuScore(self.data, equivalent_sample_size=equivalent_sample_size)
-        elif score_type == 'Bic':
-            scoring_method = BicScore(self.data)
-        elif score_type == 'K2':
-            scoring_method = K2Score(self.data)
-        elif score_type == 'StructureScore':
-            scoring_method = StructureScore(self.data)
-        elif score_type == 'BDsScore':
-            scoring_method = BDsScore(self.data)
-        elif score_type == 'AICScore':
-            scoring_method = AICScore(self.data)    
+        # Check if learned_structure is a list, a pandas DataFrame, or a NetworkX graph
+        if isinstance(learned_structure, list):
+            # If it's a list of edges, use it directly
+            edges = learned_structure
+        elif isinstance(learned_structure, pd.DataFrame):
+            # If it's a DataFrame (adjacency matrix), convert it to an edge list
+            graph = nx.from_pandas_adjacency(learned_structure, create_using=nx.DiGraph)
+            edges = graph.edges()  # Get the edges as a list of tuples
+        elif isinstance(learned_structure, nx.DiGraph):
+            # If it's already a DiGraph, get the edges directly
+            edges = learned_structure.edges()
         else:
-            raise ValueError(f"Unbekannter Score-Typ: {score_type}")
+            raise ValueError("Unsupported learned structure format")
 
-        # Algorithmusauswahl
-        if algorithm == 'hill_climb':
-            search_alg = HillClimbSearch(self.data, use_cache=False)
-            best_model = search_alg.estimate(scoring_method=scoring_method)
-        elif algorithm == 'tree_search':
-            search_alg = TreeSearch(self.data, root_node='previous_machine_pause')  # Beispiel für TreeSearch (root_node definieren)
-            best_model = search_alg.estimate()
-        elif algorithm == 'exhaustive':
-            search_alg = ExhaustiveSearch(self.data, scoring_method=scoring_method, use_cache=False)
-            best_model = search_alg.estimate()
-        elif algorithm == 'pc':
-            from pgmpy.estimators import PC
-            search_alg = PC(self.data)
-            search_alg.max_cond_vars = 3  # Maximale Anzahl bedingter Variablen (einstellbar)
-            best_model = search_alg.estimate(significance_level=0.05)
-            #return BayesianNetwork(best_model.edges())
-        else:
-            raise ValueError(f"Unbekannter Algorithmus: {algorithm}")
+        # Now create the Bayesian Network with the edge list
+        model = BayesianNetwork(edges)
 
-        # Struktur mit der gewählten Suchmethode lernen
-              
-        model = BayesianNetwork(best_model.edges())
+        model.fit(self.data, estimator=BayesianEstimator, prior_type=self.estimator)
 
-        model.name = f"Learned_Model_{algorithm}_{score_type}"  # Setzt den Modellnamen für die spätere Speicherung
-        
-        # Anpassung der CPDs für das Modell basierend auf den Daten
-        model.fit(self.data, estimator=BayesianEstimator, prior_type="BDeu")
-        
-        # Modellüberprüfung
-        assert model.check_model()
-        
-        self.safe_model(model)
+        if not model.check_model():
+            raise ValueError("Invalid learned model.")
+
         return model
-    
+
     def learn_truth_causal_model(self):
-        """
-        Testet verschiedene Algorithmus- und Scoring-Kombinationen und gibt diejenigen zurück,
-        die das 'truth model' korrekt nachbilden.
+        """ Test various algorithms and retain the best one. """
+        successful_models = []
 
-        :param data: Eingabedaten als Pandas DataFrame.
-        :return: Liste der erfolgreichen (Algorithmus, Score)-Kombinationen.
-        """
-        successful_combinations = []
+        try:
+            learned_model = self.learn_causal_model()
+            if compare_structures(truth_model=self.truth_model.model, learned_model=learned_model):
+                successful_models.append(learned_model)
+                self.logger.debug(f"Model successfully matched the truth model.")
+            else:
+                self.logger.debug("Failed to match the truth model.")
 
-        # Definiere mögliche Algorithmen und Scores
-        algorithms = ['hill_climb', 'tree_search', 'exhaustive', 'pc']
-        scores = ['BDeu', 'Bic', 'K2', 'StructureScore', 'BDsScore', 'AICScore']
+        except Exception as e:
+            self.logger.debug(f"Error learning model: {e}")
 
-        # exhaustive Search einziges Modell, bei dem zuverlässig der truth Graph gefunden wird
-
-        
-
-        # Iteriere über alle Algorithmus- und Score-Kombinationen
-        for algorithm in algorithms:
-            for score in scores:
-                try:
-                    print(f"Testing combination: Algorithm={algorithm}, Score={score}")
-
-                    # Versuche, das Modell mit der aktuellen Kombination zu lernen
-                    learned_model = self.learn_causal_model(self.data, algorithm=algorithm, score_type=score)
-                    
-                    # Überprüfe, ob das gelernte Modell der Wahrheit entspricht
-                    model_check = compare_structures(truth_graph=self.truth_model ,learned_model=learned_model)
-
-                    if model_check:
-                        print(f"Successful combination: Algorithm={algorithm}, Score={score}")
-                        successful_combinations.append((algorithm, score, learned_model))
-                    else:
-                        print(f"Failed combination: Algorithm={algorithm}, Score={score}")
-
-                except Exception as e:
-                    print(f"Error with combination Algorithm={algorithm}, Score={score}: {e}")
-
-        return successful_combinations
+        return successful_models
     
-    def safe_model(self, model):
-        model_filename = f"causal/{model.name}.png" if hasattr(model, 'name') else "causal/causal_model.png"
-        model_graphviz = model.to_graphviz()
-        model_graphviz.draw(model_filename, prog="dot")
-        return model_graphviz
-    
-    def get_new_duration(self, operation, inferenced_variables) -> int:
-        new_duration = round(operation.duration * inferenced_variables['delay'],0)
-        return new_duration
-    
-    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:      
-        
-        if operation.machine is not None:
-            previous_machine_pause =  operation.tool != operation.machine.current_tool
-        else:
-            previous_machine_pause = True
-            
-        evidence = {
-            'previous_machine_pause': previous_machine_pause
-            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
-        }
+    def inference(self, operation, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
+        """ Perform inference with configurable variables. """
+        last_tool_change = operation.tool != operation.machine.current_tool if operation.machine else True
+        evidence = {evidence_variable: last_tool_change}
 
-        # Inferenz durchführen
-        result = self.sample(evidence=evidence)
+        # Do-Intervention with True and False
+        result_do_true = self.sample(evidence=evidence, do={do_variable: True})
+        result_do_false = self.sample(evidence=evidence, do={do_variable: False})
 
-        # Variablen für delay, machine_status und pre_processing initialisieren
-        has_delay = False
-        machine_status = None
-        pre_processing = None
+        # Extract probabilities
+        factor_do_true = result_do_true[target_variable]
+        factor_do_false = result_do_false[target_variable]
+        prob_do_true, prob_do_false = factor_do_true.values[1], factor_do_false.values[1]
 
-        # Sampling für die delay-Variable
-        if 'delay' in result:
-            delay_values = result['delay'].values
-            if len(delay_values) == 2:
-                # Wahrscheinlichkeiten extrahieren
-                delay_probabilities = delay_values / delay_values.sum()  # Normalisieren
-                # Zustand für delay basierend auf den Wahrscheinlichkeiten würfeln
-                has_delay = np.random.choice([0, 1], p=delay_probabilities)
-        
-        # Sampling für die machine_status-Variable
-        if 'machine_status' in result:
-            machine_status_values = result['machine_status'].values
-            machine_status_probabilities = machine_status_values / machine_status_values.sum()  # Normalisieren
-            machine_status = np.random.choice([0, 1], p=machine_status_probabilities)
-        
-        # Sampling für die pre_processing-Variable
-        if 'pre_processing' in result:
-            pre_processing_values = result['pre_processing'].values
-            pre_processing_probabilities = pre_processing_values / pre_processing_values.sum()  # Normalisieren
-            pre_processing = np.random.choice([0, 1], p=pre_processing_probabilities)
-        
-        # Berechnung des Multiplikators
-        delay = 1.2 if has_delay else 1.0
+        # Select the best intervention
+        cleaning = prob_do_true > prob_do_false
+        selected_result = result_do_true if cleaning else result_do_false
 
-        inferenced_variables = {
-            'previous_machine_pause': previous_machine_pause,
-            'delay': delay,
-            'machine_status': machine_status,
-            'pre_processing': pre_processing
-        }
-            
-        return self.get_new_duration(operation=operation, inferenced_variables=inferenced_variables), inferenced_variables
+        # Define mapping for states
+        # Pgmpy can only have int states
+        relative_processing_time_deviation_mapping = {0: 0.9, 1: 1.0, 2: 1.2}
+        # Sample dynamically
+        inferenced_variables = {evidence_variable: last_tool_change, do_variable: cleaning}
+        for var, factor in selected_result.items():
+            inferenced_variables[var] = relative_processing_time_deviation_mapping[np.random.choice(factor.state_names[var], p=factor.values / factor.values.sum())]
+
+        # Compute new duration
+        return round(operation.duration * inferenced_variables[target_variable], 0), inferenced_variables

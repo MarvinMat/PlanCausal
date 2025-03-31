@@ -1,5 +1,4 @@
 # inference.py
-from modules.factory.Operation import Operation
 from models.abstract.model import Model
 from pgmpy.inference import VariableElimination, CausalInference, BeliefPropagation
 
@@ -29,27 +28,43 @@ class PGMPYModel(Model):
         if not self.model:
             raise ValueError("No model for inference.")
         
-        if not variable:
-            all_model_variables = self.model.nodes()
-        else:
-            all_model_variables = variable
+        #if not variable:
+            #all_model_variables = self.model.nodes()
+        #else:
+            #all_model_variables = variable
 
-        result = {}     
+        result = {}
+        
+        # Get all variables in the model
+        all_model_variables = set(self.model.nodes())
 
-        # Reguläre Inferenz ohne "do"-Intervention
+        # Remove any variables that are in `evidence` or `do`
+        query_variables = list(all_model_variables - set(evidence) - set(do))
+        
+        # Regular Inference (No do-intervention)
         if not any(do):
-            for variable in all_model_variables:
-                if variable not in evidence:
-                    # Nur Variablen abfragen, die nicht in der Evidenz enthalten sind
-                    query_result = self.variable_elemination.query(variables=[variable], evidence=evidence, joint=True)
-                    result[variable] = query_result
+            for variable in query_variables:
+                
+                query_result = self.variable_elemination.query(
+                    variables=[variable], 
+                    evidence=evidence, 
+                    joint=True, 
+                    show_progress=False
+                )
+                result[variable] = query_result
 
-        # Kausale Inferenz (do-Intervention)
+        # Causal Inference (do-Intervention)
         else:
-            #print(f"Durchführung einer 'do'-Intervention: Setze 'pre_processing' auf {do}")
-            for variable in all_model_variables:
-                if variable not in evidence:
-                    do_result = self.causal_inference.query(variables=[variable], do=do, joint=True)
-                    result[variable] = do_result
+            for variable in query_variables:
+                do_result = self.causal_inference.query(
+                    variables=[variable], 
+                    evidence=evidence, 
+                    adjustment_set=set(do), 
+                    do=do, joint=True, 
+                    inference_algo="ve", 
+                    show_progress=False
+                )
+                result[variable] = do_result
 
         return result
+

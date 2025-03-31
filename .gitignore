@@ -3,6 +3,7 @@
 /output/results/*
 /output/plots/*
 !output/.gitkeep
+/causal/*
 
 
 # Byte-compiled / optimized / DLL files

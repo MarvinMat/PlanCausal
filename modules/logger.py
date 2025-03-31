@@ -49,18 +49,24 @@ class Logger:
     @classmethod
     def get_logger(cls, category="General", level=logging.INFO, log_to_file=False, log_filename=None):
         logger = logging.getLogger(category)
-        logger.propagate = False  # Disable propagation
+        logger.propagate = False  # Prevent duplicate logs from bubbling up
         logger.setLevel(level)
 
-        if not logger.handlers:  # Add handlers only once
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            console_handler = logging.StreamHandler()
-            console_handler.setFormatter(formatter)
-            logger.addHandler(console_handler)
-            if log_to_file and log_filename:
-                file_handler = logging.FileHandler(log_filename)
-                file_handler.setFormatter(formatter)
-                logger.addHandler(file_handler)
+        # Remove existing handlers before adding new ones
+        if logger.hasHandlers():
+            logger.handlers.clear()
+
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
+
+        if log_to_file and log_filename:
+            file_handler = logging.FileHandler(log_filename)
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+
         return logger
 
     @classmethod
@@ -70,6 +76,8 @@ class Logger:
         """
         if not hasattr(cls, "_global_logger"):
             cls._global_logger = cls.get_logger(category, level, log_to_file, log_filename)
+        else:
+            cls._global_logger.setLevel(level)  # Ensure level updates
         return cls._global_logger
 
     @staticmethod
