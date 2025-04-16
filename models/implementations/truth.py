@@ -7,12 +7,13 @@ from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
 class TruthModel(PGMPYModel):
-    def __init__(self, seed = None):    
+    def __init__(self, seed = None, lognormal_shape_modifier = False):    
         super().__init__(seed=seed) 
         self.model = None
         self.variable_elemination = None
         self.belief_propagation = None
         self.causal_inference = None
+        self.lognormal_shape_modifier = lognormal_shape_modifier
         self.seed = seed
         
         
@@ -39,7 +40,7 @@ class TruthModel(PGMPYModel):
         cpd_last_tool_change = TabularCPD(
             variable='last_tool_change', 
             variable_card=2,  # 2 states: 0 and 1
-            values=[[0.8], [0.2]]  # P(last_tool_change=0)=0.8, P(last_tool_change=1)=0.2
+            values=[[0.6], [0.4]]  # P(last_tool_change=0)=0.8, P(last_tool_change=1)=0.2
         )
         
         # CPD for 'machine_state' (dependent on 'last_tool_change')
@@ -92,23 +93,76 @@ class TruthModel(PGMPYModel):
         
         return model
     
+    def sample_network(self, evidence: dict) -> dict:
+        """
+        Samples the Bayesian network given the provided evidence.
+
+        Args:
+            evidence (dict): A dictionary where keys are variable names and values are their observed states.
+
+        Returns:
+            dict: A dictionary containing the sampled values for all variables in the network.
+        """
+        from pgmpy.inference import VariableElimination
+
+        # Initialize variable elimination for inference
+        if self.variable_elemination is None:
+            self.variable_elemination = VariableElimination(self.model)
+
+        # Perform inference to get the probability distributions for all variables
+        sampled_result = {}
+        for variable in self.model.nodes():
+            if variable not in evidence:
+                # Query the probability distribution for the variable
+                distribution = self.variable_elemination.query(
+                    variables=[variable],
+                    evidence=evidence
+                )
+                sampled_result[variable] = distribution.values
+
+        return sampled_result
+    
+    def sample_without_evidence(self, num_samples: int) -> list[dict]:
+        """
+        Samples the Bayesian network multiple times without providing any evidence.
+
+        Args:
+            num_samples (int): The number of samples to generate.
+
+        Returns:
+            list[dict]: A list of dictionaries, where each dictionary contains the sampled values for all variables in the network.
+        """
+        from pgmpy.sampling import BayesianModelSampling
+
+        # Initialize the sampler
+        sampler = BayesianModelSampling(self.model)
+
+        # Generate samples
+        samples = sampler.forward_sample(size=num_samples)
+        
+        samples.to_excel("./output/samples.xlsx", index=False)
+
+        # Convert the DataFrame to a list of dictionaries
+        sampled_results = samples.to_dict(orient='records')
+
+        return sampled_results
+    
     def get_new_duration(self, operation: Operation, inferenced_variables) -> int:
         base_duration = operation.duration * inferenced_variables['relative_processing_time_deviation']
 
         # Generate log-normal noise around base duration
-        log_normal_factor = np.random.lognormal(mean=0, sigma=0.00)  # Small deviation
-
-        new_duration = base_duration * log_normal_factor  # Introduce log-normal variation
-
+        if self.lognormal_shape_modifier:
+            log_normal_factor = np.random.lognormal(mean=0, sigma=0.08)  # Small deviation
+            new_duration = base_duration * log_normal_factor  # Introduce log-normal variation
+        else: 
+            new_duration = base_duration
+        
         return round(new_duration, 0)
     
-    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:      
+    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:      
         
-        if operation.machine is not None:
-            last_tool_change =  operation.tool != operation.machine.current_tool
-        else:
-            last_tool_change = True
-            
+        last_tool_change =  operation.tool != current_tool
+        
         evidence = {
             'last_tool_change': last_tool_change
             # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
@@ -149,3 +203,4 @@ class TruthModel(PGMPYModel):
         }
             
         return self.get_new_duration(operation=operation, inferenced_variables=inferenced_variables), inferenced_variables
+

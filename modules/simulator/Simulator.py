@@ -11,65 +11,87 @@ import pandas as pd
 import simpy
 
 class Simulator:
-    """ Simulator to any given schedule
-    machines = [[id, name, tools]] machine array with [id, name , array_tools]
-    schedule = [Operation], array containing all scheduled operations
-    monitor_data = resource monitor [0] pre , [1] post monitor
-    model = includes a inference(operation) returning an int, as operation Duration 
-    """
-    def __init__(self, machines, schedule, monitor_data, model: Model , oberserved_data_path):
+    def __init__(self, machines, schedule, monitor_data, model: Model, oberserved_data_path, planned_mode=True):
+        """
+        Args:
+            machines: Array of machine configurations
+            schedule: Array of operations
+            monitor_data: Resource monitor data
+            model: Model for inference
+            oberserved_data_path: Path for observed data output
+            planned_mode: If True, uses planned starts and machines. If False, uses dynamic scheduling
+        """
         self.schedule = schedule
         self.oberserved_data_path = oberserved_data_path
         self.observed_data = []
         self.machines = machines
         self.model = model
         self.pre_resource_monitor = monitor_data[0]
-        self.post_resource_monitor =  monitor_data[1]
+        self.post_resource_monitor = monitor_data[1]
         self.env = simpy.Environment()
         self.pools = self.build_pools(machines)
+        self.planned_mode = planned_mode
+        self.machine_groups = self._group_machines_by_type()
         self.build_jobs()
-        # Now, only warnings and errors will be displayed for "Module1"
-        self.logger = Logger.get_logger(category="Simulation", level=logging.DEBUG, log_to_file=False, log_filename="output/logs/simulation.log")
+        self.logger = Logger.get_logger(category="Simulation", level=logging.DEBUG, 
+                                      log_to_file=False, log_filename="output/logs/simulation.log")
+
+    def _group_machines_by_type(self):
+        """Group machines by their type for unplanned mode"""
+        groups = {}
+        for machine_id, machine in self.pools.items():
+            if machine.group not in groups:
+                groups[machine.group] = []
+            groups[machine.group].append(machine)
+        return groups
+
+    def get_next_available_machine(self, machine_group_id):
+        """Find next available machine of required type"""
+        if machine_group_id not in self.machine_groups:
+            return None
         
+        machines = self.machine_groups[machine_group_id]
+        # Return machine with shortest queue
+        return min(machines, key=lambda m: len(m.queue))
+
     def operation(self, operation, precedent_tasks):
-        """
-        hart of the processing
-        --- workflow
-        waits for planned start
-        waits for the completions of pressidenct operation (list can be empty)
-        grabs a resouce
-        spend some time doing the operation
-        """
-        plan_start = operation.plan_start if operation.plan_start is not None else 0 
-        #print(plan_start)
-        delay =  plan_start - self.env.now 
-        #self.logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, created; waiting for start {delay}')    
-        yield self.env.timeout(delay)
-
-        #self.logger.debug(f'{self.env.now}, job: {operation.job_id}, task_id: {operation.task_id}, waiting for presedents')
-        
+        """Modified operation method to support both modes"""
+        # Wait for precedent tasks in both modes
         yield self.env.all_of(precedent_tasks)
-
-        # TODO: 
-        # Yield all prececent operations on resource q
+        
+        if self.planned_mode:
+            # Planned mode - use specified start times and machines
+            plan_start = operation.plan_start if operation.plan_start is not None else 0
+            delay = max(0, plan_start - self.env.now)
+            yield self.env.timeout(delay)
+            machine = self.get_machine(operation.plan_machine_id)
+        else:
+            # Unplanned mode - get next available machine of required type
+            machine = self.get_next_available_machine(operation.req_machine_group_id)
+            if not machine:
+                self.logger.error(f"No suitable machine found for operation {operation.operation_id}, "
+                                  f"required machine group: {operation.req_machine_group_id}")
+                return
 
         self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, getting resource')
-        with operation.machine.request() as req:
-            yield req
-            operation.sim_start = self.env.now
-            self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
-            operation.machine.current_operation = operation
-            operation.sim_duration, influenced_variables = self.model.inference(operation)
-            self.observed_data.append(influenced_variables)
-            operation.machine.current_tool = operation.machine.current_operation.tool
-            
-            yield self.env.timeout(operation.sim_duration) # durchführung
         
+        with machine.request() as req:
+            yield req
+            # Rest of the operation logic remains the same
+            operation.sim_start = self.env.now
+            operation.machine = machine  # Store the actually used machine
+            self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
+            machine.current_operation = operation
+            operation.sim_duration, influenced_variables = self.model.inference(operation, machine.current_tool)
+            self.observed_data.append(influenced_variables)
+            machine.current_tool = operation.tool
+            
+            yield self.env.timeout(operation.sim_duration)
+            
         operation.sim_end = self.env.now
         operation.machine.current_operation = None
         operation.machine.history.append(operation)
         self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, finished operation')
-
 
     def build_pools(self, pool_data):
         """
@@ -132,4 +154,3 @@ class Simulator:
     def write_data(self):
         df_observed_data = pd.DataFrame(self.observed_data)
         return df_observed_data.to_csv(self.oberserved_data_path)
-        

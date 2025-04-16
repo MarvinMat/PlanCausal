@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--instances", "150", "--seed", "447", "--priority_rule", "fcfs", "--evaluate"]
+            "args": ["--instances", "150", "--seed", "447", "--priority_rule", "fcfs", "--eval"]
         }
     ]
 }

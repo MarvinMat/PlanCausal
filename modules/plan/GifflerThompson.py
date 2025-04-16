@@ -1,4 +1,5 @@
 import heapq
+import pandas as pd
 from modules.factory.Operation import Operation
 from modules.plan.PriorityRules import get_priority
 
@@ -9,6 +10,7 @@ class GifflerThompson:
     def __init__(self, rule_name, inference):
         self.rule_name = rule_name
         self.inference = inference
+        self.observed_data = []
         self.schedule = []
         self.qlength = []
 
@@ -20,7 +22,7 @@ class GifflerThompson:
             heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + str(operation.operation_id)), operation))
         return temp_heap
 
-    def giffen_thompson(self, operations, machine_pools):
+    def create_schedule(self, operations, machine_pools):
         ready_operations = []
         inserted_operations = set()
         # [available time, setup]
@@ -63,12 +65,14 @@ class GifflerThompson:
                 qleng = len([op for op in self.schedule if current_operation.successor_operation.req_machine_group_id == op.req_machine_group_id and earliest_start_time < op.plan_start])
                 self.qlength.append([n, current_operation.successor_operation.req_machine_group_id, qleng])
                 n = n + 1
-            current_duration, _ = self.inference(current_operation)#, available_times[selected_machine_idx][1])    
+            current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + '_' + str(selected_machine_idx)
+            current_tool = available_times[selected_machine_idx][1]
+            current_duration, inferenced_variables = self.inference(current_operation, current_tool)  
+            self.observed_data.append(inferenced_variables)
             end_time = earliest_start_time + current_duration
             current_operation.plan_duration = current_duration
             current_operation.plan_start = earliest_start_time
             current_operation.plan_end = end_time
-            current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + '_' + str(selected_machine_idx)
             available_times[selected_machine_idx] = [end_time, current_operation.tool]
 
             # Aktualisiere die geplante Startzeit für die Nachfolgeaufgaben
@@ -86,4 +90,9 @@ class GifflerThompson:
             # Füge die Aufgabe zur Zeitplanung hinzu
             self.schedule.append(current_operation)
 
+        self.write_data()
         return self.schedule
+    
+    def write_data(self):
+        df_observed_data = pd.DataFrame(self.observed_data)
+        return df_observed_data.to_csv(f'./data/data_oberserve_{self.inference.__func__.__qualname__}.csv')

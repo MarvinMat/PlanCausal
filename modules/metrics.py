@@ -2,6 +2,7 @@ import pandas as pd
 from tabulate import tabulate
 from modules.logger import Logger
 import logging
+from scipy.stats import kendalltau
 
 logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
 
@@ -27,9 +28,15 @@ def calculate_makespan(df_schedule):
     
     return average_makespan
 
+def compare_makespan(schedule_truth, schedule_approach):
+    makespan_truth = calculate_makespan(schedule_truth)
+    makespan_approach   = calculate_makespan(schedule_approach)
+    return {
+        "makespan": round(makespan_approach - makespan_truth , 0)
+    }
 
 # --- Positional Differences: Using the truth schedule as reference ---
-def compare_positional_deviations(schedule_truth, schedule_sim):
+def compare_positional_deviations(schedule_truth, schedule_approach):
     """
     Compares the positional deviations between the truth schedule and a simulation schedule.
     This function merges the truth and simulation DataFrames on (job_id, operation_id) and
@@ -42,52 +49,37 @@ def compare_positional_deviations(schedule_truth, schedule_sim):
         - max_abs_end_deviation: Maximum absolute difference in end times.
     """
     merged = pd.merge(
-        schedule_truth, schedule_sim,
+        schedule_truth, schedule_approach,
         on=['job_id', 'operation_id'],
-        suffixes=('_truth', '_sim')
+        suffixes=('_truth', '_approach')
     )
     
-    merged['abs_start_deviation'] = (merged['start_time_sim'] - merged['start_time_truth']).abs()
-    merged['abs_end_deviation'] = (merged['end_time_sim'] - merged['end_time_truth']).abs()
+    merged['abs_start_deviation'] = (merged['start_time_approach'] - merged['start_time_truth']).abs()
+    merged['abs_end_deviation'] = (merged['end_time_approach'] - merged['end_time_truth']).abs()
     
     return {
         'avg_abs_start_deviation': round(merged['abs_start_deviation'].mean(), 1),
-        #'max_abs_start_deviation': round(merged['abs_start_deviation'].max(), 1),
+        'max_abs_start_deviation': round(merged['abs_start_deviation'].max(), 1),
         'avg_abs_end_deviation': round(merged['abs_end_deviation'].mean(), 1),
-        #'max_abs_end_deviation': round(merged['abs_end_deviation'].max(), 1)
+        'max_abs_end_deviation': round(merged['abs_end_deviation'].max(), 1)
     }
 
-# --- Existing Helper Metrics (Plan Shifts, Flow Times, Duration Deviations) ---
-def compare_plan_shifts(schedule_truth, schedule_sim):
+def compare_operation_start_end_shifts(schedule_truth, schedule_approach):
     merged = pd.merge(
-        schedule_truth, schedule_sim,
+        schedule_truth, schedule_approach,
         on=['job_id', 'operation_id'],
-        suffixes=('_truth', '_sim')
+        suffixes=('_truth', '_approach')
     )
     # These differences may be positive or negative (shift direction)
-    merged['start_shift'] = merged['start_time_sim'] - merged['start_time_truth']
-    merged['end_shift'] = merged['end_time_sim'] - merged['end_time_truth']
+    merged['start_shift'] = merged['start_time_truth'] - merged['start_time_approach']
+    merged['end_shift'] = merged['end_time_approach'] - merged['end_time_truth']
     
     return {
         'avg_start_shift': round(merged['start_shift'].mean(), 1),
-        #'max_start_shift': round(merged['start_shift'].abs().max(), 1),
+        'max_start_shift': round(merged['start_shift'].abs().max(), 1),
         'avg_end_shift': round(merged['end_shift'].mean(), 1),
-        #'max_end_shift': round(merged['end_shift'].abs().max(), 1)
+        'max_end_shift': round(merged['end_shift'].abs().max(), 1)
     }
-
-def compare_job_flow_times(schedule_truth, schedule_sim):
-    truth_jobs = schedule_truth.groupby('job_id').agg({'start_time': 'min', 'end_time': 'max'})
-    sim_jobs   = schedule_sim.groupby('job_id').agg({'start_time': 'min', 'end_time': 'max'})
-    
-    truth_jobs.rename(columns={'start_time': 'start_truth', 'end_time': 'end_truth'}, inplace=True)
-    sim_jobs.rename(columns={'start_time': 'start_sim', 'end_time': 'end_sim'}, inplace=True)
-    
-    comparison = truth_jobs.join(sim_jobs, how='inner')
-    comparison['flow_time_truth'] = comparison['end_truth'] - comparison['start_truth']
-    comparison['flow_time_sim']   = comparison['end_sim'] - comparison['start_sim']
-    comparison['flow_time_diff']  = comparison['flow_time_sim'] - comparison['flow_time_truth']
-    
-    return {'avg_flow_time_diff': round(comparison['flow_time_diff'].mean(), 1)}
 
 def calculate_duration_deviation(schedule):
     """
@@ -98,53 +90,123 @@ def calculate_duration_deviation(schedule):
     deviation_per_job = df.groupby('job_id')['duration_deviation'].sum()
     return {
         'avg_duration_deviation': round(deviation_per_job.mean(), 1),
-        #'max_duration_deviation': round(deviation_per_job.abs().max(), 1)
+        'max_duration_deviation': round(deviation_per_job.abs().max(), 1)
     }
 
+def compare_duration_deviation(schedule_truth, schedule_approach):
+    deviations_truth = calculate_duration_deviation(schedule_truth)
+    deviations_approach   = calculate_duration_deviation(schedule_approach)
+    
+    deviations = {}
+    deviations['avg_duration_deviation_truth'] = deviations_truth['avg_duration_deviation']
+    deviations['max_duration_deviation_truth'] = deviations_truth['max_duration_deviation']
+    deviations['avg_duration_deviation_approach']   = deviations_approach['avg_duration_deviation']
+    deviations['max_duration_deviation_approach']   = deviations_approach['max_duration_deviation']
+    
+    return {
+        'avg_duration_deviation_diff': round(deviations_approach['avg_duration_deviation'] - deviations_truth['avg_duration_deviation'], 1),
+        'max_duration_deviation_diff': round(deviations_approach['max_duration_deviation'] - deviations_truth['max_duration_deviation'], 1)
+    }
+
+def compare_machine_operation_sequences(schedule_truth, schedule_approach):
+    """
+    Groups operations by machine, sorts by start time, and compares sequences between schedules.
+    Returns similarity metrics for each machine's operation order.
+    
+    Args:
+        schedule_truth: DataFrame with truth schedule
+        schedule_approach: DataFrame with approach schedule
+    
+    Returns:
+        dict: Dictionary with machine-wise sequence comparisons and overall metrics
+    """
+    # Ensure both schedules are sorted by start time    
+    machine_metrics = {}
+    overall_similarity = []
+    
+    # Group by machine and sort by start time for both schedules
+    truth_grouped = schedule_truth.sort_values('start_time').groupby('machine')
+    approach_grouped = schedule_approach.sort_values('start_time').groupby('machine')
+    
+    # Compare sequences for each machine
+    for machine in truth_grouped.groups.keys():
+        truth_ops = truth_grouped.get_group(machine)[['job_id', 'operation_id']].values.tolist()
+        
+        if machine in approach_grouped.groups:
+            approach_ops = approach_grouped.get_group(machine)[['job_id', 'operation_id']].values.tolist()
+            
+            # Convert operation lists to comparable format
+            truth_seq = [f"{job}_{op}" for job, op in truth_ops]
+            approach_seq = [f"{job}_{op}" for job, op in approach_ops]
+            
+            # Cut sequences to the smaller size
+            # TODO: Workaround at the moment - sizes of sequences are not equal - therefore kandall's tau cannot be calculated
+            # This is a workaround - the sequences should be equal in size
+            min_length = min(len(truth_seq), len(approach_seq))
+            truth_seq = truth_seq[:min_length]
+            approach_seq = approach_seq[:min_length]
+            
+            # Calculate Kendall's Tau correlation
+            tau, p_value = kendalltau(range(len(truth_seq)), 
+                                    [truth_seq.index(op) if op in truth_seq else len(truth_seq) 
+                                     for op in approach_seq])
+            
+            similarity = (tau + 1) / 2  # Convert to [0,1] range
+            
+            machine_metrics[machine] = {
+                'truth_sequence': truth_seq,
+                'approach_sequence': approach_seq,
+                'sequence_similarity': round(similarity, 3),
+                'operations_count': len(truth_seq),
+                'misplaced_operations': len(set(truth_seq) ^ set(approach_seq))
+            }
+            
+            overall_similarity.append(similarity)
+    
+    # Calculate overall metrics
+    results = {
+        'machine_wise_metrics': machine_metrics,
+        'overall_sequence_similarity': round(sum(overall_similarity) / len(overall_similarity), 3) if overall_similarity else 0
+    }
+    
+    return results
+
 # --- Combined Extended Comparison ---
-def extended_compare_schedule(schedule_truth, schedule_sim):
+def extended_compare_schedule(schedule_truth, schedule_approach):
     """
     Compares a simulation schedule to the truth schedule using various metrics.
     Returns a dictionary of metrics.
     """
     metrics = {}
     
-    # Makespan metrics
-    metrics['makespan_truth'] = calculate_makespan(schedule_truth)
-    metrics['makespan_sim']   = calculate_makespan(schedule_sim)
-    metrics['makespan_diff']  = round(metrics['makespan_sim'] - metrics['makespan_truth'], 0)
+    # Makespan
+    metrics.update(compare_makespan(schedule_truth, schedule_approach))
     
-    # Plan shifts (raw differences, can be negative)
-    metrics.update(compare_plan_shifts(schedule_truth, schedule_sim))
+    # Operation shift
+    #metrics.update(compare_operation_start_end_shifts(schedule_truth, schedule_approach))
+        
+    # Duration deviation
+    metrics.update(compare_duration_deviation(schedule_truth, schedule_approach))
     
-    # Flow time differences per job
-    metrics.update(compare_job_flow_times(schedule_truth, schedule_sim))
+    # Positional deviations
+    metrics.update(compare_positional_deviations(schedule_truth, schedule_approach))
     
-    # Duration deviation metrics (for each schedule individually and the difference)
-    truth_devs = calculate_duration_deviation(schedule_truth)
-    sim_devs   = calculate_duration_deviation(schedule_sim)
+    # Positional differences
+    #metrics.update(compare_machine_positional_differences(schedule_truth, schedule_approach))
     
-    #metrics['avg_duration_deviation_truth'] = truth_devs['avg_duration_deviation']
-    #metrics['max_duration_deviation_truth'] = truth_devs['max_duration_deviation']
-    metrics['avg_duration_deviation_sim']   = sim_devs['avg_duration_deviation']
-    #metrics['max_duration_deviation_sim']   = sim_devs['max_duration_deviation']
-    metrics['avg_duration_deviation_diff']  = round(sim_devs['avg_duration_deviation'] - truth_devs['avg_duration_deviation'], 1)
-    #metrics['max_duration_deviation_diff']  = round(sim_devs['max_duration_deviation'] - truth_devs['max_duration_deviation'], 1)
-    
-    # Positional deviations (using absolute differences)
-    metrics.update(compare_positional_deviations(schedule_truth, schedule_sim))
+    # Compare Sequence of Operations
+    metrics.update(compare_machine_operation_sequences(schedule_truth, schedule_approach))
     
     return { 
-        'makespan_truth': metrics['makespan_truth'],    
-        'makespan_diff': metrics['makespan_diff'], 
-        'avg_start_shift': metrics['avg_start_shift'],
-        'avg_end_shift': metrics['avg_end_shift'],
-        'avg_abs_start_deviation': metrics['avg_abs_start_deviation'],
-        'avg_duration_deviation_diff': metrics['avg_duration_deviation_diff'],
-        #'avg_flow_time_diff': metrics['avg_flow_time_diff']
+        'Makespan (vs Truth)': metrics['makespan'], 
+        #'avg operation shift': metrics['avg_start_shift'],
+        'avg abs start deviation': metrics['avg_abs_start_deviation'],
+        'avg duration deviation': metrics['avg_duration_deviation_diff'],
+        'overall_sequence_similarity': metrics['overall_sequence_similarity'],
+        #'machine_shift_count': metrics['machine_shift_count']        
     }
 
-def extended_compare_all_schedules(schedules, truth_model_name):
+def extended_compare_all_schedules(schedules, reference_schedule):
     """
     Iterates over all simulation schedules (given as a dictionary of DataFrames),
     compares each to the truth schedule, and returns a DataFrame with the extended metrics.
@@ -154,12 +216,11 @@ def extended_compare_all_schedules(schedules, truth_model_name):
     :return: DataFrame with comparison metrics for each simulation schedule.
     """
     results = []
-    truth_schedule = schedules[truth_model_name]
     
     for model_name, schedule_df in schedules.items():
         #if model_name == truth_model_name:
         #    continue  # Skip the truth schedule itself
-        metrics = extended_compare_schedule(truth_schedule, schedule_df)
+        metrics = extended_compare_schedule(reference_schedule, schedule_df)
         metrics = {'Model': model_name, **metrics}
         results.append(metrics)
     
@@ -200,4 +261,7 @@ def print_comparison_table(df_results):
     
     :param df_results: DataFrame containing the makespan comparison results
     """
-    print(tabulate(df_results, headers='keys', tablefmt='pretty'))
+    columns_to_drop = ['instance', 'priority_rule']
+    df_results = df_results.drop(columns=columns_to_drop, errors='ignore')
+    print(tabulate(df_results, headers='keys', tablefmt='rounded_outline'))
+    #print(tabulate(df_results, headers='keys', tablefmt='latex_booktabs'))

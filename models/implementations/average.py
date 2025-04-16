@@ -4,6 +4,7 @@ import pandas as pd
 
 class AverageModel(Model):
 
+    #TODO Use Feedback data instead of oberseved data
     def __init__(self, csv_file):
         super().__init__()
         self.csv_file = csv_file

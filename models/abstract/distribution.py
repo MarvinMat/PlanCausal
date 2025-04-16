@@ -32,7 +32,6 @@ class DistributionModel(Model):
             else:
                 self.distribution_dict[(product_type, operation_id)] = None  # Not enough data
         
-        
     def read_from_csv(self):
         """
         Reads the dataset from CSV.
@@ -57,7 +56,7 @@ class DistributionModel(Model):
         """
         raise NotImplementedError("This method must be implemented in derived classes.")
 
-    def inference(self, operation: Operation):
+    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:
         """
         Perform inference by sampling from the fitted distribution.
         """
@@ -65,6 +64,6 @@ class DistributionModel(Model):
 
         if key in self.distribution_dict and self.distribution_dict[key] is not None:
             params = self.distribution_dict[key]
-            return self.sample(params), key  # Call sample method to draw from distribution
+            return round(self.sample(params), 0), key  # Call sample method to draw from distribution
         else:
             return None  # No data available for inference

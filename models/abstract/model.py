@@ -25,7 +25,7 @@ class Model(ABC):
             np.random.seed(self.seed)
         
     @abstractmethod
-    def inference(self, operation: Operation) -> tuple[int, list[tuple]]:
+    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:
         """
         Inference method for planning
         
