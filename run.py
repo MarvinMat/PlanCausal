@@ -18,6 +18,7 @@ from modules.logger import Logger
 import argparse
 import pandas as pd 
 import logging
+from datetime import datetime
 
 # Define the logger
 logger = Logger.get_global_logger(category="General", level=logging.DEBUG, log_to_file=True, log_filename="output/logs/app.log")
@@ -64,10 +65,11 @@ def run_experiment(seed, args):
         logger.error(f"Error initializing models: {e}")
         return
 
+    
     logger.debug("Start model iteration.")
+    
     schedules = {}
     planed_schedules = {}
-    truthModel = None
 
     for model in models:
         model.initialize()
@@ -77,10 +79,10 @@ def run_experiment(seed, args):
         production = ProductionGenerator()
         operations, machines = production.generate_data_dynamic(amount_products = 10,
                                                                 product_types_relation = None,
-                                                                avg_operations=4, 
+                                                                avg_operations=2, 
                                                                 avg_duration=15,
                                                                 machine_groups=3, 
-                                                                tools_per_machine=2,
+                                                                tools_per_machine=3,
                                                                 num_instances=args.instances, 
                                                                 distribution='equal',
                                                                 seed=args.seed)
@@ -119,10 +121,12 @@ def run_experiment(seed, args):
         logger.debug(f"{model_name} | Makespan (Approach) {makespan} | Makespan-Diff (vs Truth) {makespan_diff['makespan']}")
 
         # Step 6: Create GanttCharts
-        viz_output_path = GanttSchedule.create(schedule_results, args.plots, model_name)
+        #viz_output_path = GanttSchedule.create(schedule_results, args.plots, model_name)
 
     # Perform evaluation
     if args.eval:
+        logger.debug("Performing evaluation.")
+        # Compare all schedules with the reference planned schedule (TruthModel)
         results_run = extended_compare_all_schedules(schedules=schedules, reference_schedule=planed_schedules[TruthModel.__name__])
         results_run['seed'] = args.seed  # Add seed to the results
         results_run['instance'] = args.instances  # Add instance to the results
@@ -130,15 +134,30 @@ def run_experiment(seed, args):
         print_comparison_table(results_run)
         
         file_exists = os.path.exists(args.experiment_result_data)  # Check if the file already exists
-
         # Save results for this seed to the CSV file
         results_df = pd.DataFrame(results_run)
         results_df.to_csv(args.experiment_result_data, mode='a', header=not file_exists, index=False)
         logger.debug(f"Results for seed {args.seed} saved to {args.experiment_result_data}")
 
+    if args.planned_mode:
+        # Compare plannded schedules with the real schedule from the simulation
+        planned_run = extended_compare_all_schedules(schedules=planed_schedules, reference_schedule=planed_schedules[TruthModel.__name__])
+        planned_run['seed'] = args.seed
+        planned_run['instance'] = args.instances
+        planned_run['priority_rule'] = args.priority_rule
+        print_comparison_table(planned_run)
+        file_exists = os.path.exists(args.experiment_result_data)  # Check if the file already exists
+        planned_df = pd.DataFrame(planned_run)
+        planned_df.to_csv(args.experiment_result_data, mode='a', header=not file_exists, index=False)
+        logger.debug(f"Planned results for seed {args.seed} saved to {args.experiment_result_data}")
+        # Save the planned results to the CSV file
 
 def main():
     args = parse_arguments()
+
+    # Generate a new file name with the current datetime in short format
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    args.experiment_result_data = args.experiment_result_data.replace(".csv", f"_{timestamp}.csv")
 
     os.makedirs(os.path.dirname(args.experiment_result_data), exist_ok=True)
 
