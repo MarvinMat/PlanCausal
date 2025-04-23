@@ -21,7 +21,7 @@ class PGMPYModel(Model):
     def inference(self) -> tuple[int, list[tuple]]:
         raise NotImplementedError("This method must be implemented in derived classes.")
     
-    def sample(self, variable={}, evidence={}, do={}) -> list:
+    def sample_OLD(self, variable={}, evidence={}, do={}) -> list:
         """
         Führt eine Inferenz auf dem gelernten Modell durch.
         """
@@ -53,7 +53,7 @@ class PGMPYModel(Model):
 
         return result
     
-    def sample_NEW(self, variable={}, evidence={}, do={}) -> list:
+    def sample(self, variable={}, evidence={}, do={}) -> list:
         """
         Führt eine Inferenz auf dem gelernten Modell durch.
         """

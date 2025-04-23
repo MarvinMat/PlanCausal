@@ -82,7 +82,7 @@ class Simulator:
             operation.machine = machine  # Store the actually used machine
             self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             machine.current_operation = operation
-            operation.sim_duration, influenced_variables = self.model.inference(operation, machine.current_tool)
+            operation.sim_duration, influenced_variables = self.model.inference(operation, machine.current_tool, False)
             self.observed_data.append(influenced_variables)
             machine.current_tool = operation.tool
             

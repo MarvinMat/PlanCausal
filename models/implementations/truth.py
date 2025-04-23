@@ -159,7 +159,7 @@ class TruthModel(PGMPYModel):
         
         return round(new_duration, 0)
     
-    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:      
+    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
         
         last_tool_change =  operation.tool != current_tool
         

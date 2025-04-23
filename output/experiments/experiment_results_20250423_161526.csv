@@ -1,0 +1,9 @@
+Model,makespan (over all),avg abs start deviation,avg duration deviation,levenshtein_seq_sim,a1_0_seq_sim,a2_0_seq_sim,a3_0_seq_sim,overall_tool_changes,seed,instance,priority_rule
+TruthContinousModel,0.0,0.0,0.0,0.0,0,0,0,0.0,154,550,dynamic
+CausalContinousModel,13.0,18.5,0.1,27.0,0,64,17,0.0,154,550,dynamic
+AverageOperationModel,6.0,8.8,0.0,19.667,0,51,8,0.0,154,550,dynamic
+LogNormalDistributionModel,6.0,11.6,-0.1,25.333,0,59,17,0.0,154,550,dynamic
+TruthContinousModel,0.0,0.0,0.0,0.0,0,0,0,0.0,155,550,dynamic
+CausalContinousModel,8.0,12.4,0.0,21.667,16,41,8,0.0,155,550,dynamic
+AverageOperationModel,0.0,9.4,0.0,27.333,14,50,18,0.0,155,550,dynamic
+LogNormalDistributionModel,0.0,15.4,0.0,35.667,30,57,20,0.0,155,550,dynamic

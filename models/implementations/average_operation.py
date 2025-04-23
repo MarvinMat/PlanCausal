@@ -12,7 +12,7 @@ class AverageOperationModel(Model):
     def initialize(self):
         data = pd.read_csv(self.csv_file)
         
-        # Group by product_type and operation_id
+        # Group by product_type and operation_ids
         unique_operations = data.groupby(['product_type', 'operation_id'])
 
         for (product_type, operation_id), group in unique_operations:
@@ -28,8 +28,9 @@ class AverageOperationModel(Model):
         if key in self.operation_dict and self.operation_dict[key] is not None:
             avg_operation_deviation = self.operation_dict[key]
         else:
+            raise ValueError(f"Operation {key} not found in the operation dictionary.")
             return None  # No data available for inference
         return round(avg_operation_deviation, 0)
 
-    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:      
+    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
         return self.get_new_duration(operation), None

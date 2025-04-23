@@ -31,6 +31,7 @@ class Operation:
                 , 'product_type': self.product_type
                 , 'operation_id': self.operation_id
                 , 'machine': self.plan_machine_id
+                , 'tool': self.tool
                 , 'start_time': self.plan_start
                 , 'duration' : self.duration
                 , 'plan_duration' : self.plan_duration
@@ -42,6 +43,7 @@ class Operation:
                 , 'product_type': self.product_type
                 , 'operation_id': self.operation_id
                 , 'machine': self.plan_machine_id
+                , 'tool': self.tool
                 , 'start_time': self.sim_start
                 , 'duration' : self.sim_duration
                 , 'plan_duration' : self.plan_duration

@@ -1,0 +1,5 @@
+Model,makespan (over all),avg abs start deviation,avg duration deviation,kendall_sequ_sim,levenshtein_seq_sim,a1_0_seq_sim,a2_0_seq_sim,a3_0_seq_sim,seed,instance,priority_rule
+TruthContinousSmallModel,0.0,0.0,0.0,1.0,1.0,1.0,1.0,1.0,448,500,fcfs
+CausalContinousSmallModel,-24.0,29.0,-0.4,1.0,0.782,1.0,1.0,0.999,448,500,fcfs
+AverageOperationModel,-5.0,16.2,0.0,1.0,0.797,1.0,1.0,1.0,448,500,fcfs
+LogNormalDistributionModel,14.0,29.3,0.2,1.0,0.765,1.0,1.0,1.0,448,500,fcfs

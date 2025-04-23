@@ -20,7 +20,7 @@ def run_simulation(machines, operations, model, planned_mode, oberserved_data_pa
                     , oberserved_data_path
                     , planned_mode=planned_mode)
 
-    sim.env.run(10000000)
+    sim.env.run(100000000)
     
     sim.write_data() if oberserved_data_path is not None else None
     

@@ -56,7 +56,7 @@ class DistributionModel(Model):
         """
         raise NotImplementedError("This method must be implemented in derived classes.")
 
-    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:
+    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:
         """
         Perform inference by sampling from the fitted distribution.
         """

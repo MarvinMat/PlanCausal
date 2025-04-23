@@ -135,7 +135,10 @@ class CausalModel(PGMPYModel):
 
         return successful_models
     
-    def inference(self, operation: Operation, current_tool) -> tuple[int, list[tuple]]:      
+    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
+        
+        if do_calculus:
+            return self.inference_do_calculus(operation, current_tool)
         
         last_tool_change =  operation.tool != current_tool
             
@@ -152,6 +155,27 @@ class CausalModel(PGMPYModel):
         machine_status = None
         cleaning = None
 
+        
+        # Sampling für die machine_status-Variable
+        if 'machine_state' in result:
+            machine_state_values = result['machine_state'].values
+            machine_state_probabilities = machine_state_values / machine_state_values.sum()  # Normalisieren
+            machine_state = np.random.choice([0, 1], p=machine_state_probabilities)
+        
+        # Sampling für die cleaning-Variable
+        if 'cleaning' in result:
+            cleaning_values = result['cleaning'].values
+            cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalisieren
+            cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
+
+        evidence = {
+            'last_tool_change': last_tool_change,
+            'cleaning': cleaning,
+            'machine_state': machine_state
+        }
+        # Inferenz durchführen
+        #result = self.sample(evidence=evidence)
+        
         # Sampling für die relative_processing_time_deviation-Variable
         if 'relative_processing_time_deviation' in result:
             relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
@@ -161,28 +185,17 @@ class CausalModel(PGMPYModel):
                 # Zustand für relative_processing_time_deviation basierend auf den Wahrscheinlichkeiten würfeln
                 relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
         
-        # Sampling für die machine_status-Variable
-        if 'machine_status' in result:
-            machine_status_values = result['machine_status'].values
-            machine_status_probabilities = machine_status_values / machine_status_values.sum()  # Normalisieren
-            machine_status = np.random.choice([0, 1], p=machine_status_probabilities)
-        
-        # Sampling für die cleaning-Variable
-        if 'cleaning' in result:
-            cleaning_values = result['cleaning'].values
-            cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalisieren
-            cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
 
         inferenced_variables = {
             'last_tool_change': last_tool_change,
             'relative_processing_time_deviation': relative_processing_time_deviation,
-            'machine_status': machine_status,
+            'machine_state': machine_status,
             'cleaning': cleaning
         }
             
         return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
     
-    def inference_NEW(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
+    def inference_do_calculus(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
         """ Perform inference with configurable variables. """
         
         last_tool_change =  operation.tool != current_tool

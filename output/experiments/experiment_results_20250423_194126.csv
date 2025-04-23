@@ -1,0 +1,13 @@
+Model,makespan (over all),avg abs start deviation,avg duration deviation,levenshtein_seq_sim,ndcg_seq_similarity,a1_0_seq_sim,a2_0_seq_sim,a3_0_seq_sim,overall_tool_changes,seed,instance,priority_rule
+TruthContinousModel,0.0,0.0,0.0,0.0,1.0,0,0,0,35.52,448,500,fcfs
+CausalContinousModel,4.0,10.4,0.2,20.333,1.0,0,0,61,34.187,448,500,fcfs
+AverageOperationModel,3.0,6.9,0.4,9.333,1.0,0,0,28,36.407,448,500,fcfs
+LogNormalDistributionModel,7.0,8.3,0.1,10.667,1.0,0,0,32,36.407,448,500,fcfs
+TruthContinousModel,0.0,0.0,0.0,0.0,1.0,0,0,0,36.407,449,500,fcfs
+CausalContinousModel,43.0,26.0,0.1,22.333,1.0,0,0,67,34.63,449,500,fcfs
+AverageOperationModel,12.0,14.1,0.1,18.667,1.0,0,0,56,35.52,449,500,fcfs
+LogNormalDistributionModel,13.0,14.5,0.3,23.333,1.0,0,0,70,35.073,449,500,fcfs
+TruthContinousModel,0.0,0.0,0.0,0.0,1.0,0,0,0,35.073,450,500,fcfs
+CausalContinousModel,10.0,7.6,0.3,10.0,1.0,0,0,30,35.073,450,500,fcfs
+AverageOperationModel,2.0,14.0,0.2,12.333,1.0,0,0,37,35.52,450,500,fcfs
+LogNormalDistributionModel,12.0,10.3,0.5,8.667,1.0,0,0,26,33.74,450,500,fcfs

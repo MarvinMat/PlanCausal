@@ -12,6 +12,39 @@ class ProductionGenerator:
     def __init__(self):
         self.template_jobs_data = []
         self.job_data = []
+        
+    def generate_data_static(self, num_instances = 150, seed = 1):
+        """
+        Generate data from a template.
+        """
+        
+        random.seed(seed)
+        
+        # Beispielhafte Datenstruktur
+        # Produkt, Arbeitsgang, Maschinengruppe, Tool, geplante Dauer, Nachfolger
+        self.template_jobs_data = [
+            ['p1', 1, 'a1', 1, 15, 2],
+            ['p1', 2, 'a3', 1, 10, -1],
+            ['p2', 1, 'a2', 1, 15, 2],       
+            ['p2', 2, 'a3', 2, 10, -1],
+            ['p3', 1, 'a1', 2, 15, 2],
+            ['p3', 2, 'a3', 2, 10, -1],
+            ['p4', 1, 'a2', 2, 15, 2],       
+            ['p4', 2, 'a3', 1, 10, -1],
+        ]
+
+        generator = JobsDataGenerator(self.template_jobs_data)
+        relation = {'p1': 0.50, 'p2': 0.13, 'p3': 0.12, 'p4': 0.25}  # Relation of each product type
+
+        self.job_data = generator.generate_jobs_data(num_instances, relation)
+
+        machines = [
+            [f'a{i}', 1, list(range(1, 2 + 1))]
+            for i in range(1, 3 + 1)
+        ]
+        
+        operations = self.prepare_data()
+        return operations, machines
     
     def generate_data_dynamic(self,
         amount_products = 10,
@@ -19,6 +52,7 @@ class ProductionGenerator:
         avg_operations=4, 
         avg_duration=30,
         machine_groups=4, 
+        machine_instances=1,
         tools_per_machine=3,
         num_instances=150, 
         distribution='normal',
@@ -68,7 +102,7 @@ class ProductionGenerator:
                 product = product_type[0]
                 machine_group = f'a{random.randint(1, machine_groups)}'
                 tool = random.randint(1, tools_per_machine)
-                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.7)))
+                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.09)))
                 successor = max(op + 1 , min(num_operations, int(random.gauss(num_operations, num_operations * 0.1))) ) if op < num_operations else -1
                 self.template_jobs_data.append([product, op, machine_group, tool, duration, successor])
 
@@ -76,11 +110,10 @@ class ProductionGenerator:
         self.job_data = JobsDataGenerator(self.template_jobs_data).generate_jobs_data(num_instances, product_types_relation)
 
         # Define machine pools dynamically
-        #TODO: Have multiple machines per machine group?
-        machines = [
-            [f'a{i}', 1, list(range(1, tools_per_machine + 1))]
-            for i in range(1, machine_groups + 1)
-        ]
+        # Create multiple machines per machine group
+        machines = []
+        for i in range(1, machine_groups + 1):
+            machines.append([f'a{i}', machine_instances, list(range(1, tools_per_machine + 1))])
 
         operations = self.prepare_data()
         return operations, machines
