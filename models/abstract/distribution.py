@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from models.abstract.model import Model
 from modules.factory.Operation import Operation
+import numpy as np
 
 class DistributionModel(Model):
     """
@@ -66,4 +67,4 @@ class DistributionModel(Model):
             params = self.distribution_dict[key]
             return round(self.sample(params), 0), key  # Call sample method to draw from distribution
         else:
-            return None  # No data available for inference
+            return np.float64(operation.duration), key  # No data available for inference

@@ -8,10 +8,17 @@ from modules.metrics import calculate_schedule, calculate_makespan, compare_make
 from models.implementations.truth_small import TruthSmallModel
 from models.implementations.causal_small import CausalSmallModel
 from models.implementations.causal import CausalModel
+from models.implementations.causal_do import CausalDoModel
 from models.implementations.causal_continious import CausalContinousModel
 from models.implementations.truth_continous import TruthContinousModel
 from models.implementations.truth_continous_small import TruthContinousSmallModel
 from models.implementations.causal_continious_small import CausalContinousSmallModel
+from models.implementations.causal_continious_small_log_learn import CausalContinousSmallLogLearnModel
+from models.implementations.causal_continious_small_log_copy import CausalContinousSmallLogCopyModel
+from models.implementations.truth_continous_small_log_learn import TruthContinousSmallLogLearnModel
+from models.implementations.truth_continous_small_log_copy import TruthContinousSmallLogCopyModel
+from models.implementations.truth_continous_small_trunc_learn import TruthContinousSmallTruncNormalLearnModel
+from models.implementations.causal_continious_small_trunc_learn import CausalContinousSmallTruncNormalLearnModel
 from models.implementations.truth import TruthModel
 from models.implementations.basic import BasicModel
 from models.implementations.average import AverageModel
@@ -19,6 +26,7 @@ from models.implementations.average_operation import AverageOperationModel
 from models.implementations.normal_distribution import NormalDistributionModel
 from models.implementations.exponential_distribution import ExponentialDistributionModel
 from models.implementations.kde_distribution import KDEDistributionModel
+from models.implementations.histo_distribution import HistoDistributionModel
 from models.implementations.log_normal_distribution import LogNormalDistributionModel
 from modules.plan.GifflerThompson import GifflerThompson
 from modules.vizualisation import GanttSchedule
@@ -48,11 +56,11 @@ def parse_arguments():
     parser.add_argument("--output", type=str, default="./output/results/", help="Output path for schedule data.")
     parser.add_argument("--seed", type=int, help="Seed for random generators.")
     parser.add_argument("--seed_iterator", type=int, default=1, help="Seed for random generators.")
-    parser.add_argument("--observed_data_path", type=str, default="./data/data_observe.csv", help="Path to observed data CSV.")
-    parser.add_argument("--result_data", type=str, default="./output/results/schedule.csv", help="Path to result data CSV.")
+    parser.add_argument("--observed_data_path", type=str, default="./data/data_observe", help="Path to observed data CSV.")
+    parser.add_argument("--result_data", type=str, default="./output/results/schedule", help="Path to result data CSV.")
     parser.add_argument("--experiment_result_data", type=str, default="./output/experiments/experiment_results.csv", help="Path to experiment result data CSV.")
     parser.add_argument("--plots", type=str, default="./output/plots", help="Output path for Gantt plots.")
-    parser.add_argument("--do_calculus", action="store_true", help="Uses the do-calculus to predict probabilities under causal assumptions.")
+    #parser.add_argument("--do_calculus", action="store_true", help="Uses the do-calculus to predict probabilities under causal assumptions.")
     return parser.parse_args()
 
 
@@ -64,21 +72,35 @@ def run_experiment(seed, args):
     args.seed = seed  # Update the seed for this run
     models = []
     try:
-        #models.append(TruthContinousSmallModel(seed=args.seed, lognormal_shape_modifier=False))
+        #models.append(TruthContinousSmallLogLearnModel(seed=args.seed))
+        #models.append(TruthContinousSmallTruncNormalLearnModel(seed=args.seed))
+        #models.append(TruthContinousSmallModel(seed=args.seed))
         #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
+        #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
+        models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
+        
+        
         #models.append(TruthModel(seed=args.seed, lognormal_shape_modifier=False))
-        models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
+                
+        result_data = f"{args.result_data}_{type(models[0]).__name__}.csv"
+        observed_data_path = f"{args.observed_data_path}_{type(models[0]).__name__}.csv"
         
-        truth_model_schedule = args.result_data.replace(".csv", f"_{type(models[0]).__name__}.csv")
+        models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallTruncNormalLearnModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
-        #models.append(CausalContinousSmallModel(csv_file=args.observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        #models.append(CausalSmallModel(csv_file=args.observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
-        #models.append(CausalModel(csv_file=args.observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        models.append(CausalContinousModel(csv_file=args.observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
-        models.append(AverageOperationModel(csv_file=truth_model_schedule))
-        #models.append(AverageModel(csv_file=args.observed_data_path))
-        models.append(LogNormalDistributionModel(csv_file=truth_model_schedule, seed=args.seed))
+        #models.append(CausalContinousModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalDoModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        
+        models.append(AverageOperationModel(csv_file=result_data))
+        #models.append(AverageModel(csv_file=observed_data_path))
+        models.append(LogNormalDistributionModel(csv_file=result_data))
+        models.append(HistoDistributionModel(csv_file=result_data)) 
+        basic_model = BasicModel()
     except Exception as e:
         logger.error(f"Error initializing models: {e}")
         return
@@ -95,12 +117,12 @@ def run_experiment(seed, args):
         # Step 1: Generate data
         production = ProductionGenerator()
         
-        operations, machines = production.generate_data_static()
+        operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
         
-        # operations, machines = production.generate_data_dynamic(amount_products = 5,
+        # operations, machines = production.generate_data_dynamic(amount_products = 10,
         #                                                         product_types_relation = None,
-        #                                                         avg_operations=3, 
-        #                                                         avg_duration=10,
+        #                                                         avg_operations=4, 
+        #                                                         avg_duration=15,
         #                                                         machine_groups=3, 
         #                                                         machine_instances=1,
         #                                                         tools_per_machine=3,
@@ -109,24 +131,36 @@ def run_experiment(seed, args):
         #                                                         seed=args.seed)
         
         # Step 2: Create schedule
-        # TODO: Always use the ground truth plan                
-        plan = GifflerThompson(rule_name=args.priority_rule, inference=model.inference, do_calculus=args.do_calculus)
+        # TODO: Always use the ground truth plan
+        if not args.planned_mode:
+            # Use the planned schedule from the truth model
+            #plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False) 
+            plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False) 
+            #machines = production.read_from_csv(args.result_data, machines=True)
+        else:
+            if isinstance(model, TruthModel):
+                plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False)
+            if isinstance(model, CausalDoModel):
+                plan = GifflerThompson(rule_name=args.priority_rule, inference=model.inference, do_calculus=True)
+            else:
+                plan = GifflerThompson(rule_name=args.priority_rule, inference=model.inference, do_calculus=False)              
         schedule = plan.create_schedule(operations, machines)
         planed_schedules[model_name] = pd.DataFrame([op.to_dict() for op in schedule])
 
         schedule_results = None
 
         # Step 3: Run simulation
-        if isinstance(model, TruthContinousModel):
+        if isinstance(model, type(models[0])):
+            # Use the planned schedule from the truth model
             # Show the product structure based on the given template
             production.job_data_metric()
             # Run simulation with the truth model
-            result = run_simulation(machines, operations, model, args.planned_mode, args.observed_data_path)
+            result = run_simulation(machines, operations, model, args.planned_mode, observed_data_path)
             schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
-            truthModel = model
+
         else:
             # Use the approach model to run the simulation
-            model_feedback_path = os.path.join(os.path.dirname(args.observed_data_path), model_name)
+            model_feedback_path = os.path.join(os.path.dirname(observed_data_path), "data_observe_"+model_name + ".csv")
             result = run_simulation(machines, operations, model, args.planned_mode, model_feedback_path)
             schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
             
@@ -143,7 +177,7 @@ def run_experiment(seed, args):
         #logger.debug(f"{model_name} | Makespan (Approach) {makespan} | Makespan-Diff (vs Truth) {makespan_diff['makespan']}")
 
         # Step 6: Create GanttCharts
-        #viz_output_path = GanttSchedule.create(schedule_results, args.plots, model_name)
+        viz_output_path = GanttSchedule.create(schedule_results, args.plots, model_name)
 
     # Perform evaluation
     if not args.planned_mode:

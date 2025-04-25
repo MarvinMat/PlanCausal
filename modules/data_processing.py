@@ -34,7 +34,7 @@ class ProductionGenerator:
         ]
 
         generator = JobsDataGenerator(self.template_jobs_data)
-        relation = {'p1': 0.50, 'p2': 0.13, 'p3': 0.12, 'p4': 0.25}  # Relation of each product type
+        relation = {'p1': 0.25, 'p2': 0.25 , 'p3': 0.25, 'p4': 0.25}  # Relation of each product type
 
         self.job_data = generator.generate_jobs_data(num_instances, relation)
 
@@ -102,7 +102,7 @@ class ProductionGenerator:
                 product = product_type[0]
                 machine_group = f'a{random.randint(1, machine_groups)}'
                 tool = random.randint(1, tools_per_machine)
-                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.09)))
+                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.7)))
                 successor = max(op + 1 , min(num_operations, int(random.gauss(num_operations, num_operations * 0.1))) ) if op < num_operations else -1
                 self.template_jobs_data.append([product, op, machine_group, tool, duration, successor])
 

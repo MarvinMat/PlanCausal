@@ -5,8 +5,9 @@ from models.abstract.model import Model
 from modules.factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
+from scipy.stats import truncnorm
 
-class TruthContinousSmallModel(PGMPYModel):
+class TruthContinousSmallTruncNormalLearnModel(PGMPYModel):
     def __init__(self, seed = None):    
         super().__init__(seed=seed) 
         self.model = None
@@ -18,7 +19,7 @@ class TruthContinousSmallModel(PGMPYModel):
         
     def initialize(self):
         self.model = self.create_model()
-        self.distributions = self.create_distributions()
+        self.distributions = self.create_log_distributions()
         super().initialize()
             
     def read_from_pre_xlsx(self, file):
@@ -26,14 +27,14 @@ class TruthContinousSmallModel(PGMPYModel):
         data.drop(columns=data.columns[0], axis=1, inplace=True)
         return data
     
-    def create_distributions(self):
+    def create_log_distributions(self):
         # Initialize distributions dictionary
         distributions = {}
 
         # Define mean and variance for each combination of 'machine_state' and 'cleaning'
         combinations = [
-            (True, {'mean': 0.7, 'variance': 0.01}),
-            (False, {'mean': 1.3, 'variance': 0.01})
+            (True, {'a': -1, 'b': 2, 'loc': 1.0, 'scale': 0.5}),
+            (False, {'a': 0, 'b': 1.5, 'loc': 0.0, 'scale': 1.0})
         ]
 
         # Populate the distributions dictionary
@@ -90,7 +91,6 @@ class TruthContinousSmallModel(PGMPYModel):
         }
                      
         result = self.sample(evidence=evidence)
-
         
         # Sampling for the relative_processing_time_deviation variable
         if 'relative_processing_time_deviation' in result:
@@ -106,14 +106,8 @@ class TruthContinousSmallModel(PGMPYModel):
         key = ('relative_processing_time_deviation', parent_values)
         if key in self.distributions:
             params = self.distributions[key]
-            mean = params['mean']
-            variance = params['variance']
-            std_dev = np.sqrt(variance)
-            
-            # Sample from the Gaussian distribution
-            relative_processing_time_deviation = np.random.normal(mean, std_dev)
-            if relative_processing_time_deviation <= 0.2:
-                relative_processing_time_deviation = 1.0
+            relative_processing_time_deviation = truncnorm.rvs(params['a'], params['b'], loc=params['loc'], scale=params['scale'])
+
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 
@@ -123,6 +117,10 @@ class TruthContinousSmallModel(PGMPYModel):
             'last_tool_change': last_tool_change,
             'relative_processing_time_deviation': relative_processing_time_deviation
         }
+        
+        result_value = round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0)
+        if result_value == 0.0:
+            result_value = 1.0
             
-        return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
+        return result_value, inferenced_variables
 

@@ -19,7 +19,11 @@ class LogNormalDistributionModel(DistributionModel):
         #self.check_log_normality(data)
         #self.check_distribution(data)
         
-        log_data = np.log(data)
+        try:
+            log_data = np.log(data)
+        except ValueError as e:
+            logging.error(f"Error in log transformation: {e}")
+            return None
         mu = np.mean(log_data)  # Mean of log-transformed data
         sigma = np.std(log_data)  # Standard deviation of log-transformed data
         return (mu, sigma)  # Store as a tuple

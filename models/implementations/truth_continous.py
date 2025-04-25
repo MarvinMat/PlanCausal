@@ -33,10 +33,10 @@ class TruthContinousModel(PGMPYModel):
 
         # Define mean and variance for each combination of 'machine_state' and 'cleaning'
         combinations = [
-            ((0, 0), {'mean': 1.0, 'variance': 0.01}),
-            ((0, 1), {'mean': 1.0, 'variance': 0.015}),
-            ((1, 0), {'mean': 1.0, 'variance': 0.02}),
-            ((1, 1), {'mean': 1.0, 'variance': 0.025}),
+            ((0, 0), {'mean': 1.7, 'variance': 0.01}),
+            ((0, 1), {'mean': 1.1, 'variance': 0.01}),
+            ((1, 0), {'mean': 0.9, 'variance': 0.01}),
+            ((1, 1), {'mean': 0.7, 'variance': 0.01}),
         ]
 
         # Populate the distributions dictionary
@@ -59,7 +59,7 @@ class TruthContinousModel(PGMPYModel):
         cpd_last_tool_change = TabularCPD(
             variable='last_tool_change', 
             variable_card=2,  # 2 states: 0 and 1
-            values=[[0.6], [0.4]]  # P(last_tool_change=0)=0.8, P(last_tool_change=1)=0.2
+            values=[[0.5], [0.5]]  # P(last_tool_change=0)=0.8, P(last_tool_change=1)=0.2
         )
         
         # CPD for 'machine_state' (dependent on 'last_tool_change')
@@ -226,6 +226,8 @@ class TruthContinousModel(PGMPYModel):
             
             # Sample from the Gaussian distribution
             relative_processing_time_deviation = np.random.normal(mean, std_dev)
+            if relative_processing_time_deviation <= 0.2:
+                relative_processing_time_deviation = 1.0
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 

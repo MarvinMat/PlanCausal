@@ -11,9 +11,10 @@ from models.utils import compare_structures
 from modules.simulation import Operation
 from sklearn.mixture import GaussianMixture
 
-class CausalContinousModel(PGMPYModel):    
+class CausalContinousSmallLogCopyModel(PGMPYModel):    
     def __init__(self, csv_file, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
+        #self.seed = seed
         self.csv_file = csv_file
         self.truth_model = truth_model
         self.edges = []
@@ -36,7 +37,8 @@ class CausalContinousModel(PGMPYModel):
         else:
             self.model = self.learn_causal_model()
         
-        self.learn_distributions(self.truth_model.model.edges)
+        self.use_distributions()
+        #self.learn_distributions(self.truth_model.model.edges)
         #self.logger.debug(f"Learned distributions: {self.distributions}")
         
         super().initialize()
@@ -65,6 +67,21 @@ class CausalContinousModel(PGMPYModel):
 
             # Store the distribution parameters with variable names and parent values
             self.distributions[(target_variable, tuple(combination.items()))] = {'mean': mean, 'variance': variance}
+        
+        print(f"{self.distributions}")
+        
+    def use_distributions(self):
+
+        # Define mean and variance for each combination of 'machine_state' and 'cleaning'
+        combinations = [
+            (True, {'mean': 0.7, 'variance': 0.01}),
+            (False, {'mean': 1.3, 'variance': 0.01})
+        ]
+
+        # Populate the distributions dictionary
+        for last_tool_change, stats in combinations:
+            self.distributions[('relative_processing_time_deviation', last_tool_change)] = stats
+
             
     def read_from_csv(self, file): 
         """ Read dataset from CSV, handling errors gracefully. """
@@ -92,7 +109,7 @@ class CausalContinousModel(PGMPYModel):
         }
 
         if method not in algorithms:
-            raise ValueError(f"Unsupported method: {method}")
+            raise ValueError(f"Unsupported method at gcastle: {method}")
 
         model = algorithms[method](**kwargs)
         model.learn(data_array)
@@ -110,7 +127,7 @@ class CausalContinousModel(PGMPYModel):
             est = ExhaustiveSearch(self.data)
             edges = list(est.estimate().edges())
         else:
-            raise ValueError(f"Unsupported method: {method}")
+            raise ValueError(f"Unsupported method at pgmpy: {method}")
         
         return edges
 
@@ -166,59 +183,50 @@ class CausalContinousModel(PGMPYModel):
 
         return successful_models
     
-    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:
-        last_tool_change = operation.tool != current_tool
-            
+    def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
+        
+        last_tool_change =  operation.tool != current_tool
+        
         evidence = {
             'last_tool_change': last_tool_change
+            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
         }
-        
-        # Inferenz durchführen
+                     
         result = self.sample(evidence=evidence)
 
-        # Initialize variables for inference
-        relative_processing_time_deviation = None
-        machine_state = None
-        cleaning = None
+        
+        # Sampling for the relative_processing_time_deviation variable
+        if 'relative_processing_time_deviation' in result:
+            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
+            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
 
-
-        # Sampling for the machine_status variable (discrete)
-        if 'machine_state' in result:
-            machine_state_values = result['machine_state'].values
-            machine_state_probabilities = machine_state_values / machine_state_values.sum()  # Normalize
-            machine_state = np.random.choice([0, 1], p=machine_state_probabilities)
-
-        # Sampling for the cleaning variable (discrete)
-        if 'cleaning' in result:
-            cleaning_values = result['cleaning'].values
-            cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalize
-            cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
-            
-        # Use the learned distributions for sampling
-        # Extract the parent variable values from the evidence
+            # Three possible states: 0.9, 1.0, 1.2
+            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
         
         # Create parent_values using machine_state and cleaning variables
-        parent_values = (('machine_state', machine_state), ('cleaning', cleaning))
+        parent_values = last_tool_change
         # Check if the parent combination exists in the learned distributions
         key = ('relative_processing_time_deviation', parent_values)
         if key in self.distributions:
             params = self.distributions[key]
             mean = params['mean']
             variance = params['variance']
-            std_dev = np.sqrt(variance)
-            
-            # Sample from the Gaussian distribution
-            relative_processing_time_deviation = np.random.normal(mean, std_dev)
-            if relative_processing_time_deviation <= 0.2:
-                relative_processing_time_deviation = 1.0
+
+            # Convert lognormal mean/variance to mu/sigma for underlying normal
+            sigma_squared = np.log(1 + (variance / (mean ** 2)))
+            sigma = np.sqrt(sigma_squared)
+            mu = np.log(mean) - (sigma_squared / 2)
+
+            # Sample from lognormal distribution
+            relative_processing_time_deviation = np.random.lognormal(mean=mu, sigma=sigma)
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 
+        
+
         inferenced_variables = {
             'last_tool_change': last_tool_change,
-            'relative_processing_time_deviation': relative_processing_time_deviation,
-            'machine_status': machine_state,
-            'cleaning': cleaning
+            'relative_processing_time_deviation': relative_processing_time_deviation
         }
             
         return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables

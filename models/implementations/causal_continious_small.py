@@ -14,6 +14,7 @@ from sklearn.mixture import GaussianMixture
 class CausalContinousSmallModel(PGMPYModel):    
     def __init__(self, csv_file, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
+        #self.seed = seed
         self.csv_file = csv_file
         self.truth_model = truth_model
         self.edges = []
@@ -36,7 +37,8 @@ class CausalContinousSmallModel(PGMPYModel):
         else:
             self.model = self.learn_causal_model()
         
-        self.learn_distributions(self.truth_model.model.edges)
+        self.use_distributions()
+        #self.learn_distributions(self.truth_model.model.edges)
         #self.logger.debug(f"Learned distributions: {self.distributions}")
         
         super().initialize()
@@ -65,6 +67,21 @@ class CausalContinousSmallModel(PGMPYModel):
 
             # Store the distribution parameters with variable names and parent values
             self.distributions[(target_variable, tuple(combination.items()))] = {'mean': mean, 'variance': variance}
+        
+        print(f"{self.distributions}")
+        
+    def use_distributions(self):
+
+        # Define mean and variance for each combination of 'machine_state' and 'cleaning'
+        combinations = [
+            (True, {'mean': 0.7, 'variance': 0.01}),
+            (False, {'mean': 1.3, 'variance': 0.01})
+        ]
+
+        # Populate the distributions dictionary
+        for last_tool_change, stats in combinations:
+            self.distributions[('relative_processing_time_deviation', last_tool_change)] = stats
+
             
     def read_from_csv(self, file): 
         """ Read dataset from CSV, handling errors gracefully. """
@@ -175,12 +192,20 @@ class CausalContinousSmallModel(PGMPYModel):
         
         # Inferenz durchführen
         result = self.sample(evidence=evidence)
-    
+      
+        # Sampling for the relative_processing_time_deviation variable
+        if 'relative_processing_time_deviation' in result:
+            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
+            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
+
+            # Three possible states: 0.9, 1.0, 1.2
+            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
+        
         # Use the learned distributions for sampling
         # Extract the parent variable values from the evidence
         
         # Create parent_values using machine_state and cleaning variables
-        parent_values = (('last_tool_change', last_tool_change),)
+        parent_values = last_tool_change
         # Check if the parent combination exists in the learned distributions
         key = ('relative_processing_time_deviation', parent_values)
         if key in self.distributions:
@@ -191,6 +216,8 @@ class CausalContinousSmallModel(PGMPYModel):
             
             # Sample from the Gaussian distribution
             relative_processing_time_deviation = np.random.normal(mean, std_dev)
+            if relative_processing_time_deviation <= 0.2:
+                relative_processing_time_deviation = 1.0
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 

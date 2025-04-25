@@ -10,10 +10,12 @@ from models.abstract.pgmpy import PGMPYModel
 from models.utils import compare_structures
 from modules.simulation import Operation
 from sklearn.mixture import GaussianMixture
+from scipy.stats import truncnorm
 
-class CausalContinousModel(PGMPYModel):    
-    def __init__(self, csv_file, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
+class CausalContinousSmallTruncNormalLearnModel(PGMPYModel):    
+    def __init__(self, csv_file, seed = 0, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
+        self.seed = seed
         self.csv_file = csv_file
         self.truth_model = truth_model
         self.edges = []
@@ -36,12 +38,20 @@ class CausalContinousModel(PGMPYModel):
         else:
             self.model = self.learn_causal_model()
         
-        self.learn_distributions(self.truth_model.model.edges)
+        #self.use_distributions()
+        self.learn_truncnorm_distributions(self.truth_model.model.edges)
         #self.logger.debug(f"Learned distributions: {self.distributions}")
         
         super().initialize()
     
-    def learn_distributions(self, edges):
+    def learn_truncnorm_distributions(self, edges):
+        # NOTE: The learned parameters depend on the actual data in self.data.
+        # If you want the learned distributions to match your original parameters (e.g., in 'combinations'),
+        # you must ensure the data was generated using those parameters and is large enough.
+        # Alternatively, you can directly assign your original parameters to self.distributions:
+        # self.distributions = {('relative_processing_time_deviation', True): {'a': ..., ...}, ...}
+        # Otherwise, this method will estimate parameters from the data, which may differ due to noise, sample size, or data generation process.
+        
         # Filter data to only include the target variable and its parent variables
         target_variable = 'relative_processing_time_deviation'
         parent_variables = [edge[0] for edge in edges if edge[1] == target_variable]
@@ -53,18 +63,18 @@ class CausalContinousModel(PGMPYModel):
         for _, combination in parent_combinations.iterrows():
             # Filter data for the current combination of parent variable values
             condition = (filtered_data[parent_variables] == combination.values).all(axis=1)
-            subset = filtered_data[condition][[target_variable]]
-
-            # Fit a Gaussian Mixture Model to estimate the distribution
-            gmm = GaussianMixture(n_components=1, random_state=42)
-            gmm.fit(subset)
-
-            # Extract the mean and variance of the Gaussian distribution
-            mean = gmm.means_.flatten()[0]
-            variance = gmm.covariances_.flatten()[0]
-
-            # Store the distribution parameters with variable names and parent values
-            self.distributions[(target_variable, tuple(combination.items()))] = {'mean': mean, 'variance': variance}
+            subset = filtered_data[condition][[target_variable]].values.flatten()
+            if len(subset) > 0:
+                loc = np.mean(subset)
+                scale = np.std(subset)
+                a = (np.min(subset) - loc) / scale
+                b = (np.max(subset) - loc) / scale
+                key = (target_variable, combination.values[0])
+                self.distributions[key] = {'a': a, 'b': b, 'loc': loc, 'scale': scale}
+            else:
+                self.logger.warning(f"No data available for combination: {combination.values}")
+                
+        print(f"{self.distributions}")
             
     def read_from_csv(self, file): 
         """ Read dataset from CSV, handling errors gracefully. """
@@ -92,7 +102,7 @@ class CausalContinousModel(PGMPYModel):
         }
 
         if method not in algorithms:
-            raise ValueError(f"Unsupported method: {method}")
+            raise ValueError(f"Unsupported method at gcastle: {method}")
 
         model = algorithms[method](**kwargs)
         model.learn(data_array)
@@ -110,7 +120,7 @@ class CausalContinousModel(PGMPYModel):
             est = ExhaustiveSearch(self.data)
             edges = list(est.estimate().edges())
         else:
-            raise ValueError(f"Unsupported method: {method}")
+            raise ValueError(f"Unsupported method at pgmpy: {method}")
         
         return edges
 
@@ -175,50 +185,34 @@ class CausalContinousModel(PGMPYModel):
         
         # Inferenz durchführen
         result = self.sample(evidence=evidence)
+        
+        # Sampling for the relative_processing_time_deviation variable
+        if 'relative_processing_time_deviation' in result:
+            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
+            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
 
-        # Initialize variables for inference
-        relative_processing_time_deviation = None
-        machine_state = None
-        cleaning = None
-
-
-        # Sampling for the machine_status variable (discrete)
-        if 'machine_state' in result:
-            machine_state_values = result['machine_state'].values
-            machine_state_probabilities = machine_state_values / machine_state_values.sum()  # Normalize
-            machine_state = np.random.choice([0, 1], p=machine_state_probabilities)
-
-        # Sampling for the cleaning variable (discrete)
-        if 'cleaning' in result:
-            cleaning_values = result['cleaning'].values
-            cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalize
-            cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
-            
+            # Three possible states: 0.9, 1.0, 1.2
+            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
         # Use the learned distributions for sampling
         # Extract the parent variable values from the evidence
         
         # Create parent_values using machine_state and cleaning variables
-        parent_values = (('machine_state', machine_state), ('cleaning', cleaning))
+        parent_values = last_tool_change
         # Check if the parent combination exists in the learned distributions
         key = ('relative_processing_time_deviation', parent_values)
         if key in self.distributions:
             params = self.distributions[key]
-            mean = params['mean']
-            variance = params['variance']
-            std_dev = np.sqrt(variance)
-            
-            # Sample from the Gaussian distribution
-            relative_processing_time_deviation = np.random.normal(mean, std_dev)
-            if relative_processing_time_deviation <= 0.2:
-                relative_processing_time_deviation = 1.0
+            relative_processing_time_deviation = truncnorm.rvs(params['a'], params['b'], loc=params['loc'], scale=params['scale'])
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 
         inferenced_variables = {
             'last_tool_change': last_tool_change,
-            'relative_processing_time_deviation': relative_processing_time_deviation,
-            'machine_status': machine_state,
-            'cleaning': cleaning
+            'relative_processing_time_deviation': relative_processing_time_deviation
         }
             
-        return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
+        result_value = round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0)
+        if result_value == 0.0:
+            result_value = 1.0
+            
+        return result_value, inferenced_variables
