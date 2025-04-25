@@ -9,11 +9,12 @@ from pgmpy.estimators import HillClimbSearch, ExhaustiveSearch
 from models.abstract.pgmpy import PGMPYModel
 from models.utils import compare_structures
 from modules.simulation import Operation
+from pgmpy.inference import VariableElimination, CausalInference
 
-class CausalModel(PGMPYModel):    
-    def __init__(self, csv_file, seed=None, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
+class CausalDoModel(PGMPYModel):    
+    def __init__(self, csv_file, seed = None, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
-        self.seed=seed
+        #self.seed=seed
         self.csv_file = csv_file
         self.truth_model = truth_model
         self.structure_learning_lib = structure_learning_lib
@@ -21,6 +22,7 @@ class CausalModel(PGMPYModel):
         self.estimator = estimator  # Bayesian Estimation method
         self.model = None
         self.kwargs = kwargs  # Additional arguments for learning algorithms
+        self.ci = None
         
          #TODO Use Feedback data and merge with oberseved data
 
@@ -34,6 +36,7 @@ class CausalModel(PGMPYModel):
         else:
             self.model = self.learn_causal_model()
         
+        self.ci = CausalInference(self.model)
         super().initialize()
     
     def read_from_csv(self, file): 
@@ -175,7 +178,7 @@ class CausalModel(PGMPYModel):
             'machine_state': machine_state
         }
         # Inferenz durchführen
-        #result = self.sample(evidence=evidence)
+        result = self.sample(evidence=evidence)
         
         # Sampling für die relative_processing_time_deviation-Variable
         if 'relative_processing_time_deviation' in result:
@@ -196,7 +199,7 @@ class CausalModel(PGMPYModel):
             
         return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
     
-    def inference_do_calculus(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
+    def inference_do_calculus_OLD(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
         """ Perform inference with configurable variables. """
         
         last_tool_change =  operation.tool != current_tool
@@ -211,7 +214,7 @@ class CausalModel(PGMPYModel):
         # Extract probabilities
         factor_do_true = result_do_true[target_variable]
         factor_do_false = result_do_false[target_variable]
-        prob_do_true, prob_do_false = factor_do_true.values[1], factor_do_false.values[1]
+        prob_do_true, prob_do_false = factor_do_true.values[0], factor_do_false.values[0]
 
         # Select the best intervention
         cleaning = prob_do_true > prob_do_false
@@ -231,3 +234,94 @@ class CausalModel(PGMPYModel):
         # Compute new duration
         return round(operation.duration * inferenced_variables[target_variable], 0), inferenced_variables
     
+    def inference_do_calculus_NEW1(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
+        """ Perform inference with configurable variables. """
+        
+        last_tool_change =  operation.tool != current_tool
+        evidence = {
+            evidence_variable: last_tool_change
+        }
+        do_true = self.causal_inference.query(
+            variables=['relative_processing_time_deviation'],
+            evidence={evidence_variable: last_tool_change},
+            do={do_variable: 1},
+            show_progress=False
+        )
+        
+        do_false = self.causal_inference.query(
+            variables=['relative_processing_time_deviation'],
+            evidence={evidence_variable: last_tool_change},
+            do={do_variable: 0},
+            show_progress=False
+        )
+        # Extract probabilities
+        factor_do_true = do_true
+        factor_do_false = do_false
+        prob_do_true, prob_do_false = factor_do_true.values[0], factor_do_false.values[0]
+
+        # Select the best intervention
+        cleaning = prob_do_true > prob_do_false
+        selected_result = do_true if cleaning else do_false
+
+        # Define mapping for states
+        # Pgmpy can only have int states
+        relative_processing_time_deviation_mapping = {0: 0.9, 1: 1.0, 2: 1.2}
+        
+        # Sample dynamically
+        inferenced_variables = {evidence_variable: last_tool_change, do_variable: cleaning}
+        inferenced_variables[target_variable] = np.random.choice(selected_result.state_names[target_variable], p=selected_result.values / selected_result.values.sum())
+        if target_variable == target_variable:
+            inferenced_variables[target_variable] = relative_processing_time_deviation_mapping[inferenced_variables[target_variable]]
+                
+        # Compute new duration
+        return round(operation.duration * inferenced_variables[target_variable], 0), inferenced_variables
+    
+    
+    def inference_do_calculus(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
+        """ Perform inference with configurable variables. """
+        last_tool_change = operation.tool != current_tool
+        evidence = {evidence_variable: last_tool_change}
+
+        do_true = self.causal_inference.query(
+            variables=[target_variable],
+            evidence=evidence,
+            do={do_variable: 1},
+            show_progress=False
+        )
+        do_false = self.causal_inference.query(
+            variables=[target_variable],
+            evidence=evidence,
+            do={do_variable: 0},
+            show_progress=False
+        )
+
+        # Define mapping for states
+        relative_processing_time_deviation_mapping = {0: 0.9, 1: 1.0, 2: 1.2}
+
+        # Calculate expected values
+        exp_true = sum(do_true.values[i] * relative_processing_time_deviation_mapping[i] for i in range(3))
+        exp_false = sum(do_false.values[i] * relative_processing_time_deviation_mapping[i] for i in range(3))
+
+        # Choose the intervention with the smaller expected value
+        if exp_true < exp_false:
+            cleaning = 1
+            selected_result = do_true
+        else:
+            cleaning = 0
+            selected_result = do_false
+
+        # Sample from the chosen distribution
+        sampled_state = np.random.choice(
+            selected_result.state_names[target_variable],
+            p=selected_result.values / selected_result.values.sum()
+        )
+        sampled_value = relative_processing_time_deviation_mapping[sampled_state]
+
+        inferenced_variables = {
+            evidence_variable: last_tool_change,
+            do_variable: cleaning,
+            target_variable: sampled_value
+        }
+
+        # Compute new duration
+        return round(operation.duration * sampled_value, 0), inferenced_variables

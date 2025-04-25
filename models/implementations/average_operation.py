@@ -28,9 +28,13 @@ class AverageOperationModel(Model):
         if key in self.operation_dict and self.operation_dict[key] is not None:
             avg_operation_deviation = self.operation_dict[key]
         else:
-            raise ValueError(f"Operation {key} not found in the operation dictionary.")
-            return None  # No data available for inference
+            avg_operation_deviation = self.operation.duration
+            #raise ValueError(f"Operation {key} not found in the operation dictionary.")
+            #return None  # No data available for inference        
         return round(avg_operation_deviation, 0)
 
     def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
-        return self.get_new_duration(operation), None
+        new_duration = self.get_new_duration(operation)
+        if new_duration is None:
+            raise ValueError(f"Operation {new_duration} not found in the operation dictionary.")
+        return new_duration, None

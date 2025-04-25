@@ -1,5 +1,7 @@
 # Costum folders
 
+/data/*
+/output/experiments/*
 /output/results/*
 /output/plots/*
 !output/.gitkeep

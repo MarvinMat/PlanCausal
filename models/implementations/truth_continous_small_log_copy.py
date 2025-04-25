@@ -6,7 +6,7 @@ from modules.factory.Operation import Operation
 from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
-class TruthContinousSmallModel(PGMPYModel):
+class TruthContinousSmallLogCopyModel(PGMPYModel):
     def __init__(self, seed = None):    
         super().__init__(seed=seed) 
         self.model = None
@@ -79,6 +79,7 @@ class TruthContinousSmallModel(PGMPYModel):
         model.check_model()
         
         return model
+
     
     def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
         
@@ -108,12 +109,14 @@ class TruthContinousSmallModel(PGMPYModel):
             params = self.distributions[key]
             mean = params['mean']
             variance = params['variance']
-            std_dev = np.sqrt(variance)
-            
-            # Sample from the Gaussian distribution
-            relative_processing_time_deviation = np.random.normal(mean, std_dev)
-            if relative_processing_time_deviation <= 0.2:
-                relative_processing_time_deviation = 1.0
+
+            # Convert lognormal mean/variance to mu/sigma for underlying normal
+            sigma_squared = np.log(1 + (variance / (mean ** 2)))
+            sigma = np.sqrt(sigma_squared)
+            mu = np.log(mean) - (sigma_squared / 2)
+
+            # Sample from lognormal distribution
+            relative_processing_time_deviation = np.random.lognormal(mean=mu, sigma=sigma)
         else:
             self.logger.error(f"No distribution found for parent values: {parent_values}. Using default mean and variance.")
 
@@ -124,5 +127,5 @@ class TruthContinousSmallModel(PGMPYModel):
             'relative_processing_time_deviation': relative_processing_time_deviation
         }
             
-        return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
+        return max(1, round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0)), inferenced_variables
 

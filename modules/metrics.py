@@ -46,6 +46,30 @@ def compare_makespan(schedule_truth, schedule_approach):
     return {
         "makespan": round(makespan_approach - makespan_truth , 0)
     }
+    
+def compare_makespan_jobwise(schedule_truth, schedule_approach):
+    """
+    Compare makespan differences per job_id and operation_id between truth and approach schedules.
+    The schedules are merged, and the differences are calculated for each pair of matching operations.
+    """
+    # Merge the schedules on job_id and operation_id
+    merged = pd.merge(
+        schedule_truth, schedule_approach,
+        on=['job_id', 'operation_id'],
+        suffixes=('_truth', '_approach')
+    )
+    
+    # Calculate the makespan difference for each job_id
+    merged['makespan_diff'] = (merged['end_time_approach'] - merged['start_time_approach']) - \
+                              (merged['end_time_truth'] - merged['start_time_truth'])
+    
+    # Group by job_id and calculate the average makespan difference
+    makespan_diff_per_job = merged.groupby('job_id')['makespan_diff'].mean()
+    
+    return {
+        'makespan_diff_per_job': makespan_diff_per_job.to_dict(),
+        'avg_makespan_diff': round(makespan_diff_per_job.mean(), 2)
+    }
 
 def calculate_makespan_product(df_schedule):
     # Convert the list of operation objects to a DataFrame
@@ -265,13 +289,13 @@ def compare_tool_change_on_machine(schedule_truth, schedule_approach):
             truth_tool_changes = sum(1 for i in range(1, len(truth_ops)) if truth_ops[i] != truth_ops[i - 1])
             approach_tool_changes = sum(1 for i in range(1, len(approach_ops)) if approach_ops[i] != approach_ops[i - 1])
             
-            changes_to_total = round((approach_tool_changes / len(approach_ops)) * 100, 2) if approach_ops else 0.0
+            tool_change_percentage = round((approach_tool_changes / len(approach_ops)) * 100, 2) if approach_ops else 0.0
             
             machine_metrics[machine] = {
                 'truth_tool_changes': truth_tool_changes,
                 'approach_tool_changes': approach_tool_changes,
                 'tool_change_difference': approach_tool_changes - truth_tool_changes,
-                'tool_change_percentage': changes_to_total
+                'tool_change_percentage': tool_change_percentage
             }
             
             # Calculate the percentage of tool changes
@@ -280,12 +304,12 @@ def compare_tool_change_on_machine(schedule_truth, schedule_approach):
             else:
                 machine_metrics[machine]['tool_change_percentage'] = 0.0
             
-            tool_changes.append(changes_to_total)
+            tool_changes.append(tool_change_percentage)
     
     results = {
         'machine_wise_tool_changes': machine_metrics,
         'overall_tool_change_difference': sum(metrics['tool_change_difference'] for metrics in machine_metrics.values()),
-        'overall_tool_changes': round(sum(tool_changes) / len(tool_changes), 3) if tool_changes else 0
+        'tool_changes_percentage': round(sum(tool_changes) / len(tool_changes), 3) if tool_changes else 0
     }
     return results
     
@@ -300,6 +324,9 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     
     # Makespan
     metrics.update(compare_makespan(schedule_truth, schedule_approach))
+    
+    # Makespan jobwise
+    metrics.update(compare_makespan_jobwise(schedule_truth, schedule_approach))
     
     # Makespan product
     #metrics.update(compare_makespan_product(schedule_truth, schedule_approach))
@@ -323,18 +350,20 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     metrics.update(compare_tool_change_on_machine(schedule_truth, schedule_approach))
     
     return { 
-        'makespan (over all)': abs(metrics['makespan']), 
+        'makespan': metrics['makespan'], 
+        'avg_makespan_diff': metrics['avg_makespan_diff'],
         #'makespan (over product)': metrics['makespan(product)'], 
         #'avg operation shift': metrics['avg_start_shift'],
-        'avg abs start deviation': abs(metrics['avg_abs_start_deviation']),
-        'avg duration deviation': abs(metrics['avg_duration_deviation_diff']),
+        'avg abs start dev': metrics['avg_abs_start_deviation'],
+        'avg duration dev': metrics['avg_duration_deviation_diff'],
         #'kendall_sequ_sim': metrics['overall_sequence_similarity'],
-        'levenshtein_seq_sim': metrics['overall_levenshtein_sequence_similarity'],
-        'ndcg_seq_similarity': metrics['overall_ndcg_similarity'],
-        'a1_0_seq_sim': metrics['machine_a1_0_levenshtein_distance'],
-        'a2_0_seq_sim': metrics['machine_a2_0_levenshtein_distance'],
-        'a3_0_seq_sim': metrics['machine_a3_0_levenshtein_distance'],
-        'overall_tool_changes': metrics['overall_tool_changes']
+        'levenshtein_seq': metrics['overall_levenshtein_sequence_similarity'],
+        'ndcg_seq': metrics['overall_ndcg_similarity'],
+        #'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
+        #'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
+        'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
+        'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
+        'toolchange_perc': metrics['tool_changes_percentage']
         #'machine_shift_count': metrics['machine_shift_count']        
     }
 

@@ -2,12 +2,12 @@ from modules.factory.Operation import Operation
 import re
 
 # Define a priority rule
-def calculate_dynamic_priority(operation) -> int:
+def calculate_dynamic_priority(operation, infered_operation_duration) -> int:
     # Priorität basierend auf der geplanten Startzeit der Vorgängeraufgaben
     if not operation.predecessor_operations:
         return operation.plan_start if operation.plan_start is not None else 0
     else:
-        return max(pred.plan_start for pred in operation.predecessor_operations) + operation.duration
+        return max(pred.plan_start for pred in operation.predecessor_operations) + infered_operation_duration
 
 # Define a priority rule
 def calculate_fcfs_priority(operation: Operation) -> int:
@@ -31,9 +31,9 @@ priority_rules = {
     "fcfs": calculate_fcfs_priority
 }
 
-def get_priority(operation, rule_name):
+def get_priority(operation, rule_name, infered_operation_duration):
     rule_function = priority_rules.get(rule_name)
     if rule_function is not None:
-        return rule_function(operation)
+        return rule_function(operation, infered_operation_duration)
     else:
         raise ValueError(f"Unknown rule: {rule_name}")
