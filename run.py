@@ -120,13 +120,13 @@ def run_experiment(seed, args):
         
         #operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
         
-        operations, machines = production.generate_data_dynamic(amount_products = 10,
+        operations, machines = production.generate_data_dynamic(amount_products = 2,
                                                                 product_types_relation = None,
-                                                                avg_operations=5, 
-                                                                avg_duration=30,
-                                                                machine_groups=4, 
-                                                                machine_instances=1,
-                                                                tools_per_machine=3,
+                                                                avg_operations= 5, 
+                                                                avg_duration= 10,
+                                                                machine_groups= 3, 
+                                                                machine_instances= 1,
+                                                                tools_per_machine= 2,
                                                                 num_instances=args.instances, 
                                                                 distribution='equal',
                                                                 seed=args.seed)

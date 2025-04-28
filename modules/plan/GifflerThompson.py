@@ -97,7 +97,7 @@ class GifflerThompson:
                     #inference_tool = available_times[selected_machine_idx][1]
                     #inference_duration, inferenced_variables = self.inference(successor, inference_tool, self.do_calculus) 
                     #priority = get_priority(operation=successor,rule_name=self.rule_name, infered_operation_duration=inference_duration)
-                    heapq.heappush(ready_operations, (0, (str(current_operation.job_id) + str(current_operation.operation_id)), successor))
+                    heapq.heappush(ready_operations, (0, (str(current_operation.job_id) + " _ " + str(current_operation.operation_id)), successor))
                     inserted_operations.add(successor)
 
             # Füge die Aufgabe zur Zeitplanung hinzu

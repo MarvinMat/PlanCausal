@@ -102,7 +102,7 @@ class ProductionGenerator:
                 product = product_type[0]
                 machine_group = f'a{random.randint(1, machine_groups)}'
                 tool = random.randint(1, tools_per_machine)
-                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.5)))
+                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.2)))
                 successor = max(op + 1 , min(num_operations, int(random.gauss(num_operations, num_operations * 0.1))) ) if op < num_operations else -1
                 self.template_jobs_data.append([product, op, machine_group, tool, duration, successor])
 
