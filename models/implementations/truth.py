@@ -7,13 +7,12 @@ from pgmpy.models import BayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
 class TruthModel(PGMPYModel):
-    def __init__(self, seed = None, lognormal_shape_modifier = False):    
+    def __init__(self, seed = None):    
         super().__init__(seed=seed) 
         self.model = None
         self.variable_elemination = None
         self.belief_propagation = None
         self.causal_inference = None
-        self.lognormal_shape_modifier = lognormal_shape_modifier
         self.seed = seed
         
         
@@ -43,6 +42,11 @@ class TruthModel(PGMPYModel):
             variable='relative_processing_time_deviation', 
             variable_card=3,
             # Columns: [ms=0, c=0], [ms=0, c=1], [ms=1, c=0], [ms=1, c=1]
+            # values=[
+            #     [0.1, 0.1, 0.1, 0.1],  # P(0.9)
+            #     [0.2, 0.7, 0.7, 0.2],  # P(1.0)
+            #     [0.7, 0.2, 0.2, 0.7],  # P(1.2)
+            # ],
             values=[
                 [0.7, 0.1, 0.1, 0.7],  # P(0.9)
                 [0.2, 0.7, 0.7, 0.2],  # P(1.0)
@@ -119,6 +123,7 @@ class TruthModel(PGMPYModel):
             #     [0.60, 0.85, 0.40, 0.40],  # 1.0
             #     [0.32, 0.05, 0.10, 0.56]   # 1.2
             # ],
+            
             values=[
                 [0.20, 0.10, 0.05, 0.30],  # P(0.9)
                 [0.60, 0.80, 0.30, 0.40],  # P(1.0)
@@ -146,72 +151,6 @@ class TruthModel(PGMPYModel):
         
         return model
     
-    def sample_network(self, evidence: dict) -> dict:
-        """
-        Samples the Bayesian network given the provided evidence.
-
-        Args:
-            evidence (dict): A dictionary where keys are variable names and values are their observed states.
-
-        Returns:
-            dict: A dictionary containing the sampled values for all variables in the network.
-        """
-        from pgmpy.inference import VariableElimination
-
-        # Initialize variable elimination for inference
-        if self.variable_elemination is None:
-            self.variable_elemination = VariableElimination(self.model)
-
-        # Perform inference to get the probability distributions for all variables
-        sampled_result = {}
-        for variable in self.model.nodes():
-            if variable not in evidence:
-                # Query the probability distribution for the variable
-                distribution = self.variable_elemination.query(
-                    variables=[variable],
-                    evidence=evidence
-                )
-                sampled_result[variable] = distribution.values
-
-        return sampled_result
-    
-    def sample_without_evidence(self, num_samples: int) -> list[dict]:
-        """
-        Samples the Bayesian network multiple times without providing any evidence.
-
-        Args:
-            num_samples (int): The number of samples to generate.
-
-        Returns:
-            list[dict]: A list of dictionaries, where each dictionary contains the sampled values for all variables in the network.
-        """
-        from pgmpy.sampling import BayesianModelSampling
-
-        # Initialize the sampler
-        sampler = BayesianModelSampling(self.model)
-
-        # Generate samples
-        samples = sampler.forward_sample(size=num_samples)
-        
-        samples.to_excel("./output/samples.xlsx", index=False)
-
-        # Convert the DataFrame to a list of dictionaries
-        sampled_results = samples.to_dict(orient='records')
-
-        return sampled_results
-    
-    def get_new_duration(self, operation: Operation, inferenced_variables) -> int:
-        base_duration = operation.duration * inferenced_variables['relative_processing_time_deviation']
-
-        # Generate log-normal noise around base duration
-        if self.lognormal_shape_modifier:
-            log_normal_factor = np.random.lognormal(mean=0, sigma=0.08)  # Small deviation
-            new_duration = base_duration * log_normal_factor  # Introduce log-normal variation
-        else: 
-            new_duration = base_duration
-        
-        return round(new_duration, 0)
-    
     def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
         
         last_tool_change =  operation.tool != current_tool
@@ -226,6 +165,7 @@ class TruthModel(PGMPYModel):
         # Variablen für relative_processing_time_deviation, machine_state und cleaning initialisieren
         machine_state = None
         cleaning = None
+        
 
         # Sampling for the relative_processing_time_deviation variable
         if 'relative_processing_time_deviation' in result:
@@ -255,5 +195,5 @@ class TruthModel(PGMPYModel):
             'cleaning': cleaning
         }
             
-        return self.get_new_duration(operation=operation, inferenced_variables=inferenced_variables), inferenced_variables
+        return round(operation.duration * inferenced_variables['relative_processing_time_deviation'], 0), inferenced_variables
 

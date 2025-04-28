@@ -1,0 +1,2065 @@
+INFO:root:You can use `os.environ['CASTLE_BACKEND'] = backend` to set the backend(`pytorch` or `mindspore`).
+INFO:root:You are using ``pytorch`` as the backend.
+2025-04-27 23:53:02,524 - General - DEBUG - Running experiment with seed: 336
+2025-04-27 23:53:02,524 - General - DEBUG - Start model iteration.
+2025-04-27 23:53:26,468 - General - DEBUG - TruthModel | Schedule 2566.0
+2025-04-27 23:53:27,515 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:53:27,515 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:53:27,515 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:53:51,600 - General - DEBUG - CausalModel | Schedule 2531.0
+2025-04-27 23:53:52,654 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:53:52,654 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:53:52,654 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:54:24,966 - General - DEBUG - CausalDoModel | Schedule 2599.0
+2025-04-27 23:54:26,089 - General - DEBUG - AverageOperationModel | Schedule 2476.0
+2025-04-27 23:54:27,230 - General - DEBUG - LogNormalDistributionModel | Schedule 2501.0
+2025-04-27 23:54:28,605 - General - DEBUG - HistoDistributionModel | Schedule 2477.0
+2025-04-27 23:54:29,770 - General - DEBUG - BasicModel | Schedule 2590.0
+2025-04-27 23:54:30,691 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2564.0  ...       100        dynamic
+1                 CausalModel    2517.0  ...       100        dynamic
+2               CausalDoModel    2537.0  ...       100        dynamic
+3       AverageOperationModel    2476.0  ...       100        dynamic
+4  LogNormalDistributionModel    2477.0  ...       100        dynamic
+5      HistoDistributionModel    2466.0  ...       100        dynamic
+6                  BasicModel    2590.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-27 23:54:30,692 - General - DEBUG - Planned results for seed 336 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-27 23:54:30,692 - General - DEBUG - Experiment completed for seed: 336
+2025-04-27 23:54:30,692 - General - DEBUG - Running experiment with seed: 337
+2025-04-27 23:54:30,693 - General - DEBUG - Start model iteration.
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            5 │           11.2 │               56 │
+│ p2        │            3 │           27.7 │               83 │
+│ p3        │            2 │           21.5 │               43 │
+│ p4        │            2 │           15   │               30 │
+│ p5        │            4 │           13   │               52 │
+│ p6        │            4 │           10.5 │               42 │
+│ p7        │            4 │            5.5 │               22 │
+│ p8        │            3 │           22.3 │               67 │
+│ p9        │            4 │           16.2 │               65 │
+│ p10       │            4 │           17   │               68 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │            7 │           12   │           84 │
+│ a3              │           15 │           11.7 │          176 │
+│ a2              │           13 │           20.6 │          268 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  35   │
+│ Average Operation Duration │  15.1 │
+│ Total Processing Time      │ 528   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ######### (9)
+p10 | ############ (12)
+p2  | ####### (7)
+p3  | ######### (9)
+p4  | ######### (9)
+p5  | ########## (10)
+p6  | ########## (10)
+p7  | ############# (13)
+p8  | ############### (15)
+p9  | ###### (6)
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2564 │          1.6 │                  0.43 │                 3   │                1.4  │             0     │                0 │            49.867 │    336 │
+│  1 │ CausalModel                │       2517 │        -15.4 │                  0.26 │                15.3 │                1.37 │            11     │               12 │            51.17  │    336 │
+│  2 │ CausalDoModel              │       2537 │        -11.6 │                  0.1  │                20.3 │                1.38 │            16.333 │               17 │            51.083 │    336 │
+│  3 │ AverageOperationModel      │       2476 │        -30.6 │                  0.08 │                22.9 │                0.94 │             5.667 │                5 │            51.21  │    336 │
+│  4 │ LogNormalDistributionModel │       2477 │        -32.6 │                  0.1  │                25.5 │                1.35 │            14.667 │               17 │            50.63  │    336 │
+│  5 │ HistoDistributionModel     │       2466 │        -47.5 │                 -0.01 │                31.5 │                1.1  │             9.667 │               13 │            51.663 │    336 │
+│  6 │ BasicModel                 │       2590 │         17.9 │                  0.67 │                13.8 │                1.23 │             9     │                8 │            50.137 │    336 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           24   │               96 │
+│ p2        │            4 │           14   │               56 │
+│ p3        │            4 │           22.8 │               91 │
+│ p4        │            3 │           11.7 │               35 │
+│ p5        │            3 │           19   │               57 │
+│ p6        │            2 │           15   │               30 │
+│ p7        │            2 │           11   │               22 │
+│ p8        │            4 │           17.8 │               71 │
+│ p9        │            3 │           18.3 │               55 │
+│ p10       │            5 │           23.2 │              116 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+2025-04-27 23:54:55,025 - General - DEBUG - TruthModel | Schedule 2728.0
+2025-04-27 23:54:56,333 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:54:56,333 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:54:56,333 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:55:20,010 - General - DEBUG - CausalModel | Schedule 2693.0
+2025-04-27 23:55:20,964 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:55:20,964 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:55:20,964 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:55:52,237 - General - DEBUG - CausalDoModel | Schedule 2742.0
+2025-04-27 23:55:53,639 - General - DEBUG - AverageOperationModel | Schedule 2719.0
+2025-04-27 23:55:54,627 - General - DEBUG - LogNormalDistributionModel | Schedule 2680.0
+2025-04-27 23:55:56,522 - General - DEBUG - HistoDistributionModel | Schedule 2740.0
+2025-04-27 23:55:57,482 - General - DEBUG - BasicModel | Schedule 2757.0
+2025-04-27 23:55:58,436 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2699.0  ...       100        dynamic
+1                 CausalModel    2670.0  ...       100        dynamic
+2               CausalDoModel    2742.0  ...       100        dynamic
+3       AverageOperationModel    2719.0  ...       100        dynamic
+4  LogNormalDistributionModel    2679.0  ...       100        dynamic
+5      HistoDistributionModel    2692.0  ...       100        dynamic
+6                  BasicModel    2757.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-27 23:55:58,437 - General - DEBUG - Planned results for seed 337 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-27 23:55:58,437 - General - DEBUG - Experiment completed for seed: 337
+2025-04-27 23:55:58,437 - General - DEBUG - Running experiment with seed: 338
+2025-04-27 23:55:58,438 - General - DEBUG - Start model iteration.
+2025-04-27 23:56:20,255 - General - DEBUG - TruthModel | Schedule 1820.0
+2025-04-27 23:56:21,010 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:56:21,010 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:56:21,010 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:56:42,161 - General - DEBUG - CausalModel | Schedule 1823.0
+2025-04-27 23:56:43,525 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:56:43,525 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:56:43,525 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:57:11,734 - General - DEBUG - CausalDoModel | Schedule 1855.0
+2025-04-27 23:57:12,508 - General - DEBUG - AverageOperationModel | Schedule 1809.0
+2025-04-27 23:57:13,269 - General - DEBUG - LogNormalDistributionModel | Schedule 1838.0
+2025-04-27 23:57:14,415 - General - DEBUG - HistoDistributionModel | Schedule 1834.0
+2025-04-27 23:57:15,157 - General - DEBUG - BasicModel | Schedule 1852.0
+/home/marvin/repo/PlanCausal/modules/vizualisation.py:24: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`). Consider using `matplotlib.pyplot.close()`.
+  fig, ax = plt.subplots(figsize=(24, size_height))
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │            8 │           18.9 │          151 │
+│ a3              │           14 │           20.2 │          283 │
+│ a1              │           12 │           16.2 │          195 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  18.5 │
+│ Total Processing Time      │ 629   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ########### (11)
+p2  | ########### (11)
+p3  | ###### (6)
+p4  | ############ (12)
+p5  | ########### (11)
+p6  | ################ (16)
+p7  | ### (3)
+p8  | ######### (9)
+p9  | ########## (10)
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2699 │        -12.7 │                 -0.02 │                18.4 │                1.6  │             0     │                0 │            50.907 │    337 │
+│  1 │ CausalModel                │       2670 │        -13.5 │                 -0.07 │                28.6 │                1.73 │             7.667 │               19 │            51.947 │    337 │
+│  2 │ CausalDoModel              │       2742 │         -0.6 │                  0.17 │                13.9 │                1.87 │             6     │                8 │            50.657 │    337 │
+│  3 │ AverageOperationModel      │       2719 │          1   │                  0.12 │                10.7 │                1.37 │             6.667 │               14 │            51.47  │    337 │
+│  4 │ LogNormalDistributionModel │       2679 │        -10.2 │                 -0.01 │                25.6 │                1.81 │             6.333 │               15 │            52.183 │    337 │
+│  5 │ HistoDistributionModel     │       2692 │         -6.6 │                 -0.01 │                15.9 │                1.56 │             5.333 │               14 │            50.333 │    337 │
+│  6 │ BasicModel                 │       2757 │         17.6 │                  0.46 │                14.8 │                1.5  │             6.333 │               13 │            51.71  │    337 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │            7.8 │               31 │
+│ p2        │            4 │           15.5 │               62 │
+│ p3        │            4 │           22   │               88 │
+│ p4        │            3 │           24.7 │               74 │
+│ p5        │            3 │           15.3 │               46 │
+│ p6        │            3 │           15.7 │               47 │
+│ p7        │            3 │           10.3 │               31 │
+│ p8        │            3 │           17   │               51 │
+│ p9        │            3 │           10   │               30 │
+│ p10       │            3 │           19   │               57 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           13 │           14   │          182 │
+│ a3              │           11 │           15.1 │          166 │
+│ a1              │            9 │           18.8 │          169 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  33   │
+│ Average Operation Duration │  15.7 │
+│ Total Processing Time      │ 517   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ####### (7)
+p10 | ################## (18)
+p2  | ########### (11)
+p3  | ########### (11)
+p4  | ######## (8)
+p5  | ##### (5)
+p6  | ######### (9)
+p7  | ############## (14)
+p8  | #### (4)
+p9  | ############# (13)
+2025-04-27 23:57:16,649 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1804.0  ...       100        dynamic
+1                 CausalModel    1817.0  ...       100        dynamic
+2               CausalDoModel    1830.0  ...       100        dynamic
+3       AverageOperationModel    1809.0  ...       100        dynamic
+4  LogNormalDistributionModel    1830.0  ...       100        dynamic
+5      HistoDistributionModel    1815.0  ...       100        dynamic
+6                  BasicModel    1852.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-27 23:57:16,650 - General - DEBUG - Planned results for seed 338 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-27 23:57:16,650 - General - DEBUG - Experiment completed for seed: 338
+2025-04-27 23:57:16,650 - General - DEBUG - Running experiment with seed: 339
+2025-04-27 23:57:16,651 - General - DEBUG - Start model iteration.
+2025-04-27 23:57:37,426 - General - DEBUG - TruthModel | Schedule 2276.0
+2025-04-27 23:57:38,274 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:57:38,274 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:57:38,274 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:57:58,591 - General - DEBUG - CausalModel | Schedule 2314.0
+2025-04-27 23:57:59,443 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-27 23:57:59,443 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:57:59,443 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:58:26,718 - General - DEBUG - CausalDoModel | Schedule 2294.0
+2025-04-27 23:58:27,579 - General - DEBUG - AverageOperationModel | Schedule 2275.0
+2025-04-27 23:58:28,437 - General - DEBUG - LogNormalDistributionModel | Schedule 2258.0
+2025-04-27 23:58:30,562 - General - DEBUG - HistoDistributionModel | Schedule 2346.0
+2025-04-27 23:58:31,407 - General - DEBUG - BasicModel | Schedule 2343.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1804 │        -11.4 │                  0.04 │                13.8 │                1.53 │             0     │                0 │            56.103 │    338 │
+│  1 │ CausalModel                │       1817 │          6.2 │                  0.16 │                15.6 │                1.65 │            11.667 │               19 │            55.61  │    338 │
+│  2 │ CausalDoModel              │       1830 │         -4.4 │                 -0.05 │                15.3 │                1.42 │            10.667 │               11 │            56.26  │    338 │
+│  3 │ AverageOperationModel      │       1809 │         -2.2 │                  0.03 │                 9.3 │                1.2  │             8     │                9 │            57.227 │    338 │
+│  4 │ LogNormalDistributionModel │       1830 │          5.5 │                  0.01 │                17.1 │                1.6  │            10.667 │               11 │            58.263 │    338 │
+│  5 │ HistoDistributionModel     │       1815 │         -8.7 │                  0.02 │                12.9 │                1.34 │             9     │                7 │            57.72  │    338 │
+│  6 │ BasicModel                 │       1852 │         23.6 │                  0.44 │                18   │                1.34 │             8.667 │               11 │            57.813 │    338 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            5 │           15.8 │               79 │
+│ p2        │            3 │           19.3 │               58 │
+│ p3        │            2 │           13   │               26 │
+│ p4        │            4 │           18   │               72 │
+│ p5        │            3 │            9   │               27 │
+│ p6        │            2 │           23   │               46 │
+│ p7        │            3 │           21.7 │               65 │
+│ p8        │            4 │            7.2 │               29 │
+│ p9        │            4 │           17.2 │               69 │
+│ p10       │            4 │            7.8 │               31 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │            8 │           18.9 │          151 │
+│ a1              │           17 │           13.2 │          224 │
+│ a2              │            9 │           14.1 │          127 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  14.8 │
+│ Total Processing Time      │ 502   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ######## (8)
+p10 | ########## (10)
+p2  | ######### (9)
+p3  | ############# (13)
+p4  | ####### (7)
+p5  | ############# (13)
+p6  | ################### (19)
+p7  | ############# (13)
+p8  | ## (2)
+p9  | ###### (6)
+2025-04-27 23:58:32,250 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2265.0  ...       100        dynamic
+1                 CausalModel    2255.0  ...       100        dynamic
+2               CausalDoModel    2284.0  ...       100        dynamic
+3       AverageOperationModel    2275.0  ...       100        dynamic
+4  LogNormalDistributionModel    2251.0  ...       100        dynamic
+5      HistoDistributionModel    2333.0  ...       100        dynamic
+6                  BasicModel    2343.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-27 23:58:32,250 - General - DEBUG - Planned results for seed 339 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-27 23:58:32,251 - General - DEBUG - Experiment completed for seed: 339
+2025-04-27 23:58:32,251 - General - DEBUG - Running experiment with seed: 340
+2025-04-27 23:58:32,251 - General - DEBUG - Start model iteration.
+2025-04-27 23:59:01,921 - General - DEBUG - TruthModel | Schedule 1995.0
+2025-04-27 23:59:02,728 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-27 23:59:02,728 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:59:02,728 - General - DEBUG - Number of successful learned models: 0
+2025-04-27 23:59:31,381 - General - DEBUG - CausalModel | Schedule 2010.0
+2025-04-27 23:59:32,186 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-27 23:59:32,186 - General - DEBUG - Failed to match the truth model.
+2025-04-27 23:59:32,186 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:00:10,245 - General - DEBUG - CausalDoModel | Schedule 1982.0
+2025-04-28 00:00:11,087 - General - DEBUG - AverageOperationModel | Schedule 1971.0
+2025-04-28 00:00:13,038 - General - DEBUG - LogNormalDistributionModel | Schedule 1993.0
+2025-04-28 00:00:14,387 - General - DEBUG - HistoDistributionModel | Schedule 1992.0
+2025-04-28 00:00:15,190 - General - DEBUG - BasicModel | Schedule 2025.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2265 │         -9.7 │                 -0.13 │                11.4 │                1.36 │             1.333 │                0 │            57.603 │    339 │
+│  1 │ CausalModel                │       2255 │          0.4 │                 -0.04 │                13.9 │                1.55 │            10.667 │               18 │            58.853 │    339 │
+│  2 │ CausalDoModel              │       2284 │          9.7 │                  0.19 │                 9.6 │                1.51 │             8.333 │               15 │            57.603 │    339 │
+│  3 │ AverageOperationModel      │       2275 │         -7.7 │                  0.05 │                 7.9 │                1.07 │             6.667 │               12 │            56.77  │    339 │
+│  4 │ LogNormalDistributionModel │       2251 │         -7.2 │                 -0.01 │                16.5 │                1.55 │             7     │               12 │            57.603 │    339 │
+│  5 │ HistoDistributionModel     │       2333 │          7.6 │                  0.18 │                16.5 │                1.39 │             9.333 │               18 │            55.52  │    339 │
+│  6 │ BasicModel                 │       2343 │         20.5 │                  0.44 │                20.3 │                1.2  │             6     │               10 │            56.77  │    339 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           18.7 │               56 │
+│ p2        │            3 │           24.3 │               73 │
+│ p3        │            4 │           12.5 │               50 │
+│ p4        │            4 │           19.8 │               79 │
+│ p5        │            4 │           11.8 │               47 │
+│ p6        │            3 │           21.3 │               64 │
+│ p7        │            5 │           16   │               80 │
+│ p8        │            2 │           16   │               32 │
+│ p9        │            3 │           12   │               36 │
+│ p10       │            5 │           12   │               60 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │            7 │           18.3 │          128 │
+│ a1              │           15 │           14.9 │          224 │
+│ a2              │           14 │           16.1 │          225 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬─────╮
+│ Total Operations           │  36 │
+│ Average Operation Duration │  16 │
+│ Total Processing Time      │ 577 │
+╰────────────────────────────┴─────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ############ (12)
+p2  | ######## (8)
+p3  | ############# (13)
+p4  | ########### (11)
+p5  | ######## (8)
+p6  | ###### (6)
+p7  | ######## (8)
+p8  | ###### (6)
+p9  | ################# (17)
+2025-04-28 00:00:15,983 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1948.0  ...       100        dynamic
+1                 CausalModel    1957.0  ...       100        dynamic
+2               CausalDoModel    1974.0  ...       100        dynamic
+3       AverageOperationModel    1971.0  ...       100        dynamic
+4  LogNormalDistributionModel    1981.0  ...       100        dynamic
+5      HistoDistributionModel    1986.0  ...       100        dynamic
+6                  BasicModel    2025.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:00:15,983 - General - DEBUG - Planned results for seed 340 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:00:15,984 - General - DEBUG - Experiment completed for seed: 340
+2025-04-28 00:00:15,984 - General - DEBUG - Running experiment with seed: 341
+2025-04-28 00:00:15,984 - General - DEBUG - Start model iteration.
+2025-04-28 00:00:53,792 - General - DEBUG - TruthModel | Schedule 2191.0
+2025-04-28 00:00:54,657 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:00:54,657 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:00:54,657 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:01:31,495 - General - DEBUG - CausalModel | Schedule 2189.0
+2025-04-28 00:01:32,362 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:01:32,362 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:01:32,362 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:02:21,180 - General - DEBUG - CausalDoModel | Schedule 2194.0
+2025-04-28 00:02:22,108 - General - DEBUG - AverageOperationModel | Schedule 2175.0
+2025-04-28 00:02:23,031 - General - DEBUG - LogNormalDistributionModel | Schedule 2216.0
+2025-04-28 00:02:25,974 - General - DEBUG - HistoDistributionModel | Schedule 2174.0
+2025-04-28 00:02:26,848 - General - DEBUG - BasicModel | Schedule 2226.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1948 │        -10.5 │                 -0.02 │                10.6 │                1.45 │             0     │                0 │            53.483 │    340 │
+│  1 │ CausalModel                │       1957 │        -15   │                 -0.03 │                16.3 │                1.41 │            10     │                5 │            53.483 │    340 │
+│  2 │ CausalDoModel              │       1974 │          8.4 │                  0.15 │                14.3 │                1.51 │             8.333 │                2 │            53.263 │    340 │
+│  3 │ AverageOperationModel      │       1971 │         -1.5 │                  0.04 │                18.8 │                1.05 │             8.667 │                3 │            53.983 │    340 │
+│  4 │ LogNormalDistributionModel │       1981 │         -3.8 │                 -0.02 │                21.1 │                1.47 │            16     │                7 │            55.2   │    340 │
+│  5 │ HistoDistributionModel     │       1986 │          4.4 │                  0.01 │                18.8 │                1.25 │             9     │                0 │            53.483 │    340 │
+│  6 │ BasicModel                 │       2025 │         25.9 │                  0.48 │                16.2 │                1.24 │            10     │                2 │            53.743 │    340 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           20   │               60 │
+│ p2        │            4 │           10.2 │               41 │
+│ p3        │            3 │           11.3 │               34 │
+│ p4        │            4 │           10.5 │               42 │
+│ p5        │            4 │           14.5 │               58 │
+│ p6        │            3 │           11.7 │               35 │
+│ p7        │            3 │           14.3 │               43 │
+│ p8        │            6 │           14.3 │               86 │
+│ p9        │            5 │           12.2 │               61 │
+│ p10       │            5 │           16.4 │               82 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │           16 │           13.4 │          214 │
+│ a3              │           16 │           12.6 │          202 │
+│ a2              │            8 │           15.8 │          126 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  40   │
+│ Average Operation Duration │  13.6 │
+│ Total Processing Time      │ 542   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ########### (11)
+p2  | ######## (8)
+p3  | ####### (7)
+p4  | ########## (10)
+p5  | ########## (10)
+p6  | ######### (9)
+p7  | ######## (8)
+p8  | ############# (13)
+p9  | ############# (13)
+2025-04-28 00:02:27,701 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2184.0  ...       100        dynamic
+1                 CausalModel    2167.0  ...       100        dynamic
+2               CausalDoModel    2141.0  ...       100        dynamic
+3       AverageOperationModel    2175.0  ...       100        dynamic
+4  LogNormalDistributionModel    2181.0  ...       100        dynamic
+5      HistoDistributionModel    2181.0  ...       100        dynamic
+6                  BasicModel    2226.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:02:27,702 - General - DEBUG - Planned results for seed 341 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:02:27,702 - General - DEBUG - Experiment completed for seed: 341
+2025-04-28 00:02:27,702 - General - DEBUG - Running experiment with seed: 342
+2025-04-28 00:02:27,703 - General - DEBUG - Start model iteration.
+2025-04-28 00:02:50,009 - General - DEBUG - TruthModel | Schedule 2448.0
+2025-04-28 00:02:50,913 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:02:50,913 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:02:50,913 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:03:12,765 - General - DEBUG - CausalModel | Schedule 2430.0
+2025-04-28 00:03:13,656 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:03:13,657 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:03:13,657 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:03:42,347 - General - DEBUG - CausalDoModel | Schedule 2500.0
+2025-04-28 00:03:43,272 - General - DEBUG - AverageOperationModel | Schedule 2403.0
+2025-04-28 00:03:44,176 - General - DEBUG - LogNormalDistributionModel | Schedule 2434.0
+2025-04-28 00:03:45,485 - General - DEBUG - HistoDistributionModel | Schedule 2445.0
+2025-04-28 00:03:48,058 - General - DEBUG - BasicModel | Schedule 2511.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2184 │         -2.1 │                  0.09 │                 7.9 │                1.24 │             0.667 │                0 │            61.57  │    341 │
+│  1 │ CausalModel                │       2167 │          3.2 │                  0.01 │                13.2 │                1.15 │             8     │                8 │            61.577 │    341 │
+│  2 │ CausalDoModel              │       2141 │         -9.5 │                 -0.01 │                15.2 │                1.13 │             6     │                8 │            61.97  │    341 │
+│  3 │ AverageOperationModel      │       2175 │         -1.6 │                  0.06 │                 9.4 │                0.94 │            10     │               12 │            63.373 │    341 │
+│  4 │ LogNormalDistributionModel │       2181 │         -2.6 │                 -0.04 │                18.8 │                1.22 │            11.333 │               17 │            61.76  │    341 │
+│  5 │ HistoDistributionModel     │       2181 │          0.4 │                  0.04 │                11.3 │                1.27 │             8     │               10 │            61.753 │    341 │
+│  6 │ BasicModel                 │       2226 │         25.8 │                  0.41 │                16.9 │                1.09 │             6.667 │               12 │            60.777 │    341 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           16.5 │               66 │
+│ p2        │            4 │           13.8 │               55 │
+│ p3        │            3 │           13.3 │               40 │
+│ p4        │            3 │           19.3 │               58 │
+│ p5        │            5 │           14.6 │               73 │
+│ p6        │            3 │           12   │               36 │
+│ p7        │            3 │           22   │               66 │
+│ p8        │            3 │           24.7 │               74 │
+│ p9        │            3 │            9   │               27 │
+│ p10       │            3 │           12   │               36 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │            8 │           12   │           96 │
+│ a3              │           14 │           17.4 │          243 │
+│ a2              │           12 │           16   │          192 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  15.6 │
+│ Total Processing Time      │ 531   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ########## (10)
+p2  | ########## (10)
+p3  | ############ (12)
+p4  | ######## (8)
+p5  | ############ (12)
+p6  | ############### (15)
+p7  | ######## (8)
+p8  | ########## (10)
+p9  | #### (4)
+2025-04-28 00:03:48,956 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2440.0  ...       100        dynamic
+1                 CausalModel    2391.0  ...       100        dynamic
+2               CausalDoModel    2438.0  ...       100        dynamic
+3       AverageOperationModel    2403.0  ...       100        dynamic
+4  LogNormalDistributionModel    2427.0  ...       100        dynamic
+5      HistoDistributionModel    2396.0  ...       100        dynamic
+6                  BasicModel    2511.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:03:48,956 - General - DEBUG - Planned results for seed 342 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:03:48,957 - General - DEBUG - Experiment completed for seed: 342
+2025-04-28 00:03:48,957 - General - DEBUG - Running experiment with seed: 343
+2025-04-28 00:03:48,957 - General - DEBUG - Start model iteration.
+2025-04-28 00:04:17,313 - General - DEBUG - TruthModel | Schedule 2491.0
+2025-04-28 00:04:18,231 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:04:18,231 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:04:18,231 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:04:45,686 - General - DEBUG - CausalModel | Schedule 2507.0
+2025-04-28 00:04:46,608 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:04:46,608 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:04:46,608 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:05:22,669 - General - DEBUG - CausalDoModel | Schedule 2550.0
+2025-04-28 00:05:23,637 - General - DEBUG - AverageOperationModel | Schedule 2487.0
+2025-04-28 00:05:24,586 - General - DEBUG - LogNormalDistributionModel | Schedule 2512.0
+2025-04-28 00:05:26,032 - General - DEBUG - HistoDistributionModel | Schedule 2517.0
+2025-04-28 00:05:26,948 - General - DEBUG - BasicModel | Schedule 2571.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2440 │         -1   │                  0.13 │                 9.9 │                1.65 │             0     │                0 │            58.563 │    342 │
+│  1 │ CausalModel                │       2391 │        -22.4 │                 -0.15 │                30.2 │                1.49 │            10.333 │               10 │            58.817 │    342 │
+│  2 │ CausalDoModel              │       2438 │         -4.8 │                  0.02 │                12.4 │                1.5  │             9     │                4 │            58.337 │    342 │
+│  3 │ AverageOperationModel      │       2403 │         -6.6 │                 -0.03 │                22.8 │                1.22 │            13     │                8 │            58.367 │    342 │
+│  4 │ LogNormalDistributionModel │       2427 │          6.9 │                  0.14 │                13.1 │                1.52 │            17.667 │               11 │            60.05  │    342 │
+│  5 │ HistoDistributionModel     │       2396 │         -9.8 │                  0.06 │                21.2 │                1.39 │            14.333 │               10 │            58.563 │    342 │
+│  6 │ BasicModel                 │       2511 │         19.8 │                  0.39 │                16.8 │                1.35 │             6.667 │                4 │            58.08  │    342 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           17.2 │               69 │
+│ p2        │            2 │            9   │               18 │
+│ p3        │            4 │           10   │               40 │
+│ p4        │            4 │           10.8 │               43 │
+│ p5        │            3 │           13.7 │               41 │
+│ p6        │            5 │           13.6 │               68 │
+│ p7        │            3 │            9.3 │               28 │
+│ p8        │            5 │           15.4 │               77 │
+│ p9        │            4 │            5.5 │               22 │
+│ p10       │            4 │            5.2 │               21 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │           18 │           13.3 │          240 │
+│ a2              │           13 │           11.7 │          152 │
+│ a3              │            7 │            5   │           35 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  38   │
+│ Average Operation Duration │  11.2 │
+│ Total Processing Time      │ 427   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ############# (13)
+p2  | ########## (10)
+p3  | ############ (12)
+p4  | ######## (8)
+p5  | ############## (14)
+p6  | ###### (6)
+p7  | ########## (10)
+p8  | ######## (8)
+p9  | ######## (8)
+2025-04-28 00:05:27,862 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2458.0  ...       100        dynamic
+1                 CausalModel    2456.0  ...       100        dynamic
+2               CausalDoModel    2450.0  ...       100        dynamic
+3       AverageOperationModel    2487.0  ...       100        dynamic
+4  LogNormalDistributionModel    2512.0  ...       100        dynamic
+5      HistoDistributionModel    2470.0  ...       100        dynamic
+6                  BasicModel    2571.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:05:27,863 - General - DEBUG - Planned results for seed 343 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:05:27,863 - General - DEBUG - Experiment completed for seed: 343
+2025-04-28 00:05:27,863 - General - DEBUG - Running experiment with seed: 344
+2025-04-28 00:05:27,864 - General - DEBUG - Start model iteration.
+2025-04-28 00:05:48,533 - General - DEBUG - TruthModel | Schedule 1932.0
+2025-04-28 00:05:49,296 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:05:49,296 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:05:49,296 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:06:09,433 - General - DEBUG - CausalModel | Schedule 1918.0
+2025-04-28 00:06:12,260 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:06:12,260 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:06:12,260 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:06:40,036 - General - DEBUG - CausalDoModel | Schedule 1944.0
+2025-04-28 00:06:40,817 - General - DEBUG - AverageOperationModel | Schedule 1907.0
+2025-04-28 00:06:41,588 - General - DEBUG - LogNormalDistributionModel | Schedule 1946.0
+2025-04-28 00:06:42,727 - General - DEBUG - HistoDistributionModel | Schedule 1936.0
+2025-04-28 00:06:43,478 - General - DEBUG - BasicModel | Schedule 1947.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2458 │        -12.3 │                 -0.13 │                10.8 │                1.07 │             0.667 │                0 │            59.073 │    343 │
+│  1 │ CausalModel                │       2456 │        -26.6 │                 -0.24 │                21.8 │                0.89 │            11.333 │                0 │            59.527 │    343 │
+│  2 │ CausalDoModel              │       2450 │        -38.8 │                 -0.2  │                24.6 │                1.01 │            12     │                0 │            59.44  │    343 │
+│  3 │ AverageOperationModel      │       2487 │         -5.6 │                 -0.06 │                12   │                0.84 │             5.333 │                0 │            58.167 │    343 │
+│  4 │ LogNormalDistributionModel │       2512 │         -6   │                  0.06 │                16.5 │                1.27 │            13.333 │                0 │            59.71  │    343 │
+│  5 │ HistoDistributionModel     │       2470 │         -7.6 │                 -0.05 │                11.4 │                0.77 │            11.667 │                0 │            59.44  │    343 │
+│  6 │ BasicModel                 │       2571 │         46.7 │                  0.21 │                22.6 │                0.92 │            14.333 │                0 │            58.8   │    343 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           22.3 │               67 │
+│ p2        │            3 │           17.7 │               53 │
+│ p3        │            3 │           14.3 │               43 │
+│ p4        │            6 │           16.3 │               98 │
+│ p5        │            2 │            3   │                6 │
+│ p6        │            2 │           23   │               46 │
+│ p7        │            5 │           16   │               80 │
+│ p8        │            3 │            9.3 │               28 │
+│ p9        │            4 │           14.8 │               59 │
+│ p10       │            3 │           18.3 │               55 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           11 │           14.3 │          157 │
+│ a1              │           13 │           17.5 │          228 │
+│ a2              │           10 │           15   │          150 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  15.7 │
+│ Total Processing Time      │ 535   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ############ (12)
+p10 | ############# (13)
+p2  | ####### (7)
+p3  | ####### (7)
+p4  | ###### (6)
+p5  | ################ (16)
+p6  | ############## (14)
+p7  | ####### (7)
+p8  | ######### (9)
+p9  | ######### (9)
+2025-04-28 00:06:44,228 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1899.0  ...       100        dynamic
+1                 CausalModel    1910.0  ...       100        dynamic
+2               CausalDoModel    1892.0  ...       100        dynamic
+3       AverageOperationModel    1907.0  ...       100        dynamic
+4  LogNormalDistributionModel    1904.0  ...       100        dynamic
+5      HistoDistributionModel    1923.0  ...       100        dynamic
+6                  BasicModel    1947.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:06:44,228 - General - DEBUG - Planned results for seed 344 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:06:44,229 - General - DEBUG - Experiment completed for seed: 344
+2025-04-28 00:06:44,229 - General - DEBUG - Running experiment with seed: 345
+2025-04-28 00:06:44,229 - General - DEBUG - Start model iteration.
+2025-04-28 00:07:08,892 - General - DEBUG - TruthModel | Schedule 2142.0
+2025-04-28 00:07:09,716 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:07:09,716 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:07:09,716 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:07:33,926 - General - DEBUG - CausalModel | Schedule 2154.0
+2025-04-28 00:07:34,754 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:07:34,754 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:07:34,754 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:08:06,512 - General - DEBUG - CausalDoModel | Schedule 2172.0
+2025-04-28 00:08:07,367 - General - DEBUG - AverageOperationModel | Schedule 2090.0
+2025-04-28 00:08:08,206 - General - DEBUG - LogNormalDistributionModel | Schedule 2090.0
+2025-04-28 00:08:09,472 - General - DEBUG - HistoDistributionModel | Schedule 2115.0
+2025-04-28 00:08:10,281 - General - DEBUG - BasicModel | Schedule 2195.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1899 │         -5.2 │                  0.11 │                10.9 │                1.37 │             0     │                0 │            59.353 │    344 │
+│  1 │ CausalModel                │       1910 │          3.5 │                  0.1  │                12.7 │                1.55 │            13     │               21 │            60.633 │    344 │
+│  2 │ CausalDoModel              │       1892 │        -18.6 │                 -0.13 │                22.6 │                1.41 │             8.667 │               10 │            60.297 │    344 │
+│  3 │ AverageOperationModel      │       1907 │        -15   │                 -0.01 │                19.8 │                1.11 │            13.667 │               21 │            60.927 │    344 │
+│  4 │ LogNormalDistributionModel │       1904 │        -16.2 │                 -0.1  │                21.8 │                1.41 │            10     │               16 │            60.613 │    344 │
+│  5 │ HistoDistributionModel     │       1923 │         -7.1 │                  0.06 │                17.6 │                1.13 │            15     │               21 │            60.32  │    344 │
+│  6 │ BasicModel                 │       1947 │         19.5 │                  0.55 │                13.2 │                1.31 │             7.333 │               11 │            60.883 │    344 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           16   │               64 │
+│ p2        │            4 │           11.2 │               45 │
+│ p3        │            4 │           11.5 │               46 │
+│ p4        │            4 │           11   │               44 │
+│ p5        │            4 │           18.8 │               75 │
+│ p6        │            3 │           20   │               60 │
+│ p7        │            2 │           10   │               20 │
+│ p8        │            3 │            4.3 │               13 │
+│ p9        │            3 │            6.7 │               20 │
+│ p10       │            3 │           14.7 │               44 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           12 │           12.2 │          146 │
+│ a3              │            7 │           13   │           91 │
+│ a1              │           15 │           12.9 │          194 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  12.7 │
+│ Total Processing Time      │ 431   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ########## (10)
+p2  | ####### (7)
+p3  | ######### (9)
+p4  | ######### (9)
+p5  | ################# (17)
+p6  | ########## (10)
+p7  | ########## (10)
+p8  | ######### (9)
+p9  | ######## (8)
+2025-04-28 00:08:11,100 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2133.0  ...       100        dynamic
+1                 CausalModel    2156.0  ...       100        dynamic
+2               CausalDoModel    2148.0  ...       100        dynamic
+3       AverageOperationModel    2090.0  ...       100        dynamic
+4  LogNormalDistributionModel    2088.0  ...       100        dynamic
+5      HistoDistributionModel    2095.0  ...       100        dynamic
+6                  BasicModel    2195.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:08:11,100 - General - DEBUG - Planned results for seed 345 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:08:11,101 - General - DEBUG - Experiment completed for seed: 345
+2025-04-28 00:08:11,101 - General - DEBUG - Running experiment with seed: 346
+2025-04-28 00:08:11,101 - General - DEBUG - Start model iteration.
+2025-04-28 00:08:25,515 - General - DEBUG - TruthModel | Schedule 1116.0
+2025-04-28 00:08:26,065 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:08:26,065 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:08:26,065 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:08:39,905 - General - DEBUG - CausalModel | Schedule 1136.0
+2025-04-28 00:08:40,460 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:08:40,460 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:08:40,460 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:09:01,878 - General - DEBUG - CausalDoModel | Schedule 1131.0
+2025-04-28 00:09:02,427 - General - DEBUG - AverageOperationModel | Schedule 1084.0
+2025-04-28 00:09:02,962 - General - DEBUG - LogNormalDistributionModel | Schedule 1104.0
+2025-04-28 00:09:03,758 - General - DEBUG - HistoDistributionModel | Schedule 1114.0
+2025-04-28 00:09:04,281 - General - DEBUG - BasicModel | Schedule 1150.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2133 │          1.3 │                  0.15 │                 8.7 │                1.4  │             0     │                0 │            61.047 │    345 │
+│  1 │ CausalModel                │       2156 │        -10.8 │                  0.03 │                22.9 │                1.3  │            18.667 │                7 │            60.507 │    345 │
+│  2 │ CausalDoModel              │       2148 │         -8.9 │                 -0.02 │                28.1 │                1.29 │            19.333 │                7 │            60.117 │    345 │
+│  3 │ AverageOperationModel      │       2090 │        -18.4 │                 -0.04 │                20.2 │                0.96 │            12     │                2 │            59.903 │    345 │
+│  4 │ LogNormalDistributionModel │       2088 │        -13.2 │                  0.02 │                17.4 │                1.29 │             8     │                4 │            61.44  │    345 │
+│  5 │ HistoDistributionModel     │       2095 │        -15.4 │                  0.08 │                16.8 │                1.21 │            15.333 │                6 │            60.807 │    345 │
+│  6 │ BasicModel                 │       2195 │         12   │                  0.4  │                24.4 │                1.12 │            17     │                6 │            60.537 │    345 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            2 │           10   │               20 │
+│ p2        │            2 │           17   │               34 │
+│ p3        │            4 │           10.5 │               42 │
+│ p4        │            2 │           24.5 │               49 │
+│ p5        │            2 │           11.5 │               23 │
+│ p6        │            3 │           11   │               33 │
+│ p7        │            4 │           11.8 │               47 │
+│ p8        │            2 │           11.5 │               23 │
+│ p9        │            2 │            5.5 │               11 │
+│ p10       │            2 │           14   │               28 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           10 │            9.9 │           99 │
+│ a1              │            8 │           12.2 │           98 │
+│ a2              │            7 │           16.1 │          113 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  25   │
+│ Average Operation Duration │  12.4 │
+│ Total Processing Time      │ 310   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ############ (12)
+p10 | ######### (9)
+p2  | ### (3)
+p3  | ############# (13)
+p4  | ############ (12)
+p5  | ############ (12)
+p6  | ########## (10)
+p7  | ####### (7)
+p8  | ############## (14)
+p9  | ######## (8)
+2025-04-28 00:09:04,819 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1114.0  ...       100        dynamic
+1                 CausalModel    1116.0  ...       100        dynamic
+2               CausalDoModel    1113.0  ...       100        dynamic
+3       AverageOperationModel    1084.0  ...       100        dynamic
+4  LogNormalDistributionModel    1094.0  ...       100        dynamic
+5      HistoDistributionModel    1106.0  ...       100        dynamic
+6                  BasicModel    1150.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:09:04,819 - General - DEBUG - Planned results for seed 346 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:09:04,820 - General - DEBUG - Experiment completed for seed: 346
+2025-04-28 00:09:04,820 - General - DEBUG - Running experiment with seed: 347
+2025-04-28 00:09:04,820 - General - DEBUG - Start model iteration.
+2025-04-28 00:09:24,031 - General - DEBUG - TruthModel | Schedule 2447.0
+2025-04-28 00:09:24,912 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:09:24,912 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:09:24,912 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:09:43,748 - General - DEBUG - CausalModel | Schedule 2445.0
+2025-04-28 00:09:44,628 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:09:44,628 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:09:44,628 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:10:09,416 - General - DEBUG - CausalDoModel | Schedule 2460.0
+2025-04-28 00:10:10,309 - General - DEBUG - AverageOperationModel | Schedule 2421.0
+2025-04-28 00:10:11,193 - General - DEBUG - LogNormalDistributionModel | Schedule 2478.0
+2025-04-28 00:10:12,423 - General - DEBUG - HistoDistributionModel | Schedule 2463.0
+2025-04-28 00:10:13,295 - General - DEBUG - BasicModel | Schedule 2484.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1114 │          1.3 │                  0.12 │                 3.3 │                0.98 │             0     │                0 │            40.207 │    346 │
+│  1 │ CausalModel                │       1116 │         -0.4 │                  0.07 │                 7.9 │                1.06 │             8.667 │               13 │            39.917 │    346 │
+│  2 │ CausalDoModel              │       1113 │          2.6 │                  0.11 │                 8.2 │                1.04 │             9     │               10 │            39.267 │    346 │
+│  3 │ AverageOperationModel      │       1084 │        -12   │                 -0.1  │                 9.5 │                0.72 │             8.333 │               13 │            37.643 │    346 │
+│  4 │ LogNormalDistributionModel │       1094 │        -10.8 │                 -0.08 │                11.2 │                0.81 │             7     │               12 │            39.337 │    346 │
+│  5 │ HistoDistributionModel     │       1106 │         -5.6 │                  0.04 │                 8.5 │                0.92 │            10     │               17 │            40.137 │    346 │
+│  6 │ BasicModel                 │       1150 │         16.7 │                  0.48 │                13.8 │                0.83 │             4     │                6 │            40.207 │    346 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           21.3 │               64 │
+│ p2        │            4 │            6.5 │               26 │
+│ p3        │            3 │           13   │               39 │
+│ p4        │            4 │           25   │              100 │
+│ p5        │            2 │           10.5 │               21 │
+│ p6        │            2 │           13   │               26 │
+│ p7        │            2 │           23.5 │               47 │
+│ p8        │            4 │           14.5 │               58 │
+│ p9        │            3 │           11.7 │               35 │
+│ p10       │            3 │           16.3 │               49 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           16 │           15.3 │          245 │
+│ a1              │            7 │           16.7 │          117 │
+│ a3              │            7 │           14.7 │          103 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  30   │
+│ Average Operation Duration │  15.5 │
+│ Total Processing Time      │ 465   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ######### (9)
+p10 | ############# (13)
+p2  | ############# (13)
+p3  | ######## (8)
+p4  | ########### (11)
+p5  | ######## (8)
+p6  | ####### (7)
+p7  | ############ (12)
+p8  | ######### (9)
+p9  | ########## (10)
+2025-04-28 00:10:14,168 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2444.0  ...       100        dynamic
+1                 CausalModel    2440.0  ...       100        dynamic
+2               CausalDoModel    2454.0  ...       100        dynamic
+3       AverageOperationModel    2421.0  ...       100        dynamic
+4  LogNormalDistributionModel    2468.0  ...       100        dynamic
+5      HistoDistributionModel    2466.0  ...       100        dynamic
+6                  BasicModel    2484.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:10:14,168 - General - DEBUG - Planned results for seed 347 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:10:14,169 - General - DEBUG - Experiment completed for seed: 347
+2025-04-28 00:10:14,169 - General - DEBUG - Running experiment with seed: 348
+2025-04-28 00:10:14,169 - General - DEBUG - Start model iteration.
+2025-04-28 00:10:37,691 - General - DEBUG - TruthModel | Schedule 1792.0
+2025-04-28 00:10:38,435 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:10:38,435 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:10:38,435 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:11:00,796 - General - DEBUG - CausalModel | Schedule 1765.0
+2025-04-28 00:11:01,536 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:11:01,536 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:11:01,536 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:11:31,516 - General - DEBUG - CausalDoModel | Schedule 1764.0
+2025-04-28 00:11:32,275 - General - DEBUG - AverageOperationModel | Schedule 1793.0
+2025-04-28 00:11:33,039 - General - DEBUG - LogNormalDistributionModel | Schedule 1779.0
+2025-04-28 00:11:34,200 - General - DEBUG - HistoDistributionModel | Schedule 1795.0
+2025-04-28 00:11:38,102 - General - DEBUG - BasicModel | Schedule 1814.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2444 │         -0.6 │                 -0.06 │                 7.1 │                1.47 │             1.333 │                4 │            40.547 │    347 │
+│  1 │ CausalModel                │       2440 │          1.1 │                 -0.11 │                10.1 │                1.41 │             8     │               12 │            40.127 │    347 │
+│  2 │ CausalDoModel              │       2454 │         -2.8 │                  0.02 │                 8.3 │                1.51 │             6     │               10 │            40.083 │    347 │
+│  3 │ AverageOperationModel      │       2421 │        -15.7 │                  0.05 │                13.9 │                1.14 │             3.667 │                8 │            40.547 │    347 │
+│  4 │ LogNormalDistributionModel │       2468 │          9.7 │                  0.16 │                12.7 │                1.54 │             4     │                8 │            40.757 │    347 │
+│  5 │ HistoDistributionModel     │       2466 │          4.8 │                  0.18 │                17.4 │                1.29 │             7.333 │                9 │            39.917 │    347 │
+│  6 │ BasicModel                 │       2484 │         10.9 │                  0.38 │                12.2 │                1.2  │             4.667 │                6 │            40.547 │    347 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           14.5 │               58 │
+│ p2        │            3 │            5.7 │               17 │
+│ p3        │            3 │            8.3 │               25 │
+│ p4        │            4 │           17.5 │               70 │
+│ p5        │            4 │           13.2 │               53 │
+│ p6        │            2 │           21.5 │               43 │
+│ p7        │            2 │           12.5 │               25 │
+│ p8        │            3 │           23.7 │               71 │
+│ p9        │            4 │           10.2 │               41 │
+│ p10       │            4 │           12   │               48 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │           12 │           14.8 │          177 │
+│ a2              │           12 │           12.1 │          145 │
+│ a3              │            9 │           14.3 │          129 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  33   │
+│ Average Operation Duration │  13.7 │
+│ Total Processing Time      │ 451   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ####### (7)
+p10 | ################ (16)
+p2  | ########## (10)
+p3  | ########## (10)
+p4  | ############ (12)
+p5  | ######## (8)
+p6  | #### (4)
+p7  | ############ (12)
+p8  | ############### (15)
+p9  | ###### (6)
+2025-04-28 00:11:38,838 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1768.0  ...       100        dynamic
+1                 CausalModel    1745.0  ...       100        dynamic
+2               CausalDoModel    1762.0  ...       100        dynamic
+3       AverageOperationModel    1793.0  ...       100        dynamic
+4  LogNormalDistributionModel    1766.0  ...       100        dynamic
+5      HistoDistributionModel    1773.0  ...       100        dynamic
+6                  BasicModel    1814.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:11:38,839 - General - DEBUG - Planned results for seed 348 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:11:38,839 - General - DEBUG - Experiment completed for seed: 348
+2025-04-28 00:11:38,839 - General - DEBUG - Running experiment with seed: 349
+2025-04-28 00:11:38,840 - General - DEBUG - Start model iteration.
+2025-04-28 00:12:11,742 - General - DEBUG - TruthModel | Schedule 1799.0
+2025-04-28 00:12:12,520 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:12:12,520 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:12:12,520 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:12:44,567 - General - DEBUG - CausalModel | Schedule 1772.0
+2025-04-28 00:12:45,330 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:12:45,330 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:12:45,331 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:13:27,825 - General - DEBUG - CausalDoModel | Schedule 1829.0
+2025-04-28 00:13:28,650 - General - DEBUG - AverageOperationModel | Schedule 1756.0
+2025-04-28 00:13:29,458 - General - DEBUG - LogNormalDistributionModel | Schedule 1787.0
+2025-04-28 00:13:30,844 - General - DEBUG - HistoDistributionModel | Schedule 1768.0
+2025-04-28 00:13:31,614 - General - DEBUG - BasicModel | Schedule 1828.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1768 │         -3.4 │                  0.06 │                 8.3 │                1.1  │             0     │                0 │            54.807 │    348 │
+│  1 │ CausalModel                │       1745 │        -23.8 │                 -0.11 │                23.7 │                1.22 │            12     │                5 │            56.27  │    348 │
+│  2 │ CausalDoModel              │       1762 │        -11.5 │                 -0.08 │                14.6 │                1.23 │             5.333 │                0 │            56.28  │    348 │
+│  3 │ AverageOperationModel      │       1793 │         -7.2 │                 -0    │                12.7 │                0.87 │             9.333 │                0 │            56.28  │    348 │
+│  4 │ LogNormalDistributionModel │       1766 │        -10.2 │                 -0.03 │                12.9 │                1.19 │             9     │                4 │            55.397 │    348 │
+│  5 │ HistoDistributionModel     │       1773 │         -8.2 │                 -0.07 │                13   │                1.17 │             9.333 │                2 │            55.397 │    348 │
+│  6 │ BasicModel                 │       1814 │         17.9 │                  0.4  │                15.3 │                1.01 │             7.333 │                4 │            58.163 │    348 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           14.7 │               44 │
+│ p2        │            3 │           14   │               42 │
+│ p3        │            4 │           13.2 │               53 │
+│ p4        │            4 │           18.8 │               75 │
+│ p5        │            5 │           13.4 │               67 │
+│ p6        │            4 │           11.2 │               45 │
+│ p7        │            5 │            8.8 │               44 │
+│ p8        │            4 │           12.5 │               50 │
+│ p9        │            4 │           14.5 │               58 │
+│ p10       │            3 │            7   │               21 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           14 │           11.5 │          161 │
+│ a2              │           12 │           14.2 │          170 │
+│ a1              │           13 │           12.9 │          168 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  39   │
+│ Average Operation Duration │  12.8 │
+│ Total Processing Time      │ 499   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########### (11)
+p10 | ############# (13)
+p2  | ###### (6)
+p3  | ####### (7)
+p4  | ###### (6)
+p5  | ################# (17)
+p6  | ####### (7)
+p7  | ########### (11)
+p8  | ############# (13)
+p9  | ######### (9)
+2025-04-28 00:13:32,371 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1778.0  ...       100        dynamic
+1                 CausalModel    1766.0  ...       100        dynamic
+2               CausalDoModel    1790.0  ...       100        dynamic
+3       AverageOperationModel    1756.0  ...       100        dynamic
+4  LogNormalDistributionModel    1751.0  ...       100        dynamic
+5      HistoDistributionModel    1733.0  ...       100        dynamic
+6                  BasicModel    1828.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:13:32,372 - General - DEBUG - Planned results for seed 349 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:13:32,372 - General - DEBUG - Experiment completed for seed: 349
+2025-04-28 00:13:32,372 - General - DEBUG - Running experiment with seed: 350
+2025-04-28 00:13:32,373 - General - DEBUG - Start model iteration.
+2025-04-28 00:14:02,403 - General - DEBUG - TruthModel | Schedule 1753.0
+2025-04-28 00:14:03,141 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:14:03,141 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:14:03,141 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:14:32,555 - General - DEBUG - CausalModel | Schedule 1733.0
+2025-04-28 00:14:33,290 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:14:33,290 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:14:33,290 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:15:12,105 - General - DEBUG - CausalDoModel | Schedule 1739.0
+2025-04-28 00:15:12,883 - General - DEBUG - AverageOperationModel | Schedule 1752.0
+2025-04-28 00:15:13,661 - General - DEBUG - LogNormalDistributionModel | Schedule 1742.0
+2025-04-28 00:15:14,959 - General - DEBUG - HistoDistributionModel | Schedule 1746.0
+2025-04-28 00:15:15,698 - General - DEBUG - BasicModel | Schedule 1781.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1778 │         -2.1 │                  0.24 │                 7   │                1.11 │             0     │                0 │            57.63  │    349 │
+│  1 │ CausalModel                │       1766 │        -16.3 │                  0.19 │                15.5 │                1.09 │            17.333 │                4 │            54.547 │    349 │
+│  2 │ CausalDoModel              │       1790 │         -6.6 │                  0.18 │                13.8 │                1.09 │            17.667 │                4 │            55.747 │    349 │
+│  3 │ AverageOperationModel      │       1756 │        -25.5 │                 -0.08 │                23.4 │                0.7  │            12.333 │                2 │            55.36  │    349 │
+│  4 │ LogNormalDistributionModel │       1751 │        -24.5 │                  0.07 │                14.6 │                0.98 │            12     │                2 │            54.807 │    349 │
+│  5 │ HistoDistributionModel     │       1733 │        -38   │                 -0.03 │                19   │                0.86 │            14     │                2 │            54.72  │    349 │
+│  6 │ BasicModel                 │       1828 │         13.3 │                  0.51 │                16   │                0.87 │            10.667 │                2 │            55.533 │    349 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            5 │           13   │               65 │
+│ p2        │            2 │           19.5 │               39 │
+│ p3        │            3 │           15.3 │               46 │
+│ p4        │            4 │           15   │               60 │
+│ p5        │            3 │           14   │               42 │
+│ p6        │            4 │            8.2 │               33 │
+│ p7        │            4 │           13.2 │               53 │
+│ p8        │            5 │           17.6 │               88 │
+│ p9        │            3 │            7.3 │               22 │
+│ p10       │            3 │           21   │               63 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           12 │           16.1 │          193 │
+│ a1              │           13 │           13.2 │          172 │
+│ a3              │           11 │           13.3 │          146 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  36   │
+│ Average Operation Duration │  14.2 │
+│ Total Processing Time      │ 511   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ###### (6)
+p10 | ######## (8)
+p2  | ####### (7)
+p3  | ############## (14)
+p4  | ######## (8)
+p5  | ############ (12)
+p6  | ######## (8)
+p7  | ########### (11)
+p8  | ############ (12)
+p9  | ############## (14)
+2025-04-28 00:15:16,428 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1703.0  ...       100        dynamic
+1                 CausalModel    1720.0  ...       100        dynamic
+2               CausalDoModel    1703.0  ...       100        dynamic
+3       AverageOperationModel    1752.0  ...       100        dynamic
+4  LogNormalDistributionModel    1733.0  ...       100        dynamic
+5      HistoDistributionModel    1728.0  ...       100        dynamic
+6                  BasicModel    1781.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:15:16,428 - General - DEBUG - Planned results for seed 350 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:15:16,429 - General - DEBUG - Experiment completed for seed: 350
+2025-04-28 00:15:16,429 - General - DEBUG - Running experiment with seed: 351
+2025-04-28 00:15:16,429 - General - DEBUG - Start model iteration.
+2025-04-28 00:15:47,811 - General - DEBUG - TruthModel | Schedule 2088.0
+2025-04-28 00:15:48,643 - General - DEBUG - SHD: 2, Precision: 1.0000, Recall: 0.5000, F1-score: 0.6667
+2025-04-28 00:15:48,643 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:15:48,643 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:16:18,830 - General - DEBUG - CausalModel | Schedule 2115.0
+2025-04-28 00:16:19,669 - General - DEBUG - SHD: 2, Precision: 1.0000, Recall: 0.5000, F1-score: 0.6667
+2025-04-28 00:16:19,669 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:16:19,669 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:16:59,588 - General - DEBUG - CausalDoModel | Schedule 2134.0
+2025-04-28 00:17:00,471 - General - DEBUG - AverageOperationModel | Schedule 2058.0
+2025-04-28 00:17:01,340 - General - DEBUG - LogNormalDistributionModel | Schedule 2072.0
+2025-04-28 00:17:06,666 - General - DEBUG - HistoDistributionModel | Schedule 2060.0
+2025-04-28 00:17:07,499 - General - DEBUG - BasicModel | Schedule 2147.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1703 │        -17.7 │                 -0.08 │                17.7 │                1.18 │             0     │                0 │            64.347 │    350 │
+│  1 │ CausalModel                │       1720 │         -4.9 │                  0.09 │                15.8 │                1.3  │             7     │                8 │            63.377 │    350 │
+│  2 │ CausalDoModel              │       1703 │        -14.4 │                 -0.05 │                20.2 │                1.26 │             9.667 │               13 │            63.047 │    350 │
+│  3 │ AverageOperationModel      │       1752 │         -4.9 │                 -0.03 │                11.3 │                1.04 │             4     │                8 │            64.347 │    350 │
+│  4 │ LogNormalDistributionModel │       1733 │         -0.6 │                  0.09 │                10.5 │                1.45 │             4.667 │               10 │            63.79  │    350 │
+│  5 │ HistoDistributionModel     │       1728 │         -2.1 │                  0.06 │                11.6 │                1.4  │             4.667 │                8 │            64.347 │    350 │
+│  6 │ BasicModel                 │       1781 │         15.9 │                  0.36 │                14.4 │                1.15 │             3.333 │                4 │            64.347 │    350 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           14   │               56 │
+│ p2        │            5 │           11.4 │               57 │
+│ p3        │            3 │            8.7 │               26 │
+│ p4        │            3 │            8   │               24 │
+│ p5        │            5 │           12.8 │               64 │
+│ p6        │            4 │           13   │               52 │
+│ p7        │            2 │           15   │               30 │
+│ p8        │            3 │           19.3 │               58 │
+│ p9        │            4 │           10.2 │               41 │
+│ p10       │            4 │           16.8 │               67 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           16 │           14.9 │          239 │
+│ a3              │           11 │           12.7 │          140 │
+│ a1              │           10 │            9.6 │           96 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  37   │
+│ Average Operation Duration │  12.8 │
+│ Total Processing Time      │ 475   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ################ (16)
+p10 | ############## (14)
+p2  | ############# (13)
+p3  | ######### (9)
+p4  | ############ (12)
+p5  | ######### (9)
+p6  | ######## (8)
+p7  | ####### (7)
+p8  | ######## (8)
+p9  | #### (4)
+2025-04-28 00:17:08,330 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2087.0  ...       100        dynamic
+1                 CausalModel    2117.0  ...       100        dynamic
+2               CausalDoModel    2086.0  ...       100        dynamic
+3       AverageOperationModel    2058.0  ...       100        dynamic
+4  LogNormalDistributionModel    2072.0  ...       100        dynamic
+5      HistoDistributionModel    2055.0  ...       100        dynamic
+6                  BasicModel    2147.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:17:08,331 - General - DEBUG - Planned results for seed 351 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:17:08,331 - General - DEBUG - Experiment completed for seed: 351
+2025-04-28 00:17:08,331 - General - DEBUG - Running experiment with seed: 352
+2025-04-28 00:17:08,332 - General - DEBUG - Start model iteration.
+2025-04-28 00:17:37,106 - General - DEBUG - TruthModel | Schedule 1951.0
+2025-04-28 00:17:37,908 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:17:37,908 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:17:37,908 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:18:05,960 - General - DEBUG - CausalModel | Schedule 1952.0
+2025-04-28 00:18:06,763 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:18:06,763 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:18:06,763 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:18:43,701 - General - DEBUG - CausalDoModel | Schedule 2014.0
+2025-04-28 00:18:44,556 - General - DEBUG - AverageOperationModel | Schedule 1925.0
+2025-04-28 00:18:45,389 - General - DEBUG - LogNormalDistributionModel | Schedule 1956.0
+2025-04-28 00:18:46,732 - General - DEBUG - HistoDistributionModel | Schedule 1930.0
+2025-04-28 00:18:47,531 - General - DEBUG - BasicModel | Schedule 2000.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2087 │        -12.7 │                 -0.07 │                16.1 │                1.23 │             5.333 │                0 │            73.823 │    351 │
+│  1 │ CausalModel                │       2117 │         -7.6 │                 -0.03 │                24.9 │                1.2  │            10     │                2 │            73.823 │    351 │
+│  2 │ CausalDoModel              │       2086 │         -4.2 │                 -0.01 │                20.6 │                1.22 │             8     │                2 │            74.127 │    351 │
+│  3 │ AverageOperationModel      │       2058 │         -3.9 │                  0    │                17.2 │                0.91 │            13.667 │                0 │            74.373 │    351 │
+│  4 │ LogNormalDistributionModel │       2072 │         -1.3 │                  0.16 │                18.4 │                1.23 │            12     │                2 │            74.037 │    351 │
+│  5 │ HistoDistributionModel     │       2055 │         -8.3 │                 -0.06 │                20.8 │                1.04 │            14.333 │                0 │            74.71  │    351 │
+│  6 │ BasicModel                 │       2147 │         15.9 │                  0.33 │                11.4 │                1.05 │             5.667 │                0 │            73.913 │    351 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           23   │               92 │
+│ p2        │            4 │            7.8 │               31 │
+│ p3        │            5 │           13.4 │               67 │
+│ p4        │            3 │           21   │               63 │
+│ p5        │            4 │           15.8 │               63 │
+│ p6        │            3 │           13.7 │               41 │
+│ p7        │            3 │            8   │               24 │
+│ p8        │            4 │           15.5 │               62 │
+│ p9        │            4 │           13.5 │               54 │
+│ p10       │            5 │           15.6 │               78 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │           14 │           12.5 │          175 │
+│ a2              │           11 │           18.1 │          199 │
+│ a3              │           14 │           14.4 │          201 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  39   │
+│ Average Operation Duration │  14.7 │
+│ Total Processing Time      │ 575   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ######## (8)
+p10 | ###### (6)
+p2  | ########## (10)
+p3  | ######## (8)
+p4  | ############ (12)
+p5  | ########### (11)
+p6  | ################ (16)
+p7  | ######## (8)
+p8  | ############# (13)
+p9  | ######## (8)
+2025-04-28 00:18:48,327 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1935.0  ...       100        dynamic
+1                 CausalModel    1944.0  ...       100        dynamic
+2               CausalDoModel    1967.0  ...       100        dynamic
+3       AverageOperationModel    1925.0  ...       100        dynamic
+4  LogNormalDistributionModel    1937.0  ...       100        dynamic
+5      HistoDistributionModel    1924.0  ...       100        dynamic
+6                  BasicModel    2000.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:18:48,327 - General - DEBUG - Planned results for seed 352 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:18:48,328 - General - DEBUG - Experiment completed for seed: 352
+2025-04-28 00:18:48,328 - General - DEBUG - Running experiment with seed: 353
+2025-04-28 00:18:48,328 - General - DEBUG - Start model iteration.
+2025-04-28 00:19:11,822 - General - DEBUG - TruthModel | Schedule 1973.0
+2025-04-28 00:19:12,604 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:19:12,604 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:19:12,604 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:19:35,788 - General - DEBUG - CausalModel | Schedule 1994.0
+2025-04-28 00:19:36,576 - General - DEBUG - SHD: 6, Precision: 0.0000, Recall: 0.0000, F1-score: 0.0000
+2025-04-28 00:19:36,576 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:19:36,576 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:20:07,428 - General - DEBUG - CausalDoModel | Schedule 1989.0
+2025-04-28 00:20:08,239 - General - DEBUG - AverageOperationModel | Schedule 1921.0
+2025-04-28 00:20:09,032 - General - DEBUG - LogNormalDistributionModel | Schedule 1976.0
+2025-04-28 00:20:10,250 - General - DEBUG - HistoDistributionModel | Schedule 1985.0
+2025-04-28 00:20:11,027 - General - DEBUG - BasicModel | Schedule 2006.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1935 │        -12.1 │                 -0.08 │                11   │                1.43 │             0     │                0 │            52.793 │    352 │
+│  1 │ CausalModel                │       1944 │        -30.8 │                 -0.16 │                23.1 │                1.37 │            17.667 │               18 │            52.53  │    352 │
+│  2 │ CausalDoModel              │       1967 │        -15.1 │                  0.01 │                17.8 │                1.48 │            21.333 │               19 │            55.41  │    352 │
+│  3 │ AverageOperationModel      │       1925 │        -17.1 │                  0.01 │                11.1 │                1.1  │            13.333 │               14 │            53.447 │    352 │
+│  4 │ LogNormalDistributionModel │       1937 │        -11.7 │                  0.08 │                 9   │                1.58 │            18.667 │               18 │            52.947 │    352 │
+│  5 │ HistoDistributionModel     │       1924 │        -13.6 │                 -0.03 │                16.3 │                1.39 │            17.333 │               19 │            52.737 │    352 │
+│  6 │ BasicModel                 │       2000 │         17.2 │                  0.36 │                17.7 │                1.17 │             9.667 │               11 │            55.077 │    352 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           17.2 │               69 │
+│ p2        │            2 │            9.5 │               19 │
+│ p3        │            2 │            8.5 │               17 │
+│ p4        │            3 │           13.7 │               41 │
+│ p5        │            3 │           22   │               66 │
+│ p6        │            4 │            9.2 │               37 │
+│ p7        │            4 │           23.5 │               94 │
+│ p8        │            3 │           15.7 │               47 │
+│ p9        │            5 │           16.2 │               81 │
+│ p10       │            5 │           23.6 │              118 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           10 │           18.8 │          188 │
+│ a1              │           13 │           15.5 │          201 │
+│ a2              │           12 │           16.7 │          200 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  35   │
+│ Average Operation Duration │  16.8 │
+│ Total Processing Time      │ 589   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########## (10)
+p10 | ### (3)
+p2  | ############## (14)
+p3  | ####### (7)
+p4  | ############## (14)
+p5  | ############# (13)
+p6  | ###### (6)
+p7  | ############ (12)
+p8  | ########## (10)
+p9  | ########### (11)
+2025-04-28 00:20:11,802 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1948.0  ...       100        dynamic
+1                 CausalModel    1974.0  ...       100        dynamic
+2               CausalDoModel    1934.0  ...       100        dynamic
+3       AverageOperationModel    1921.0  ...       100        dynamic
+4  LogNormalDistributionModel    1973.0  ...       100        dynamic
+5      HistoDistributionModel    1924.0  ...       100        dynamic
+6                  BasicModel    2006.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:20:11,802 - General - DEBUG - Planned results for seed 353 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:20:11,803 - General - DEBUG - Experiment completed for seed: 353
+2025-04-28 00:20:11,803 - General - DEBUG - Running experiment with seed: 354
+2025-04-28 00:20:11,803 - General - DEBUG - Start model iteration.
+2025-04-28 00:20:35,044 - General - DEBUG - TruthModel | Schedule 2488.0
+2025-04-28 00:20:35,951 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:20:35,951 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:20:35,951 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:20:58,682 - General - DEBUG - CausalModel | Schedule 2481.0
+2025-04-28 00:20:59,586 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:20:59,586 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:20:59,586 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:21:29,584 - General - DEBUG - CausalDoModel | Schedule 2500.0
+2025-04-28 00:21:30,511 - General - DEBUG - AverageOperationModel | Schedule 2452.0
+2025-04-28 00:21:31,427 - General - DEBUG - LogNormalDistributionModel | Schedule 2476.0
+2025-04-28 00:21:32,751 - General - DEBUG - HistoDistributionModel | Schedule 2499.0
+2025-04-28 00:21:33,648 - General - DEBUG - BasicModel | Schedule 2530.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1948 │         -4.8 │                  0.12 │                10.5 │                1.49 │             0     │                0 │            65.13  │    353 │
+│  1 │ CausalModel                │       1974 │          1.3 │                  0.11 │                18.4 │                1.36 │            18     │               23 │            63.697 │    353 │
+│  2 │ CausalDoModel              │       1934 │        -17.9 │                  0.06 │                17.2 │                1.45 │            19.667 │               29 │            66.63  │    353 │
+│  3 │ AverageOperationModel      │       1921 │        -21.2 │                 -0.08 │                23.6 │                1.13 │            13.667 │               22 │            65.513 │    353 │
+│  4 │ LogNormalDistributionModel │       1973 │         -2.9 │                  0.1  │                17.9 │                1.47 │            15     │               22 │            65.177 │    353 │
+│  5 │ HistoDistributionModel     │       1924 │        -18.2 │                 -0    │                20.3 │                1.38 │            16     │               25 │            67.607 │    353 │
+│  6 │ BasicModel                 │       2006 │         18.3 │                  0.57 │                16.9 │                1.4  │             9.333 │               10 │            66.797 │    353 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           13.2 │               53 │
+│ p2        │            4 │           12.5 │               50 │
+│ p3        │            2 │           13   │               26 │
+│ p4        │            5 │           18.2 │               91 │
+│ p5        │            3 │           16   │               48 │
+│ p6        │            3 │           18   │               54 │
+│ p7        │            4 │           23   │               92 │
+│ p8        │            4 │           12.2 │               49 │
+│ p9        │            3 │           23   │               69 │
+│ p10       │            3 │           19.3 │               58 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │            9 │           17.1 │          154 │
+│ a2              │           11 │           15.7 │          173 │
+│ a3              │           15 │           17.5 │          263 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  35   │
+│ Average Operation Duration │  16.9 │
+│ Total Processing Time      │ 590   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########## (10)
+p10 | ######## (8)
+p2  | ######## (8)
+p3  | ################# (17)
+p4  | ########## (10)
+p5  | ######## (8)
+p6  | ###### (6)
+p7  | ####### (7)
+p8  | ############### (15)
+p9  | ########### (11)
+2025-04-28 00:21:39,348 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2472.0  ...       100        dynamic
+1                 CausalModel    2469.0  ...       100        dynamic
+2               CausalDoModel    2493.0  ...       100        dynamic
+3       AverageOperationModel    2452.0  ...       100        dynamic
+4  LogNormalDistributionModel    2474.0  ...       100        dynamic
+5      HistoDistributionModel    2494.0  ...       100        dynamic
+6                  BasicModel    2530.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:21:39,348 - General - DEBUG - Planned results for seed 354 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:21:39,349 - General - DEBUG - Experiment completed for seed: 354
+2025-04-28 00:21:39,349 - General - DEBUG - Running experiment with seed: 355
+2025-04-28 00:21:39,349 - General - DEBUG - Start model iteration.
+2025-04-28 00:22:02,603 - General - DEBUG - TruthModel | Schedule 2205.0
+2025-04-28 00:22:03,437 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:22:03,437 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:22:03,437 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:22:26,085 - General - DEBUG - CausalModel | Schedule 2188.0
+2025-04-28 00:22:26,918 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:22:26,918 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:22:26,918 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:22:57,073 - General - DEBUG - CausalDoModel | Schedule 2261.0
+2025-04-28 00:22:57,941 - General - DEBUG - AverageOperationModel | Schedule 2162.0
+2025-04-28 00:22:58,785 - General - DEBUG - LogNormalDistributionModel | Schedule 2204.0
+2025-04-28 00:23:00,042 - General - DEBUG - HistoDistributionModel | Schedule 2192.0
+2025-04-28 00:23:00,865 - General - DEBUG - BasicModel | Schedule 2299.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2472 │         -1.7 │                  0.06 │                 9.8 │                1.73 │             0     │                0 │            63.533 │    354 │
+│  1 │ CausalModel                │       2469 │        -13.2 │                 -0.02 │                14.3 │                1.55 │            12.667 │               15 │            62.683 │    354 │
+│  2 │ CausalDoModel              │       2493 │         -7   │                  0.08 │                15.6 │                1.7  │            16.333 │               17 │            62.583 │    354 │
+│  3 │ AverageOperationModel      │       2452 │        -18.4 │                 -0.04 │                18.9 │                1.2  │            15.667 │               14 │            62.9   │    354 │
+│  4 │ LogNormalDistributionModel │       2474 │         -0.8 │                  0.07 │                15.1 │                1.52 │            15     │               14 │            62.163 │    354 │
+│  5 │ HistoDistributionModel     │       2494 │          2.8 │                  0.08 │                 9.9 │                1.45 │            15     │               11 │            63.117 │    354 │
+│  6 │ BasicModel                 │       2530 │         24.1 │                  0.47 │                18.3 │                1.37 │            10.667 │                8 │            63.433 │    354 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           17   │               68 │
+│ p2        │            4 │           19.8 │               79 │
+│ p3        │            3 │           23.3 │               70 │
+│ p4        │            3 │           17.3 │               52 │
+│ p5        │            4 │           19.8 │               79 │
+│ p6        │            3 │           14.7 │               44 │
+│ p7        │            3 │           10.7 │               32 │
+│ p8        │            2 │            9.5 │               19 │
+│ p9        │            3 │            8.7 │               26 │
+│ p10       │            4 │           10.8 │               43 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │            8 │           14.5 │          116 │
+│ a1              │           15 │           17.1 │          256 │
+│ a3              │           10 │           14   │          140 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  33   │
+│ Average Operation Duration │  15.5 │
+│ Total Processing Time      │ 512   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ############ (12)
+p10 | ######### (9)
+p2  | ##### (5)
+p3  | ########### (11)
+p4  | ############ (12)
+p5  | ######### (9)
+p6  | ########## (10)
+p7  | ############ (12)
+p8  | ########### (11)
+p9  | ######### (9)
+2025-04-28 00:23:01,701 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2198.0  ...       100        dynamic
+1                 CausalModel    2170.0  ...       100        dynamic
+2               CausalDoModel    2209.0  ...       100        dynamic
+3       AverageOperationModel    2162.0  ...       100        dynamic
+4  LogNormalDistributionModel    2178.0  ...       100        dynamic
+5      HistoDistributionModel    2176.0  ...       100        dynamic
+6                  BasicModel    2299.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:23:01,701 - General - DEBUG - Planned results for seed 355 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:23:01,702 - General - DEBUG - Experiment completed for seed: 355
+2025-04-28 00:23:01,702 - General - DEBUG - Running experiment with seed: 356
+2025-04-28 00:23:01,702 - General - DEBUG - Start model iteration.
+2025-04-28 00:23:25,160 - General - DEBUG - TruthModel | Schedule 2748.0
+2025-04-28 00:23:26,126 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:23:26,126 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:23:26,126 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:23:48,619 - General - DEBUG - CausalModel | Schedule 2735.0
+2025-04-28 00:23:49,589 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:23:49,589 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:23:49,589 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:24:19,246 - General - DEBUG - CausalDoModel | Schedule 2750.0
+2025-04-28 00:24:20,236 - General - DEBUG - AverageOperationModel | Schedule 2712.0
+2025-04-28 00:24:21,220 - General - DEBUG - LogNormalDistributionModel | Schedule 2768.0
+2025-04-28 00:24:22,617 - General - DEBUG - HistoDistributionModel | Schedule 2751.0
+2025-04-28 00:24:23,588 - General - DEBUG - BasicModel | Schedule 2821.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2198 │         -1   │                 -0.17 │                18.8 │                1.45 │             0.667 │                0 │            61.953 │    355 │
+│  1 │ CausalModel                │       2170 │         -9.3 │                 -0.23 │                31   │                1.5  │             4.667 │                0 │            61.953 │    355 │
+│  2 │ CausalDoModel              │       2209 │          6   │                 -0.04 │                13.6 │                1.34 │             3.333 │                0 │            62.197 │    355 │
+│  3 │ AverageOperationModel      │       2162 │        -16.8 │                 -0.04 │                22.7 │                1.11 │             6.667 │                0 │            61.71  │    355 │
+│  4 │ LogNormalDistributionModel │       2178 │         -5   │                 -0.05 │                21.1 │                1.51 │             6.333 │                0 │            61.223 │    355 │
+│  5 │ HistoDistributionModel     │       2176 │         -9.9 │                  0.09 │                17   │                1.3  │             7     │                0 │            61.467 │    355 │
+│  6 │ BasicModel                 │       2299 │         54   │                  0.45 │                30.8 │                1.34 │             2.667 │                0 │            61.953 │    355 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            3 │           15.7 │               47 │
+│ p2        │            3 │           14.7 │               44 │
+│ p3        │            3 │            9.3 │               28 │
+│ p4        │            4 │           11.2 │               45 │
+│ p5        │            5 │           14.8 │               74 │
+│ p6        │            5 │           15.2 │               76 │
+│ p7        │            4 │           11   │               44 │
+│ p8        │            3 │           13.3 │               40 │
+│ p9        │            3 │           15.3 │               46 │
+│ p10       │            3 │           15   │               45 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           19 │           13.4 │          255 │
+│ a3              │            6 │           15.2 │           91 │
+│ a1              │           11 │           13   │          143 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  36   │
+│ Average Operation Duration │  13.6 │
+│ Total Processing Time      │ 489   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ############ (12)
+p10 | ###### (6)
+p2  | ############# (13)
+p3  | ######## (8)
+p4  | ############ (12)
+p5  | ########## (10)
+p6  | ######### (9)
+p7  | ######### (9)
+p8  | ############### (15)
+p9  | ###### (6)
+2025-04-28 00:24:24,556 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2734.0  ...       100        dynamic
+1                 CausalModel    2726.0  ...       100        dynamic
+2               CausalDoModel    2749.0  ...       100        dynamic
+3       AverageOperationModel    2712.0  ...       100        dynamic
+4  LogNormalDistributionModel    2722.0  ...       100        dynamic
+5      HistoDistributionModel    2735.0  ...       100        dynamic
+6                  BasicModel    2821.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:24:24,557 - General - DEBUG - Planned results for seed 356 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:24:24,557 - General - DEBUG - Experiment completed for seed: 356
+2025-04-28 00:24:24,557 - General - DEBUG - Running experiment with seed: 357
+2025-04-28 00:24:24,557 - General - DEBUG - Start model iteration.
+2025-04-28 00:24:47,434 - General - DEBUG - TruthModel | Schedule 2390.0
+2025-04-28 00:24:48,310 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:24:48,310 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:24:48,310 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:25:10,191 - General - DEBUG - CausalModel | Schedule 2462.0
+2025-04-28 00:25:11,084 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:25:11,084 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:25:11,084 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:25:40,460 - General - DEBUG - CausalDoModel | Schedule 2510.0
+2025-04-28 00:25:41,379 - General - DEBUG - AverageOperationModel | Schedule 2376.0
+2025-04-28 00:25:42,270 - General - DEBUG - LogNormalDistributionModel | Schedule 2379.0
+2025-04-28 00:25:43,560 - General - DEBUG - HistoDistributionModel | Schedule 2401.0
+2025-04-28 00:25:44,426 - General - DEBUG - BasicModel | Schedule 2505.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2734 │         -4.1 │                  0.2  │                 8.8 │                1.24 │             1.333 │                2 │            49.927 │    356 │
+│  1 │ CausalModel                │       2726 │         -5.3 │                  0.08 │                23.1 │                1.22 │            14.667 │                2 │            47.977 │    356 │
+│  2 │ CausalDoModel              │       2749 │         -1.7 │                  0.12 │                18   │                1.14 │            13.667 │                2 │            48.65  │    356 │
+│  3 │ AverageOperationModel      │       2712 │        -15   │                 -0.01 │                22.1 │                0.91 │             9.333 │                2 │            49.527 │    356 │
+│  4 │ LogNormalDistributionModel │       2722 │         -9.2 │                 -0.06 │                16.5 │                1.26 │            11.667 │                2 │            48.45  │    356 │
+│  5 │ HistoDistributionModel     │       2735 │         -3.2 │                  0.1  │                 7.1 │                1.17 │             9.333 │                2 │            50.713 │    356 │
+│  6 │ BasicModel                 │       2821 │         33.7 │                  0.49 │                20.6 │                1.05 │             7.333 │                2 │            49.527 │    356 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           16.2 │               65 │
+│ p2        │            3 │           21.7 │               65 │
+│ p3        │            3 │           20.7 │               62 │
+│ p4        │            3 │           20   │               60 │
+│ p5        │            4 │           17.8 │               71 │
+│ p6        │            4 │           19.2 │               77 │
+│ p7        │            3 │           13   │               39 │
+│ p8        │            3 │           12.3 │               37 │
+│ p9        │            3 │           13   │               39 │
+│ p10       │            2 │           17   │               34 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a1              │            7 │           12.4 │           87 │
+│ a3              │           14 │           16.4 │          229 │
+│ a2              │           11 │           21.2 │          233 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  32   │
+│ Average Operation Duration │  17.2 │
+│ Total Processing Time      │ 549   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########## (10)
+p10 | ####### (7)
+p2  | ########## (10)
+p3  | ############ (12)
+p4  | ############### (15)
+p5  | ########## (10)
+p6  | ############## (14)
+p7  | ######### (9)
+p8  | ####### (7)
+p9  | ###### (6)
+2025-04-28 00:25:45,317 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2370.0  ...       100        dynamic
+1                 CausalModel    2410.0  ...       100        dynamic
+2               CausalDoModel    2405.0  ...       100        dynamic
+3       AverageOperationModel    2376.0  ...       100        dynamic
+4  LogNormalDistributionModel    2369.0  ...       100        dynamic
+5      HistoDistributionModel    2376.0  ...       100        dynamic
+6                  BasicModel    2505.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:25:45,317 - General - DEBUG - Planned results for seed 357 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:25:45,318 - General - DEBUG - Experiment completed for seed: 357
+2025-04-28 00:25:45,318 - General - DEBUG - Running experiment with seed: 358
+2025-04-28 00:25:45,318 - General - DEBUG - Start model iteration.
+2025-04-28 00:26:11,650 - General - DEBUG - TruthModel | Schedule 1748.0
+2025-04-28 00:26:12,382 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:26:12,383 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:26:12,383 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:26:37,933 - General - DEBUG - CausalModel | Schedule 1750.0
+2025-04-28 00:26:38,666 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:26:38,666 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:26:38,666 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:27:11,984 - General - DEBUG - CausalDoModel | Schedule 1747.0
+2025-04-28 00:27:12,740 - General - DEBUG - AverageOperationModel | Schedule 1684.0
+2025-04-28 00:27:19,405 - General - DEBUG - LogNormalDistributionModel | Schedule 1732.0
+2025-04-28 00:27:20,620 - General - DEBUG - HistoDistributionModel | Schedule 1708.0
+2025-04-28 00:27:21,339 - General - DEBUG - BasicModel | Schedule 1778.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2370 │        -13.1 │                 -0.14 │                20.6 │                1.53 │             0     │                0 │            51.857 │    357 │
+│  1 │ CausalModel                │       2410 │          6.7 │                  0.06 │                13.8 │                1.62 │             6.667 │               14 │            50.787 │    357 │
+│  2 │ CausalDoModel              │       2405 │         -3.4 │                 -0.03 │                17.5 │                1.57 │             7     │               16 │            51.023 │    357 │
+│  3 │ AverageOperationModel      │       2376 │          2.3 │                  0    │                 7.8 │                1.21 │            10.333 │               25 │            51.023 │    357 │
+│  4 │ LogNormalDistributionModel │       2369 │          2.3 │                 -0.03 │                17.6 │                1.71 │            10.667 │               28 │            51.147 │    357 │
+│  5 │ HistoDistributionModel     │       2376 │        -14.1 │                 -0.05 │                18.5 │                1.46 │             6     │               14 │            51.26  │    357 │
+│  6 │ BasicModel                 │       2505 │         48.2 │                  0.63 │                28.5 │                1.44 │             9     │               22 │            51.023 │    357 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           16.8 │               67 │
+│ p2        │            4 │           21.5 │               86 │
+│ p3        │            4 │           12.2 │               49 │
+│ p4        │            2 │           14   │               28 │
+│ p5        │            4 │           12.5 │               50 │
+│ p6        │            3 │            8.7 │               26 │
+│ p7        │            4 │            9.8 │               39 │
+│ p8        │            3 │            9.3 │               28 │
+│ p9        │            4 │           13.2 │               53 │
+│ p10       │            2 │           14.5 │               29 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a2              │           12 │           15.5 │          186 │
+│ a1              │           11 │           13.8 │          152 │
+│ a3              │           11 │           10.6 │          117 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  34   │
+│ Average Operation Duration │  13.4 │
+│ Total Processing Time      │ 455   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########## (10)
+p10 | ######### (9)
+p2  | ######### (9)
+p3  | ########### (11)
+p4  | ######## (8)
+p5  | ########### (11)
+p6  | ########## (10)
+p7  | ####### (7)
+p8  | ########### (11)
+p9  | ############## (14)
+2025-04-28 00:27:22,059 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    1754.0  ...       100        dynamic
+1                 CausalModel    1728.0  ...       100        dynamic
+2               CausalDoModel    1706.0  ...       100        dynamic
+3       AverageOperationModel    1684.0  ...       100        dynamic
+4  LogNormalDistributionModel    1710.0  ...       100        dynamic
+5      HistoDistributionModel    1702.0  ...       100        dynamic
+6                  BasicModel    1778.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:27:22,059 - General - DEBUG - Planned results for seed 358 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:27:22,060 - General - DEBUG - Experiment completed for seed: 358
+2025-04-28 00:27:22,060 - General - DEBUG - Running experiment with seed: 359
+2025-04-28 00:27:22,060 - General - DEBUG - Start model iteration.
+2025-04-28 00:27:44,977 - General - DEBUG - TruthModel | Schedule 2076.0
+2025-04-28 00:27:45,784 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:27:45,784 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:27:45,784 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:28:08,211 - General - DEBUG - CausalModel | Schedule 2071.0
+2025-04-28 00:28:09,011 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:28:09,011 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:28:09,011 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:28:38,445 - General - DEBUG - CausalDoModel | Schedule 2117.0
+2025-04-28 00:28:39,280 - General - DEBUG - AverageOperationModel | Schedule 2017.0
+2025-04-28 00:28:40,094 - General - DEBUG - LogNormalDistributionModel | Schedule 2035.0
+2025-04-28 00:28:41,310 - General - DEBUG - HistoDistributionModel | Schedule 2074.0
+2025-04-28 00:28:42,107 - General - DEBUG - BasicModel | Schedule 2108.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       1754 │         -5.8 │                  0.12 │                 5.1 │                1.31 │             0     │                0 │            63.543 │    358 │
+│  1 │ CausalModel                │       1728 │        -11.6 │                 -0.04 │                12.9 │                1.13 │             7.667 │               13 │            61.77  │    358 │
+│  2 │ CausalDoModel              │       1706 │         -6   │                  0.06 │                14.7 │                1.27 │             6.667 │               12 │            62.36  │    358 │
+│  3 │ AverageOperationModel      │       1684 │        -11.8 │                  0.03 │                11.9 │                0.97 │             5     │                9 │            62.36  │    358 │
+│  4 │ LogNormalDistributionModel │       1710 │         -9   │                  0.07 │                 9.9 │                1.39 │             5.667 │               11 │            62.36  │    358 │
+│  5 │ HistoDistributionModel     │       1702 │         -2.4 │                  0.06 │                12.9 │                1.19 │             3.333 │                6 │            62.36  │    358 │
+│  6 │ BasicModel                 │       1778 │          9.7 │                  0.38 │                12.8 │                1.09 │             7     │               13 │            63.857 │    358 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           15.2 │               61 │
+│ p2        │            3 │           11.7 │               35 │
+│ p3        │            2 │           15   │               30 │
+│ p4        │            3 │           37.3 │              112 │
+│ p5        │            3 │           21   │               63 │
+│ p6        │            3 │           18.7 │               56 │
+│ p7        │            4 │           15.5 │               62 │
+│ p8        │            3 │           17.3 │               52 │
+│ p9        │            5 │            8.8 │               44 │
+│ p10       │            3 │           20.7 │               62 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           11 │           18.2 │          200 │
+│ a2              │            9 │           19.3 │          174 │
+│ a1              │           13 │           15.6 │          203 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  33   │
+│ Average Operation Duration │  17.5 │
+│ Total Processing Time      │ 577   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ########## (10)
+p10 | ############## (14)
+p2  | #### (4)
+p3  | ############### (15)
+p4  | ##### (5)
+p5  | ######### (9)
+p6  | ########### (11)
+p7  | ######### (9)
+p8  | ####### (7)
+p9  | ################ (16)
+2025-04-28 00:28:42,905 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2069.0  ...       100        dynamic
+1                 CausalModel    2062.0  ...       100        dynamic
+2               CausalDoModel    2026.0  ...       100        dynamic
+3       AverageOperationModel    2017.0  ...       100        dynamic
+4  LogNormalDistributionModel    2031.0  ...       100        dynamic
+5      HistoDistributionModel    2017.0  ...       100        dynamic
+6                  BasicModel    2108.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:28:42,905 - General - DEBUG - Planned results for seed 359 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:28:42,906 - General - DEBUG - Experiment completed for seed: 359
+2025-04-28 00:28:42,906 - General - DEBUG - Running experiment with seed: 360
+2025-04-28 00:28:42,906 - General - DEBUG - Start model iteration.
+2025-04-28 00:29:08,990 - General - DEBUG - TruthModel | Schedule 2291.0
+2025-04-28 00:29:09,856 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:29:09,856 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:29:09,856 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:29:34,842 - General - DEBUG - CausalModel | Schedule 2302.0
+2025-04-28 00:29:35,711 - General - DEBUG - SHD: 4, Precision: 0.5000, Recall: 0.2500, F1-score: 0.3333
+2025-04-28 00:29:35,712 - General - DEBUG - Failed to match the truth model.
+2025-04-28 00:29:35,712 - General - DEBUG - Number of successful learned models: 0
+2025-04-28 00:30:08,854 - General - DEBUG - CausalDoModel | Schedule 2352.0
+2025-04-28 00:30:09,759 - General - DEBUG - AverageOperationModel | Schedule 2260.0
+2025-04-28 00:30:10,649 - General - DEBUG - LogNormalDistributionModel | Schedule 2291.0
+2025-04-28 00:30:12,000 - General - DEBUG - HistoDistributionModel | Schedule 2297.0
+2025-04-28 00:30:12,861 - General - DEBUG - BasicModel | Schedule 2360.0
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2069 │         -4.9 │                  0.16 │                 8.7 │                1.6  │             0.667 │                0 │            59.187 │    359 │
+│  1 │ CausalModel                │       2062 │         -3   │                  0.1  │                11.1 │                1.39 │            14.333 │               19 │            57.86  │    359 │
+│  2 │ CausalDoModel              │       2026 │        -20.4 │                  0.09 │                19.1 │                1.44 │            16.667 │               22 │            59.447 │    359 │
+│  3 │ AverageOperationModel      │       2017 │        -25.4 │                 -0.07 │                17.5 │                1.12 │            11.667 │               19 │            57.343 │    359 │
+│  4 │ LogNormalDistributionModel │       2031 │        -27.7 │                 -0.09 │                21.5 │                1.4  │            13.667 │               21 │            58.927 │    359 │
+│  5 │ HistoDistributionModel     │       2017 │        -32.7 │                 -0.16 │                20   │                1.28 │            11.667 │               17 │            58.637 │    359 │
+│  6 │ BasicModel                 │       2108 │         19   │                  0.53 │                12.5 │                1.31 │            11.667 │               19 │            57.343 │    359 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+
+Product Metrics:
+╭───────────┬──────────────┬────────────────┬──────────────────╮
+│ Product   │   Operations │   Avg Duration │   Total Duration │
+├───────────┼──────────────┼────────────────┼──────────────────┤
+│ p1        │            4 │           12.5 │               50 │
+│ p2        │            4 │           11.5 │               46 │
+│ p3        │            3 │           19.3 │               58 │
+│ p4        │            4 │           12.2 │               49 │
+│ p5        │            4 │           13.5 │               54 │
+│ p6        │            3 │           23   │               69 │
+│ p7        │            4 │           21.8 │               87 │
+│ p8        │            3 │           10   │               30 │
+│ p9        │            3 │           11.7 │               35 │
+│ p10       │            5 │           22.2 │              111 │
+╰───────────┴──────────────┴────────────────┴──────────────────╯
+
+Machine Group Metrics:
+╭─────────────────┬──────────────┬────────────────┬──────────────╮
+│ Machine Group   │   Operations │   Avg Duration │   Total Load │
+├─────────────────┼──────────────┼────────────────┼──────────────┤
+│ a3              │           12 │           13   │          156 │
+│ a1              │           15 │           18.1 │          271 │
+│ a2              │           10 │           16.2 │          162 │
+╰─────────────────┴──────────────┴────────────────┴──────────────╯
+
+Overall Metrics:
+╭────────────────────────────┬───────╮
+│ Total Operations           │  37   │
+│ Average Operation Duration │  15.9 │
+│ Total Processing Time      │ 589   │
+╰────────────────────────────┴───────╯
+
+Product Mix:
+p1  | ######## (8)
+p10 | ######## (8)
+p2  | ######## (8)
+p3  | ########### (11)
+p4  | ######### (9)
+p5  | ######## (8)
+p6  | ############### (15)
+p7  | ########### (11)
+p8  | ############# (13)
+p9  | ######### (9)
+2025-04-28 00:30:13,728 - General - DEBUG - planned_df:                         Model  makespan  ...  instance  priority_rule
+0                  TruthModel    2269.0  ...       100        dynamic
+1                 CausalModel    2254.0  ...       100        dynamic
+2               CausalDoModel    2347.0  ...       100        dynamic
+3       AverageOperationModel    2260.0  ...       100        dynamic
+4  LogNormalDistributionModel    2272.0  ...       100        dynamic
+5      HistoDistributionModel    2293.0  ...       100        dynamic
+6                  BasicModel    2360.0  ...       100        dynamic
+
+[7 rows x 12 columns]
+2025-04-28 00:30:13,728 - General - DEBUG - Planned results for seed 360 saved to ./output/experiments/experiment_results_20250427_235302.csv
+2025-04-28 00:30:13,729 - General - DEBUG - Experiment completed for seed: 360
+╭────┬────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────╮
+│    │ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │
+├────┼────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┤
+│  0 │ TruthModel                 │       2269 │        -18.9 │                 -0.13 │                15.4 │                1.67 │             0     │                0 │            59.497 │    360 │
+│  1 │ CausalModel                │       2254 │        -22.9 │                 -0.16 │                16.5 │                1.47 │            12.667 │               14 │            59.463 │    360 │
+│  2 │ CausalDoModel              │       2347 │          6.3 │                 -0.06 │                29.1 │                1.65 │            20.333 │               17 │            59.6   │    360 │
+│  3 │ AverageOperationModel      │       2260 │         -8.8 │                 -0    │                10.4 │                1.26 │            17     │               16 │            60.267 │    360 │
+│  4 │ LogNormalDistributionModel │       2272 │         -6.3 │                 -0.09 │                16.7 │                1.67 │            17.667 │               21 │            59.787 │    360 │
+│  5 │ HistoDistributionModel     │       2293 │          7.2 │                  0.14 │                14.8 │                1.48 │            15     │               18 │            58.967 │    360 │
+│  6 │ BasicModel                 │       2360 │         32.2 │                  0.42 │                17.9 │                1.38 │            12.667 │               15 │            58.983 │    360 │
+╰────┴────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────╯
+╭────────────────────────────┬────────────┬──────────────┬───────────────────────┬─────────────────────┬─────────────────────┬───────────────────┬──────────────────┬───────────────────┬────────┬────────────╮
+│ Model                      │   makespan │   throughput │   avg_throughput_diff │   avg_abs_start_dev │   avg_duration_diff │   levenshtein_seq │   leven_a3_0_seq │   toolchange_perc │   seed │   instance │
+├────────────────────────────┼────────────┼──────────────┼───────────────────────┼─────────────────────┼─────────────────────┼───────────────────┼──────────────────┼───────────────────┼────────┼────────────┤
+│ AverageOperationModel      │    2107.4  │      -11.584 │               -0.0048 │              15.512 │              1.0436 │           9.74672 │             9.52 │           56.9615 │    348 │        100 │
+│ BasicModel                 │    2185.12 │       23.052 │                0.4484 │              17.444 │              1.1984 │           8.30672 │             7.96 │           57.1981 │    348 │        100 │
+│ CausalDoModel              │    2127.2  │       -7.008 │                0.0272 │              16.984 │              1.3768 │          11.4133  │            10.2  │           57.0191 │    348 │        100 │
+│ CausalModel                │    2117.48 │       -9.216 │               -0.0052 │              18.104 │              1.3592 │          11.3734  │            11.24 │           56.7562 │    348 │        100 │
+│ HistoDistributionModel     │    2114.36 │       -9.272 │                0.0292 │              16.04  │              1.2476 │          10.6799  │             9.96 │           57.0278 │    348 │        100 │
+│ LogNormalDistributionModel │    2115.2  │       -7.496 │                0.0208 │              16.76  │              1.408  │          11.1201  │            11.4  │           57.1103 │    348 │        100 │
+│ TruthModel                 │    2121.48 │       -6.544 │                0.04   │              10.944 │              1.3836 │           0.48    │             0.24 │           57.054  │    348 │        100 │
+╰────────────────────────────┴────────────┴──────────────┴───────────────────────┴─────────────────────┴─────────────────────┴───────────────────┴──────────────────┴───────────────────┴────────┴────────────╯

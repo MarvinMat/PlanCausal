@@ -10,7 +10,7 @@ def calculate_dynamic_priority(operation, infered_operation_duration) -> int:
         return max(pred.plan_start for pred in operation.predecessor_operations) + infered_operation_duration
 
 # Define a priority rule
-def calculate_fcfs_priority(operation: Operation) -> int:
+def calculate_fcfs_priority(operation: Operation, infered_operation_duration) -> int:
      """
      Calculate the First-Come-First-Serve (FCFS) priority for the given operation.
      

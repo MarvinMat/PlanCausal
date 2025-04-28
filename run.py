@@ -1,10 +1,10 @@
 import os
 import random
-
+import concurrent.futures
 from tabulate import tabulate
 from modules.data_processing import ProductionGenerator
 from modules.simulation import run_simulation
-from modules.metrics import calculate_schedule, calculate_makespan, compare_makespan, calculate_duration_deviation, print_comparison_table, extended_compare_all_schedules
+from modules.metrics import calculate_schedule, calculate_throughput, compare_throughput, calculate_duration_deviation, print_comparison_table, extended_compare_all_schedules, extended_compare_schedules_pairwaise
 from models.implementations.truth_small import TruthSmallModel
 from models.implementations.causal_small import CausalSmallModel
 from models.implementations.causal import CausalModel
@@ -56,11 +56,11 @@ def parse_arguments():
     parser.add_argument("--output", type=str, default="./output/results/", help="Output path for schedule data.")
     parser.add_argument("--seed", type=int, help="Seed for random generators.")
     parser.add_argument("--seed_iterator", type=int, default=1, help="Seed for random generators.")
-    parser.add_argument("--observed_data_path", type=str, default="./data/data_observe", help="Path to observed data CSV.")
-    parser.add_argument("--result_data", type=str, default="./output/results/schedule", help="Path to result data CSV.")
-    parser.add_argument("--experiment_result_data", type=str, default="./output/experiments/experiment_results.csv", help="Path to experiment result data CSV.")
+    #parser.add_argument("--observed_data", type=str, default="./data/data_observe", help="Path to observed data CSV.")
+    #parser.add_argument("--result_data", type=str, default="./output/results/schedule", help="Path to result data CSV.")
+    parser.add_argument("--experiment_folder", type=str, default="./output/experiments", help="Path to experiment result data CSV.")
     parser.add_argument("--plots", type=str, default="./output/plots", help="Output path for Gantt plots.")
-    #parser.add_argument("--do_calculus", action="store_true", help="Uses the do-calculus to predict probabilities under causal assumptions.")
+    parser.add_argument("--parallel", action="store_true", help="Uses parallel computing for experiments.")
     return parser.parse_args()
 
 
@@ -77,29 +77,30 @@ def run_experiment(seed, args):
         #models.append(TruthContinousSmallModel(seed=args.seed))
         #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
-        models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
+        #models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
         
         
-        #models.append(TruthModel(seed=args.seed, lognormal_shape_modifier=False))
+        models.append(TruthModel(seed=args.seed))
                 
-        result_data = f"{args.result_data}_{type(models[0]).__name__}.csv"
-        observed_data_path = f"{args.observed_data_path}_{type(models[0]).__name__}.csv"
+        result_data_path = f"{args.result_data}/schedule_{type(models[0]).__name__}_{args.seed}.csv"
+        observed_data_path = f"{args.observed_data_path}/data_observe_{type(models[0]).__name__}_{args.seed}.csv"
         
-        models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallTruncNormalLearnModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
-        #models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
         #models.append(CausalContinousModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        #models.append(CausalDoModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        models.append(CausalDoModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
-        models.append(AverageOperationModel(csv_file=result_data))
+        models.append(AverageOperationModel(csv_file=result_data_path))
         #models.append(AverageModel(csv_file=observed_data_path))
-        models.append(LogNormalDistributionModel(csv_file=result_data))
-        models.append(HistoDistributionModel(csv_file=result_data)) 
+        models.append(LogNormalDistributionModel(csv_file=result_data_path))
+        models.append(HistoDistributionModel(csv_file=result_data_path)) 
+        models.append(BasicModel())
         basic_model = BasicModel()
     except Exception as e:
         logger.error(f"Error initializing models: {e}")
@@ -117,21 +118,21 @@ def run_experiment(seed, args):
         # Step 1: Generate data
         production = ProductionGenerator()
         
-        operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
+        #operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
         
-        # operations, machines = production.generate_data_dynamic(amount_products = 10,
-        #                                                         product_types_relation = None,
-        #                                                         avg_operations=4, 
-        #                                                         avg_duration=15,
-        #                                                         machine_groups=3, 
-        #                                                         machine_instances=1,
-        #                                                         tools_per_machine=3,
-        #                                                         num_instances=args.instances, 
-        #                                                         distribution='equal',
-        #                                                         seed=args.seed)
+        operations, machines = production.generate_data_dynamic(amount_products = 10,
+                                                                product_types_relation = None,
+                                                                avg_operations=5, 
+                                                                avg_duration=30,
+                                                                machine_groups=4, 
+                                                                machine_instances=1,
+                                                                tools_per_machine=3,
+                                                                num_instances=args.instances, 
+                                                                distribution='equal',
+                                                                seed=args.seed)
         
         # Step 2: Create schedule
-        # TODO: Always use the ground truth plan
+        # TODO: Always use the ground truth plan 
         if not args.planned_mode:
             # Use the planned schedule from the truth model
             #plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False) 
@@ -153,14 +154,14 @@ def run_experiment(seed, args):
         if isinstance(model, type(models[0])):
             # Use the planned schedule from the truth model
             # Show the product structure based on the given template
-            production.job_data_metric()
+            # production.job_data_metric()
             # Run simulation with the truth model
-            result = run_simulation(machines, operations, model, args.planned_mode, observed_data_path)
+            result = run_simulation(machines, operations, model, False, observed_data_path)
             schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
 
         else:
             # Use the approach model to run the simulation
-            model_feedback_path = os.path.join(os.path.dirname(observed_data_path), "data_observe_"+model_name + ".csv")
+            model_feedback_path = os.path.join(os.path.dirname(observed_data_path), "data_observe_"+ model_name + f"_{args.seed}" + ".csv")
             result = run_simulation(machines, operations, model, args.planned_mode, model_feedback_path)
             schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
             
@@ -168,10 +169,12 @@ def run_experiment(seed, args):
         schedules[model_name] = schedule_results
 
         # Step 4: Save schedule data
-        output_path = production.save_data(schedule_results, args.output, model_name)
+        # TODO: Save the schedule data to a CSV file and find a good folder structure
+        production_schedule_path = f"{args.result_data}/schedule_{model_name}_{args.seed}.csv"
+        output_path = production.save_data(schedule_results, production_schedule_path)
 
         # Step 5: Calculate metrics
-        schuedule_duration = calculate_schedule(schedule_results)
+        schuedule_duration = calculate_schedule(schedule_results)['schedule_makespan']
         logger.debug(f"{model_name} | Schedule {schuedule_duration}")
         #makespan_diff = compare_makespan(planed_schedules[TruthModel.__name__], schedules[model_name])
         #logger.debug(f"{model_name} | Makespan (Approach) {makespan} | Makespan-Diff (vs Truth) {makespan_diff['makespan']}")
@@ -192,12 +195,14 @@ def run_experiment(seed, args):
         file_exists = os.path.exists(args.experiment_result_data)  # Check if the file already exists
         # Save results for this seed to the CSV file
         results_df = pd.DataFrame(results_run)
+        logger.debug(f"results_df: {results_df}")
         results_df.to_csv(args.experiment_result_data, mode='a', header=not file_exists, index=False)
         logger.debug(f"Results for seed {args.seed} saved to {args.experiment_result_data}")
         return results_df
     
     if args.planned_mode:
         # Compare plannded schedules with the real schedule from the simulation
+        #planned_run = extended_compare_schedules_pairwaise(planed_schedules, schedules)
         planned_run = extended_compare_all_schedules(schedules=planed_schedules, reference_schedule=schedules[type(models[0]).__name__])
         planned_run['seed'] = args.seed
         planned_run['instance'] = args.instances
@@ -205,20 +210,39 @@ def run_experiment(seed, args):
         print_comparison_table(planned_run)
         file_exists = os.path.exists(args.experiment_result_data)  # Check if the file already exists
         planned_df = pd.DataFrame(planned_run)
+        logger.debug(f"planned_df: {planned_df}")
         planned_df.to_csv(args.experiment_result_data, mode='a', header=not file_exists, index=False)
         logger.debug(f"Planned results for seed {args.seed} saved to {args.experiment_result_data}")
         # Save the planned results to the CSV file
         return planned_df
+
+def create_folder_structure(args):
+    # Generate a new file name with the current datetime in short format
+    # Generate a timestamp for the experiment folder
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    main_experiment_folder = os.path.join(args.experiment_folder, timestamp)
+
+    # Create the main experiment folder
+    os.makedirs(main_experiment_folder, exist_ok=True)
+
+    # Define subfolders and create them
+    subfolders = ["observe", "results"]
+    for subfolder in subfolders:
+        os.makedirs(os.path.join(main_experiment_folder, subfolder), exist_ok=True)
+
+    # Set paths for experiment result data and other outputs
+    args.experiment_result_data = os.path.join(main_experiment_folder, f"experiment_results_{timestamp}.csv")
+    os.makedirs(os.path.dirname(args.experiment_result_data), exist_ok=True)
+    args.observed_data_path = os.path.join(main_experiment_folder, "observe")
+    args.result_data = os.path.join(main_experiment_folder, "results")
     
+    return args
+
 def main():
     args = parse_arguments()
 
-    # Generate a new file name with the current datetime in short format
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    args.experiment_result_data = args.experiment_result_data.replace(".csv", f"_{timestamp}.csv")
-
-    os.makedirs(os.path.dirname(args.experiment_result_data), exist_ok=True)
-
+    # Create folder structure for the experiment
+    args = create_folder_structure(args)
     # Write the header to the CSV file if it doesn't exist
     #with open(args.experiment_result_data, 'w') as f:
         #print(f'{args.experiment_result_data} created')
@@ -251,7 +275,44 @@ def main():
                 results = pd.concat([results, run_results], ignore_index=True)
     
     # Display the mean values
+    for key, value in vars(args).items():
+        print(f"{key} = {value}")
     print(tabulate(results, headers='keys', tablefmt='rounded_outline'))
-        
+
+def main_parallel():
+    args = parse_arguments()
+    #TODO Build folders for parallel runs
+    #timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #args.experiment_result_data = args.experiment_result_data.replace(".csv", f"_{timestamp}.csv")
+    #os.makedirs(os.path.dirname(args.experiment_result_data), exist_ok=True)
+    args = create_folder_structure(args)
+    args.seed = random.randint(0, 10000) if args.seed is None else args.seed
+    results = pd.DataFrame()
+
+    if args.seed_iterator > 1:
+        seed_end = args.seed + args.seed_iterator
+        seed_range = range(args.seed, seed_end)
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            # Starte die Experimente parallel
+            futures = [executor.submit(run_experiment, seed, args) for seed in seed_range]
+            for future in concurrent.futures.as_completed(futures):
+                run_results = future.result()
+                if run_results is not None:
+                    results = pd.concat([results, run_results], ignore_index=True)
+        describe_table = results.groupby("Model").describe()
+        results = describe_table.xs('mean', level=1, axis=1)
+    else:
+        run_results = run_experiment(args.seed, args)
+        if run_results is not None:
+            results = pd.concat([results, run_results], ignore_index=True)
+    
+    for key, value in vars(args).items():
+        print(f"{key} = {value}")
+    print(tabulate(results, headers='keys', tablefmt='rounded_outline'))
+  
 if __name__ == "__main__":
-    main()
+    args = parse_arguments()
+    if args.parallel:
+        main_parallel()
+    else:
+        main()

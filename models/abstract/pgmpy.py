@@ -77,7 +77,7 @@ class PGMPYModel(Model):
         if not any(do):
             for variable in query_variables:
                 
-                query_result = self.variable_elemination.query(
+                query_result = self.causal_inference.query(
                     variables=[variable], 
                     evidence=evidence, 
                     joint=True, 

@@ -102,7 +102,7 @@ class ProductionGenerator:
                 product = product_type[0]
                 machine_group = f'a{random.randint(1, machine_groups)}'
                 tool = random.randint(1, tools_per_machine)
-                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.7)))
+                duration = max(1, int(random.gauss(avg_duration, avg_duration * 0.5)))
                 successor = max(op + 1 , min(num_operations, int(random.gauss(num_operations, num_operations * 0.1))) ) if op < num_operations else -1
                 self.template_jobs_data.append([product, op, machine_group, tool, duration, successor])
 
@@ -124,12 +124,12 @@ class ProductionGenerator:
         """
         data.from_csv(input_path, index=False)
 
-    def save_data(self, data, output_dir, model_name):
+    def save_data(self, data, output_file):
         """
         Save data to a CSV file.
         """
-        os.makedirs(output_dir, exist_ok=True)
-        output_file = os.path.join(output_dir, f'schedule_{model_name}.csv')
+        #os.makedirs(output_dir, exist_ok=True)
+        #output_file = os.path.join(output_dir, f'schedule_{model_name}.csv')
         data.to_csv(output_file, index=False)
         return output_file
 

@@ -45,13 +45,6 @@ class CausalContinousSmallTruncNormalLearnModel(PGMPYModel):
         super().initialize()
     
     def learn_truncnorm_distributions(self, edges):
-        # NOTE: The learned parameters depend on the actual data in self.data.
-        # If you want the learned distributions to match your original parameters (e.g., in 'combinations'),
-        # you must ensure the data was generated using those parameters and is large enough.
-        # Alternatively, you can directly assign your original parameters to self.distributions:
-        # self.distributions = {('relative_processing_time_deviation', True): {'a': ..., ...}, ...}
-        # Otherwise, this method will estimate parameters from the data, which may differ due to noise, sample size, or data generation process.
-        
         # Filter data to only include the target variable and its parent variables
         target_variable = 'relative_processing_time_deviation'
         parent_variables = [edge[0] for edge in edges if edge[1] == target_variable]

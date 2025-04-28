@@ -13,7 +13,7 @@ from modules.simulation import Operation
 class CausalModel(PGMPYModel):    
     def __init__(self, csv_file, seed=None, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
-        self.seed=seed
+        #self.seed=seed
         self.csv_file = csv_file
         self.truth_model = truth_model
         self.structure_learning_lib = structure_learning_lib
@@ -29,7 +29,7 @@ class CausalModel(PGMPYModel):
         
         if self.truth_model:
             successful_models = self.learn_truth_causal_model()
-            self.logger.debug(f"Number of successful learned models: {len(successful_models)}")
+            #self.logger.debug(f"Number of successful learned models: {len(successful_models)}")
             self.model = successful_models[0] if successful_models else self.truth_model.model
         else:
             self.model = self.learn_causal_model()
@@ -128,11 +128,11 @@ class CausalModel(PGMPYModel):
             if metrics['SHD'] == 0:
                 successful_models.append(learned_model)
                 self.logger.debug(f"Model successfully matched the truth model.")
-            else:
-                self.logger.debug("Failed to match the truth model.")
+            #else:
+            #    self.logger.debug("Failed to match the truth model.")
 
         except Exception as e:
-            self.logger.debug(f"Error learning model: {e}")
+            self.logger.error(f"Error learning model: {e}")
 
         return successful_models
     

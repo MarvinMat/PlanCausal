@@ -1,6 +1,0 @@
-Model,makespan (over all),avg abs start deviation,avg duration deviation,overall_sequence_similarity,seed,instance,priority_rule
-TruthModel,0.0,0.0,0.0,1.0,10,150,fcfs
-AverageOperationModel,-10.0,9.9,0.8,0.999,10,150,fcfs
-LogNormalDistributionModel,-12.0,9.4,0.6,0.999,10,150,fcfs
-CausalModel,6.0,15.9,0.6,0.999,10,150,fcfs
-CausalContinousModel,-22.0,16.2,0.9,0.999,10,150,fcfs

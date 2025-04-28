@@ -1,9 +1,0 @@
-Model,makespan (over all),avg abs start deviation,avg duration deviation,levenshtein_seq_sim,a1_0_seq_sim,a2_0_seq_sim,a3_0_seq_sim,overall_tool_changes,seed,instance,priority_rule
-TruthModel,0.0,0.0,0.0,0.0,0,0,0,8.513,1547,550,fcfs
-CausalModel,23.0,19.8,0.0,32.667,0,98,0,8.617,1547,550,fcfs
-AverageOperationModel,39.0,37.8,0.2,32.333,0,97,0,8.513,1547,550,fcfs
-LogNormalDistributionModel,11.0,25.0,0.2,14.0,0,42,0,8.41,1547,550,fcfs
-TruthModel,0.0,0.0,0.0,0.0,0,0,0,30.913,1548,550,fcfs
-CausalModel,1.0,10.6,0.1,16.667,50,0,0,30.62,1548,550,fcfs
-AverageOperationModel,32.0,51.0,0.0,7.333,22,0,0,31.063,1548,550,fcfs
-LogNormalDistributionModel,10.0,16.7,0.1,21.0,63,0,0,30.62,1548,550,fcfs

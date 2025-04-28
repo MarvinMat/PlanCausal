@@ -62,7 +62,7 @@ def compare_structures(truth_model, learned_model):
     recall = recall_score(y_true, y_pred, zero_division=0)
     f1 = f1_score(y_true, y_pred, zero_division=0)
 
-    logger.debug(f"SHD: {shd}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1-score: {f1:.4f}")
+    #logger.debug(f"SHD: {shd}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1-score: {f1:.4f}")
 
     return {
         "SHD": shd,

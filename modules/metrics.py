@@ -12,7 +12,7 @@ def compare_metrics(schedule_truth, schedule_compare):
     Compare metrics between truth and simulated schedules.
     """
     return {
-        'makespan_diff': round(calculate_makespan(schedule_compare) - calculate_makespan(schedule_truth),0)
+        'throughput_diff': round(calculate_throughput(schedule_compare) - calculate_throughput(schedule_truth),0)
     }
     
 def calculate_schedule(df_schedule):
@@ -24,32 +24,47 @@ def calculate_schedule(df_schedule):
     max_end_time = df_schedule['end_time'].max()
     
     duration = max_end_time - min_start_time
-    return duration
+    return {
+        'schedule_makespan': duration,
+    }
+    
+def compare_schedule(schedule_truth, df_schedule):
+    """
+    Calculate the duration from the minimum start_time of all operations
+    to the maximum end_time of all operations and return it.
+    """
+    max_end_time_approach = df_schedule['end_time'].max()
+    max_end_time_truth = schedule_truth['end_time'].max()
+    
+    duration = max_end_time_approach - max_end_time_truth
+    return {
+        'schedule_makespan': duration,
+    }
 
-def calculate_makespan(df_schedule):
+def calculate_throughput(df_schedule):
     # Convert the list of operation objects to a DataFrame
     
     # Calculate start and end times for each job
     grouped_schedule = df_schedule.groupby('job_id').agg({'start_time': 'min', 'end_time': 'max'})
 
-    # Calculate the makespan for each job
-    grouped_schedule['makespan'] = grouped_schedule['end_time'] - grouped_schedule['start_time']
+    # Calculate the throughput for each job
+    grouped_schedule['throughput'] = grouped_schedule['end_time'] - grouped_schedule['start_time']
 
-    # Calculate the average makespan across all jobs
-    average_makespan = round(grouped_schedule['makespan'].mean(),1)
+    # Calculate the average throughput across all jobs
+    average_throughput = round(grouped_schedule['throughput'].mean(),1)
     
-    return average_makespan
+    return average_throughput
 
-def compare_makespan(schedule_truth, schedule_approach):
-    makespan_truth = calculate_makespan(schedule_truth)
-    makespan_approach   = calculate_makespan(schedule_approach)
+def compare_throughput(schedule_truth, schedule_approach):
+    throughput_truth = calculate_throughput(schedule_truth)
+    throughput_approach   = calculate_throughput(schedule_approach)
     return {
-        "makespan": round(makespan_approach - makespan_truth , 0)
+        "throughput": round(throughput_approach - throughput_truth , 2)
     }
     
-def compare_makespan_jobwise(schedule_truth, schedule_approach):
+def compare_throughput_jobwise(schedule_truth, schedule_approach):
     """
-    Compare makespan differences per job_id and operation_id between truth and approach schedules.
+    Compare throughput differences per job_id and operation_id between truth and approach schedules.
     The schedules are merged, and the differences are calculated for each pair of matching operations.
     """
     # Merge the schedules on job_id and operation_id
@@ -59,37 +74,37 @@ def compare_makespan_jobwise(schedule_truth, schedule_approach):
         suffixes=('_truth', '_approach')
     )
     
-    # Calculate the makespan difference for each job_id
-    merged['makespan_diff'] = (merged['end_time_approach'] - merged['start_time_approach']) - \
+    # Calculate the throughput difference for each job_id
+    merged['throughput_diff'] = (merged['end_time_approach'] - merged['start_time_approach']) - \
                               (merged['end_time_truth'] - merged['start_time_truth'])
     
-    # Group by job_id and calculate the average makespan difference
-    makespan_diff_per_job = merged.groupby('job_id')['makespan_diff'].mean()
+    # Group by job_id and calculate the average throughput difference
+    throughput_diff_per_job = merged.groupby('job_id')['throughput_diff'].mean()
     
     return {
-        'makespan_diff_per_job': makespan_diff_per_job.to_dict(),
-        'avg_makespan_diff': round(makespan_diff_per_job.mean(), 2)
+        'throughput_diff_per_job': throughput_diff_per_job.to_dict(),
+        'avg_throughput_diff': round(throughput_diff_per_job.mean(), 2)
     }
 
-def calculate_makespan_product(df_schedule):
+def calculate_throughput_product(df_schedule):
     # Convert the list of operation objects to a DataFrame
     
     # Calculate start and end times for each job
     grouped_schedule = df_schedule.groupby(['product_type', 'job_id']).agg({'start_time': 'min', 'end_time': 'max'})
 
-    # Calculate the makespan for each job
-    grouped_schedule['makespan'] = grouped_schedule['end_time'] - grouped_schedule['start_time']
+    # Calculate the throughput for each job
+    grouped_schedule['throughput'] = grouped_schedule['end_time'] - grouped_schedule['start_time']
 
-    # Calculate the average makespan across all jobs
-    average_makespan = round(grouped_schedule['makespan'].mean(),1)
+    # Calculate the average throughput across all jobs
+    average_throughput = round(grouped_schedule['throughput'].mean(),1)
     
-    return average_makespan
+    return average_throughput
 
-def compare_makespan_product(schedule_truth, schedule_approach):
-    makespan_truth = calculate_makespan_product(schedule_truth)
-    makespan_approach   = calculate_makespan_product(schedule_approach)
+def compare_throughput_product(schedule_truth, schedule_approach):
+    throughput_truth = calculate_throughput_product(schedule_truth)
+    throughput_approach   = calculate_throughput_product(schedule_approach)
     return {
-        "makespan(product)": round(makespan_approach - makespan_truth , 0)
+        "throughput(product)": round(throughput_approach - throughput_truth , 0)
     }
 
 # --- Positional Differences: Using the truth schedule as reference ---
@@ -149,6 +164,20 @@ def calculate_duration_deviation(schedule):
         'avg_duration_deviation': round(deviation_per_job.mean(), 1),
         'max_duration_deviation': round(deviation_per_job.abs().max(), 1)
     }
+    
+def compare_duration_difference(schedule_truth, schedule_approach):
+    merged = pd.merge(
+        schedule_truth, schedule_approach,
+        on=['job_id', 'operation_id'],
+        suffixes=('_truth', '_approach')
+    )
+    
+    merged['avg_duration_diff'] = (merged['plan_duration_approach'] - merged['duration_truth']).abs()
+    
+    return {
+        'avg_duration_diff': round(merged['avg_duration_diff'].mean(), 2),
+    }
+    
 
 def compare_duration_deviation(schedule_truth, schedule_approach):
     deviations_truth = calculate_duration_deviation(schedule_truth)
@@ -321,21 +350,26 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     Returns a dictionary of metrics.
     """
     metrics = {}
+
+    metrics.update(compare_schedule(schedule_truth, schedule_approach))
     
-    # Makespan
-    metrics.update(compare_makespan(schedule_truth, schedule_approach))
+    # throughput
+    metrics.update(compare_throughput(schedule_truth, schedule_approach))
     
-    # Makespan jobwise
-    metrics.update(compare_makespan_jobwise(schedule_truth, schedule_approach))
+    # throughput jobwise
+    metrics.update(compare_throughput_jobwise(schedule_truth, schedule_approach))
     
-    # Makespan product
-    #metrics.update(compare_makespan_product(schedule_truth, schedule_approach))
+    # throughput product
+    #metrics.update(compare_throughput_product(schedule_truth, schedule_approach))
     
     # Operation shift
     #metrics.update(compare_operation_start_end_shifts(schedule_truth, schedule_approach))
         
     # Duration deviation
     metrics.update(compare_duration_deviation(schedule_truth, schedule_approach))
+    
+    # Duration difference
+    metrics.update(compare_duration_difference(schedule_truth, schedule_approach))
     
     # Positional deviations
     metrics.update(compare_positional_deviations(schedule_truth, schedule_approach))
@@ -350,22 +384,47 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     metrics.update(compare_tool_change_on_machine(schedule_truth, schedule_approach))
     
     return { 
-        'makespan': metrics['makespan'], 
-        'avg_makespan_diff': metrics['avg_makespan_diff'],
-        #'makespan (over product)': metrics['makespan(product)'], 
+        'makespan': metrics['schedule_makespan'], 
+        'throughput': metrics['throughput'], 
+        'avg_throughput_diff': metrics['avg_throughput_diff'],
+        #'throughput (over product)': metrics['throughput(product)'], 
         #'avg operation shift': metrics['avg_start_shift'],
-        'avg abs start dev': metrics['avg_abs_start_deviation'],
-        'avg duration dev': metrics['avg_duration_deviation_diff'],
+        'avg_abs_start_dev': metrics['avg_abs_start_deviation'],
+        'avg_duration_diff': metrics['avg_duration_diff'],
+        #'avg duration dev': metrics['avg_duration_deviation_diff'],
         #'kendall_sequ_sim': metrics['overall_sequence_similarity'],
         'levenshtein_seq': metrics['overall_levenshtein_sequence_similarity'],
-        'ndcg_seq': metrics['overall_ndcg_similarity'],
+        #'ndcg_seq': metrics['overall_ndcg_similarity'],
         #'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
         #'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
         'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
-        'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
+        #'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
         'toolchange_perc': metrics['tool_changes_percentage']
         #'machine_shift_count': metrics['machine_shift_count']        
     }
+
+def extended_compare_schedules_pairwaise(schedules, schedules_two):
+    """
+    Iterates over all simulation schedules (given as a dictionary of DataFrames),
+    compares each to the truth schedule, and returns a DataFrame with the extended metrics.
+    
+    :param schedules: Dictionary with schedule names as keys and DataFrames as values.
+    :param truth_model_name: The key for the truth schedule.
+    :return: DataFrame with comparison metrics for each simulation schedule.
+    """
+    if len(schedules) != len(schedules_two):
+        raise ValueError("The number of schedules in both dictionaries must be the same.")
+
+    results = []
+    
+    for (model_name, schedule_df), (reference_name, reference_schedule) in zip(schedules.items(), schedules_two.items()):
+        if model_name != reference_name:
+            raise ValueError(f"Schedule names do not match: {model_name} != {reference_name}")
+        metrics = extended_compare_schedule(reference_schedule, schedule_df)
+        metrics = {'Model': model_name, **metrics}
+        results.append(metrics)
+    
+    return pd.DataFrame(results)
 
 def extended_compare_all_schedules(schedules, reference_schedule):
     """
@@ -389,29 +448,29 @@ def extended_compare_all_schedules(schedules, reference_schedule):
 
 def compare_all_schedules(schedules, truth_model_name):
     """
-    Compare makespan differences between multiple schedules and return a formatted DataFrame.
+    Compare throughput differences between multiple schedules and return a formatted DataFrame.
     
     :param schedules: Dictionary with schedule names as keys and corresponding DataFrames as values
     :param truth_model_name: The key of the truth schedule in the schedules dictionary
-    :return: DataFrame with makespan differences
+    :return: DataFrame with throughput differences
     """
     results = []
     
-    # Get the makespan of the truth model
-    makespan_truth = calculate_makespan(schedules[truth_model_name])
+    # Get the throughput of the truth model
+    throughput_truth = calculate_throughput(schedules[truth_model_name])
     
     for model_name, df_schedule in schedules.items():
         if model_name == truth_model_name:
             continue  # Skip comparison with itself
         
-        makespan_model = calculate_makespan(df_schedule)
-        makespan_diff = round(makespan_model - makespan_truth, 0)
+        throughput_model = calculate_throughput(df_schedule)
+        throughput_diff = round(throughput_model - throughput_truth, 0)
         
         results.append({
             'Compared Model': model_name,
-            'Makespan Truth': makespan_truth,
-            'Makespan Compared': makespan_model,
-            'Makespan Difference': makespan_diff
+            'throughput Truth': throughput_truth,
+            'throughput Compared': throughput_model,
+            'throughput Difference': throughput_diff
         })
     
     return pd.DataFrame(results)
@@ -420,7 +479,7 @@ def print_comparison_table(df_results):
     """
     Print the schedule comparison results in a nicely formatted table.
     
-    :param df_results: DataFrame containing the makespan comparison results
+    :param df_results: DataFrame containing the throughput comparison results
     """
     columns_to_drop = ['instance', 'priority_rule']
     df_results = df_results.drop(columns=columns_to_drop, errors='ignore')
