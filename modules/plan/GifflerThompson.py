@@ -18,7 +18,7 @@ class GifflerThompson:
 
     def update_priorities(self, ready_operations, available_times):
         temp_heap = []
-        while ready_operations:
+        while len(ready_operations) > 0:
             _,_, operation = heapq.heappop(ready_operations)
             selected_machine_idx = 0
             operation.plan_machine_id = str(operation.req_machine_group_id) + '_' + str(selected_machine_idx)
@@ -26,7 +26,7 @@ class GifflerThompson:
             inference_duration, inferenced_variables = self.inference(operation, inference_tool, self.do_calculus) 
             new_priority = get_priority(operation=operation,rule_name=self.rule_name, infered_operation_duration=inference_duration)
             #new_priority = get_priority(operation=operation,rule_name=self.rule_name)
-            heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + str(operation.operation_id)), operation))
+            heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + " _ " + str(operation.operation_id)), operation))
         return temp_heap
 
     def create_schedule(self, operations, machine_pools):
@@ -46,10 +46,10 @@ class GifflerThompson:
                 next_operation.predecessor_operations.append(operation)
             if not operation.predecessor_operations:
                 #priority = get_priority(operation=operation,rule_name=self.rule_name, infered_operation_duration=operation.duration)
-                heapq.heappush(ready_operations, (0, (str(operation.job_id) + str(operation.operation_id)), operation))
+                heapq.heappush(ready_operations, (0, (str(operation.job_id) + " _ " +  str(operation.operation_id)), operation))
                 inserted_operations.add(operation)
         n = 0
-        while ready_operations:
+        while len(ready_operations) > 0:
 
             # Aktualisiere alle Prioritäten in der ready_operations Heap
             ready_operations = self.update_priorities(ready_operations, machine_available_time)
