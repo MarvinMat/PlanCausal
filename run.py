@@ -79,7 +79,6 @@ def run_experiment(seed, args):
         #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
         
-        
         models.append(TruthModel(seed=args.seed))
                 
         result_data_path = f"{args.result_data}/schedule_{type(models[0]).__name__}_{args.seed}.csv"
@@ -91,6 +90,8 @@ def run_experiment(seed, args):
         #models.append(CausalContinousSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
+        models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
         #models.append(CausalContinousModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
@@ -120,17 +121,22 @@ def run_experiment(seed, args):
         
         #operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
         
+        #if isinstance(model, TruthModel):
+        #    num_instances = args.instances * 5
+        #else:
+        num_instances = args.instances 
+        
         operations, machines = production.generate_data_dynamic(amount_products = 10,
                                                                 product_types_relation = None,
-                                                                avg_operations=5, 
-                                                                avg_duration=30,
-                                                                machine_groups=4, 
+                                                                avg_operations=10, 
+                                                                avg_duration=15,
+                                                                machine_groups=3, 
                                                                 machine_instances=1,
-                                                                tools_per_machine=3,
-                                                                num_instances=args.instances, 
+                                                                tools_per_machine=8,
+                                                                num_instances=num_instances, 
                                                                 distribution='equal',
                                                                 seed=args.seed)
-        
+         
         # Step 2: Create schedule
         # TODO: Always use the ground truth plan 
         if not args.planned_mode:
@@ -139,7 +145,7 @@ def run_experiment(seed, args):
             plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False) 
             #machines = production.read_from_csv(args.result_data, machines=True)
         else:
-            if isinstance(model, TruthModel):
+            if isinstance(model, TruthModel):                
                 plan = GifflerThompson(rule_name=args.priority_rule, inference=basic_model.inference, do_calculus=False)
             if isinstance(model, CausalDoModel):
                 plan = GifflerThompson(rule_name=args.priority_rule, inference=model.inference, do_calculus=True)
@@ -156,7 +162,7 @@ def run_experiment(seed, args):
             # Show the product structure based on the given template
             # production.job_data_metric()
             # Run simulation with the truth model
-            result = run_simulation(machines, operations, model, False, observed_data_path)
+            result = run_simulation(machines, operations, model, args.planned_mode , observed_data_path)
             schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
 
         else:

@@ -34,23 +34,50 @@ class TruthModel(PGMPYModel):
             ('cleaning', 'relative_processing_time_deviation')
         ])
         
-        cpd_last_tool_change = TabularCPD('last_tool_change', 2, [[0.5], [0.5]])
-        cpd_machine_state = TabularCPD('machine_state', 2, [[0.8, 0.3], [0.2, 0.7]], evidence=['last_tool_change'], evidence_card=[2])
-        cpd_cleaning = TabularCPD('cleaning', 2, [[0.7, 0.2], [0.3, 0.8]], evidence=['machine_state'], evidence_card=[2])
-        # Context-sensitive CPD: cleaning only helps if machine_state=1
+        # Update CPD for 'last_tool_change' to have 5 states
+        cpd_last_tool_change = TabularCPD(
+            variable='last_tool_change', 
+            variable_card=5,  # 5 states: 0, 1, 2, 3, 4
+            values=[
+                [0.2],  # P(last_tool_change=0)
+                [0.2],  # P(last_tool_change=1)
+                [0.2],  # P(last_tool_change=2)
+                [0.2],  # P(last_tool_change=3)
+                [0.2]   # P(last_tool_change=4)
+            ]
+        )
+
+        # Update CPD for 'machine_state' to account for 5 states of 'last_tool_change'
+        cpd_machine_state = TabularCPD(
+            variable='machine_state', 
+            variable_card=2,  # 2 states: 0 and 1
+            values=[
+            [0.6, 0.4, 0.3, 0.4, 0.2],  # P(machine_state=0 | last_tool_change)
+            [0.4, 0.6, 0.7, 0.6, 0.8]   # P(machine_state=1 | last_tool_change)
+            ],
+            evidence=['last_tool_change'],  # Parent node
+            evidence_card=[5]  # Number of states of parent
+        )
+
+        cpd_cleaning = TabularCPD(
+            variable='cleaning', 
+            variable_card=2,  # 2 states: 0 and 1
+            values=[
+                [0.5, 0.2],  # P(cleaning=0 | machine_state)
+                [0.5, 0.8]   # P(cleaning=1 | machine_state)
+            ],
+            evidence=['machine_state'],  # Parent node
+            evidence_card=[2]  # Number of states of parent
+        )
+
+        # Adjust CPD for 'relative_processing_time_deviation' to make cleaning impactful
         cpd_relative_processing_time_deviation = TabularCPD(
             variable='relative_processing_time_deviation', 
-            variable_card=3,
-            # Columns: [ms=0, c=0], [ms=0, c=1], [ms=1, c=0], [ms=1, c=1]
-            # values=[
-            #     [0.1, 0.1, 0.1, 0.1],  # P(0.9)
-            #     [0.2, 0.7, 0.7, 0.2],  # P(1.0)
-            #     [0.7, 0.2, 0.2, 0.7],  # P(1.2)
-            # ],
+            variable_card=3,  # 3 states: 0.9, 1.0, 1.2
             values=[
-                [0.7, 0.1, 0.1, 0.7],  # P(0.9)
-                [0.2, 0.7, 0.7, 0.2],  # P(1.0)
-                [0.1, 0.2, 0.2, 0.1],  # P(1.2)
+                [0.9, 0.3, 0.2, 0.8],  # P(0.9)
+                [0.1, 0.6, 0.7, 0.15],  # P(1.0)
+                [0.0, 0.1, 0.1, 0.05],  # P(1.2)
             ],
             evidence=['machine_state', 'cleaning'],
             evidence_card=[2, 2]
@@ -153,7 +180,7 @@ class TruthModel(PGMPYModel):
     
     def inference(self, operation: Operation, current_tool, do_calculus) -> tuple[int, list[tuple]]:      
         
-        last_tool_change =  operation.tool != current_tool
+        last_tool_change =  current_tool
         
         evidence = {
             'last_tool_change': last_tool_change
@@ -165,16 +192,7 @@ class TruthModel(PGMPYModel):
         # Variablen für relative_processing_time_deviation, machine_state und cleaning initialisieren
         machine_state = None
         cleaning = None
-        
-
-        # Sampling for the relative_processing_time_deviation variable
-        if 'relative_processing_time_deviation' in result:
-            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
-            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
-
-            # Three possible states: 0.9, 1.0, 1.2
-            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
-        
+                        
         # Sampling für die machine_state-Variable
         if 'machine_state' in result:
             machine_state_values = result['machine_state'].values
@@ -186,6 +204,24 @@ class TruthModel(PGMPYModel):
             cleaning_values = result['cleaning'].values
             cleaning_probabilities = cleaning_values / cleaning_values.sum()  # Normalisieren
             cleaning = np.random.choice([0, 1], p=cleaning_probabilities)
+        
+        evidence = {
+            'last_tool_change': last_tool_change,
+            'machine_state' : machine_state,
+            'cleaning' : cleaning
+        }
+            # Weitere Evidenzen können hier hinzugefügt werden, falls nötig
+        
+        result = self.sample(evidence=evidence)
+        
+        # Sampling for the relative_processing_time_deviation variable
+        if 'relative_processing_time_deviation' in result:
+            relative_processing_time_deviation_values = result['relative_processing_time_deviation'].values
+            relative_processing_time_deviation_probabilities = relative_processing_time_deviation_values / relative_processing_time_deviation_values.sum()  # Normalize
+
+            # Three possible states: 0.9, 1.0, 1.2
+            relative_processing_time_deviation = np.random.choice([0.9, 1.0, 1.2], p=relative_processing_time_deviation_probabilities)
+
         
 
         inferenced_variables = {

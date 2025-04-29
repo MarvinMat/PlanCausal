@@ -82,9 +82,16 @@ class Simulator:
             operation.machine = machine  # Store the actually used machine
             self.logger.debug(f'{self.env.now}, job: {operation.job_id}, operation_id: {operation.operation_id}, starting operation')
             machine.current_operation = operation
-            operation.sim_duration, influenced_variables = self.model.inference(operation, machine.current_tool, False)
+            if not isinstance(machine.current_tool, list):
+                machine.current_tool = []
+            operation.sim_duration, influenced_variables = self.model.inference(
+                operation, len(set(machine.current_tool[-4:])) if len(machine.current_tool) >= 4 else len(set(machine.current_tool)), False
+            )
             self.observed_data.append(influenced_variables)
-            machine.current_tool = operation.tool
+            
+            # Append the current tool to the machine's tool history
+            
+            machine.current_tool.append(operation.tool)
             
             yield self.env.timeout(operation.sim_duration)
             

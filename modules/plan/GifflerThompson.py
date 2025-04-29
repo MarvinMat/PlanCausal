@@ -21,12 +21,16 @@ class GifflerThompson:
         while ready_operations:
             _,_, operation = heapq.heappop(ready_operations)
             selected_machine_idx = 0
-            operation.plan_machine_id = str(operation.req_machine_group_id) + '_' + str(selected_machine_idx)
-            inference_tool = available_times[operation.req_machine_group_id][0][1]
-            inference_duration, inferenced_variables = self.inference(operation, inference_tool, self.do_calculus) 
+            operation.plan_machine_id = str(operation.req_machine_group_id) + "_" + str(selected_machine_idx)  
+            if not isinstance(available_times[operation.req_machine_group_id][0][1], list):
+                available_times[operation.req_machine_group_id][0][1] = []   
+            inference_tool = available_times[operation.req_machine_group_id][0][1]     
+            inference_duration, inferenced_variables = self.inference(operation, len(set(inference_tool[-4:])) if len(inference_tool) >= 4 else len(set(inference_tool)), self.do_calculus) 
+            # Append the current tool to the machine's tool history
+            available_times[operation.req_machine_group_id][0][1].append(operation.tool)
             new_priority = get_priority(operation=operation,rule_name=self.rule_name, infered_operation_duration=inference_duration)
             #new_priority = get_priority(operation=operation,rule_name=self.rule_name)
-            heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + str(operation.operation_id)), operation))
+            heapq.heappush(temp_heap, (new_priority, (str(operation.job_id) + "_" + str(operation.operation_id)), operation))
         return temp_heap
 
     def create_schedule(self, operations, machine_pools):
@@ -46,7 +50,7 @@ class GifflerThompson:
                 next_operation.predecessor_operations.append(operation)
             if not operation.predecessor_operations:
                 #priority = get_priority(operation=operation,rule_name=self.rule_name, infered_operation_duration=operation.duration)
-                heapq.heappush(ready_operations, (0, (str(operation.job_id) + str(operation.operation_id)), operation))
+                heapq.heappush(ready_operations, (0, (str(operation.job_id) + "_" + str(operation.operation_id)), operation))
                 inserted_operations.add(operation)
         n = 0
         while ready_operations:
@@ -72,10 +76,15 @@ class GifflerThompson:
                 qleng = len([op for op in self.schedule if current_operation.successor_operation.req_machine_group_id == op.req_machine_group_id and earliest_start_time < op.plan_start])
                 self.qlength.append([n, current_operation.successor_operation.req_machine_group_id, qleng])
                 n = n + 1
-            current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + '_' + str(selected_machine_idx)
+            current_operation.plan_machine_id = str(current_operation.req_machine_group_id) + "_" + str(selected_machine_idx)
             current_tool = available_times[selected_machine_idx][1]
-            current_duration, inferenced_variables = self.inference(current_operation, current_tool, self.do_calculus)  
+            current_duration, inferenced_variables = self.inference(current_operation, len(set(current_tool[-4:])) if len(current_tool) >= 4 else len(set(current_tool)), self.do_calculus)
             self.observed_data.append(inferenced_variables)
+             # Append the current tool to the machine's tool history
+            if not isinstance(available_times[selected_machine_idx][1], list):
+                available_times[selected_machine_idx][1] = []
+            available_times[selected_machine_idx][1].append(operation.tool)
+            
             if current_duration is None or not isinstance(current_duration, (float, np.float64)) or current_duration <= 0:
                 print(f"Invalid duration {operation.duration} for operation {current_operation.job_id}_{current_operation.operation_id}: {current_duration}")
                 raise ValueError("Invalid value for new_duration. It must be a positive float.")
@@ -97,7 +106,7 @@ class GifflerThompson:
                     #inference_tool = available_times[selected_machine_idx][1]
                     #inference_duration, inferenced_variables = self.inference(successor, inference_tool, self.do_calculus) 
                     #priority = get_priority(operation=successor,rule_name=self.rule_name, infered_operation_duration=inference_duration)
-                    heapq.heappush(ready_operations, (0, (str(current_operation.job_id) + str(current_operation.operation_id)), successor))
+                    heapq.heappush(ready_operations, (0, (str(current_operation.job_id) + "_" + str(current_operation.operation_id)), successor))
                     inserted_operations.add(successor)
 
             # Füge die Aufgabe zur Zeitplanung hinzu

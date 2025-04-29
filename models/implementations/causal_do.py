@@ -144,7 +144,7 @@ class CausalDoModel(PGMPYModel):
         if do_calculus:
             return self.inference_do_calculus(operation, current_tool)
         
-        last_tool_change =  operation.tool != current_tool
+        last_tool_change =  current_tool
             
         evidence = {
             'last_tool_change': last_tool_change
@@ -202,7 +202,7 @@ class CausalDoModel(PGMPYModel):
     def inference_do_calculus_OLD(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
         """ Perform inference with configurable variables. """
         
-        last_tool_change =  operation.tool != current_tool
+        last_tool_change =  current_tool
         evidence = {
             evidence_variable: last_tool_change
         }
@@ -237,10 +237,8 @@ class CausalDoModel(PGMPYModel):
     def inference_do_calculus_NEW1(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
         """ Perform inference with configurable variables. """
         
-        last_tool_change =  operation.tool != current_tool
-        evidence = {
-            evidence_variable: last_tool_change
-        }
+        last_tool_change =  current_tool
+
         do_true = self.causal_inference.query(
             variables=['relative_processing_time_deviation'],
             evidence={evidence_variable: last_tool_change},
@@ -279,7 +277,7 @@ class CausalDoModel(PGMPYModel):
     
     def inference_do_calculus(self, operation, current_tool, evidence_variable='last_tool_change', do_variable='cleaning', target_variable='relative_processing_time_deviation'):
         """ Perform inference with configurable variables. """
-        last_tool_change = operation.tool != current_tool
+        last_tool_change = current_tool
         evidence = {evidence_variable: last_tool_change}
 
         do_true = self.causal_inference.query(

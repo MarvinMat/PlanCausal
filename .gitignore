@@ -6,6 +6,7 @@
 /output/plots/*
 !output/.gitkeep
 /causal/*
+/data/*
 
 
 # Byte-compiled / optimized / DLL files
