@@ -12,7 +12,7 @@ from modules.simulation import Operation
 from sklearn.mixture import GaussianMixture
 
 class CausalContinousSmallModel(PGMPYModel):    
-    def __init__(self, csv_file, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
+    def __init__(self, seed, csv_file, truth_model=None, structure_learning_lib = 'pgmpy', structure_learning_method='HillClimbSearch', estimator='BDeu', **kwargs):        
         super().__init__()
         #self.seed = seed
         self.csv_file = csv_file

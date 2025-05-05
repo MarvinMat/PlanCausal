@@ -23,13 +23,13 @@ class ProductionGenerator:
         # Beispielhafte Datenstruktur
         # Produkt, Arbeitsgang, Maschinengruppe, Tool, geplante Dauer, Nachfolger
         self.template_jobs_data = [
-            ['p1', 1, 'a1', 1, 15, 2],
+            ['p1', 1, 'a1', 1, 20, 2],
             ['p1', 2, 'a3', 1, 10, -1],
-            ['p2', 1, 'a2', 1, 15, 2],       
+            ['p2', 1, 'a2', 1, 20, 2],       
             ['p2', 2, 'a3', 2, 10, -1],
-            ['p3', 1, 'a1', 2, 15, 2],
+            ['p3', 1, 'a1', 2, 20, 2],
             ['p3', 2, 'a3', 2, 10, -1],
-            ['p4', 1, 'a2', 2, 15, 2],       
+            ['p4', 1, 'a2', 2, 20, 2],       
             ['p4', 2, 'a3', 1, 10, -1],
         ]
 

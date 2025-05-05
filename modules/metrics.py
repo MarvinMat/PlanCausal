@@ -169,7 +169,7 @@ def compare_duration_difference(schedule_truth, schedule_approach):
     merged = pd.merge(
         schedule_truth, schedule_approach,
         on=['job_id', 'operation_id'],
-        suffixes=('_truth', '_approach')
+        suffixes=('_truth', '_approach') 
     )
     
     merged['avg_duration_diff'] = (merged['plan_duration_approach'] - merged['duration_truth']).abs()
@@ -395,8 +395,8 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
         #'kendall_sequ_sim': metrics['overall_sequence_similarity'],
         'levenshtein_seq': metrics['overall_levenshtein_sequence_similarity'],
         #'ndcg_seq': metrics['overall_ndcg_similarity'],
-        #'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
-        #'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
+        'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
+        'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
         'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
         #'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
         'toolchange_perc': metrics['tool_changes_percentage']

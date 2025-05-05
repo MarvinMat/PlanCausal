@@ -74,13 +74,15 @@ def run_experiment(seed, args):
     try:
         #models.append(TruthContinousSmallLogLearnModel(seed=args.seed))
         #models.append(TruthContinousSmallTruncNormalLearnModel(seed=args.seed))
-        #models.append(TruthContinousSmallModel(seed=args.seed))
+        models.append(TruthContinousSmallModel(seed=args.seed))
+        models.append(TruthContinousSmallModel(seed=args.seed))
+        #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
         
-        
-        models.append(TruthModel(seed=args.seed))
+        #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
+        #models.append(TruthModel(seed=args.seed))
                 
         result_data_path = f"{args.result_data}/schedule_{type(models[0]).__name__}_{args.seed}.csv"
         observed_data_path = f"{args.observed_data_path}/data_observe_{type(models[0]).__name__}_{args.seed}.csv"
@@ -88,19 +90,19 @@ def run_experiment(seed, args):
         #models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallTruncNormalLearnModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        #models.append(CausalContinousSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        models.append(CausalContinousSmallModel(seed= args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
-        models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        #models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
         #models.append(CausalContinousModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        models.append(CausalDoModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
+        #models.append(CausalDoModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
         models.append(AverageOperationModel(csv_file=result_data_path))
         #models.append(AverageModel(csv_file=observed_data_path))
         models.append(LogNormalDistributionModel(csv_file=result_data_path))
         models.append(HistoDistributionModel(csv_file=result_data_path)) 
-        models.append(BasicModel())
+        #models.append(BasicModel())
         basic_model = BasicModel()
     except Exception as e:
         logger.error(f"Error initializing models: {e}")
@@ -118,18 +120,24 @@ def run_experiment(seed, args):
         # Step 1: Generate data
         production = ProductionGenerator()
         
-        #operations, machines = production.generate_data_static(num_instances = args.instances, seed=args.seed)
+        if model == models[0]:
+            numb_instances = args.instances
+        else:
+            numb_instances = 50
+                        
+        operations, machines = production.generate_data_static(num_instances = numb_instances , seed=1) 
+                                                               #, seed=args.seed)
         
-        operations, machines = production.generate_data_dynamic(amount_products = 2,
-                                                                product_types_relation = None,
-                                                                avg_operations= 5, 
-                                                                avg_duration= 10,
-                                                                machine_groups= 3, 
-                                                                machine_instances= 1,
-                                                                tools_per_machine= 2,
-                                                                num_instances=args.instances, 
-                                                                distribution='equal',
-                                                                seed=args.seed)
+        # operations, machines = production.generate_data_dynamic(amount_products = 2,
+        #                                                         product_types_relation = None,
+        #                                                         avg_operations= 5, 
+        #                                                         avg_duration= 10,
+        #                                                         machine_groups= 3, 
+        #                                                         machine_instances= 1,
+        #                                                         tools_per_machine= 2,
+        #                                                         num_instances=args.instances, 
+        #                                                         distribution='equal',
+        #                                                         seed=args.seed)
         
         # Step 2: Create schedule
         # TODO: Always use the ground truth plan 
@@ -203,7 +211,7 @@ def run_experiment(seed, args):
     if args.planned_mode:
         # Compare plannded schedules with the real schedule from the simulation
         #planned_run = extended_compare_schedules_pairwaise(planed_schedules, schedules)
-        planned_run = extended_compare_all_schedules(schedules=planed_schedules, reference_schedule=schedules[type(models[0]).__name__])
+        planned_run = extended_compare_all_schedules(schedules=planed_schedules, reference_schedule=schedules[type(models[1]).__name__])
         planned_run['seed'] = args.seed
         planned_run['instance'] = args.instances
         planned_run['priority_rule'] = args.priority_rule
