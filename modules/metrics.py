@@ -386,7 +386,7 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     return { 
         'makespan': metrics['schedule_makespan'], 
         'throughput': metrics['throughput'], 
-        'avg_throughput_diff': metrics['avg_throughput_diff'],
+        #'avg_throughput_diff': metrics['avg_throughput_diff'],
         #'throughput (over product)': metrics['throughput(product)'], 
         #'avg operation shift': metrics['avg_start_shift'],
         'avg_abs_start_dev': metrics['avg_abs_start_deviation'],
@@ -395,8 +395,8 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
         #'kendall_sequ_sim': metrics['overall_sequence_similarity'],
         'levenshtein_seq': metrics['overall_levenshtein_sequence_similarity'],
         #'ndcg_seq': metrics['overall_ndcg_similarity'],
-        'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
-        'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
+        #'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
+        #'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
         'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
         #'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
         'toolchange_perc': metrics['tool_changes_percentage']

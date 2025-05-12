@@ -32,8 +32,8 @@ class TruthContinousSmallLogCopyModel(PGMPYModel):
 
         # Define mean and variance for each combination of 'machine_state' and 'cleaning'
         combinations = [
-            (True, {'mean': 0.7, 'variance': 0.01}),
-            (False, {'mean': 1.3, 'variance': 0.01})
+            (True, {'mean': 0.7, 'variance': 0.02}),
+            (False, {'mean': 1.3, 'variance': 0.02})
         ]
 
         # Populate the distributions dictionary

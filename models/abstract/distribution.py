@@ -65,6 +65,6 @@ class DistributionModel(Model):
 
         if key in self.distribution_dict and self.distribution_dict[key] is not None:
             params = self.distribution_dict[key]
-            return round(self.sample(params), 0), key  # Call sample method to draw from distribution
+            return max(1, round(self.sample(params)), 0), key  # Call sample method to draw from distribution
         else:
             return np.float64(operation.duration), key  # No data available for inference

@@ -43,8 +43,8 @@ Logger.set_log_level(category="General", level=logging.DEBUG)
 Logger.set_log_filter(category="General", level=logging.DEBUG)
 Logger.set_log_level(category="Simulation", level=logging.ERROR)
 Logger.set_log_filter(category="Simulation", level=logging.ERROR)
-Logger.set_log_level(category="Model", level=logging.ERROR)
-Logger.set_log_filter(category="Model", level=logging.ERROR)
+Logger.set_log_level(category="Model", level=logging.DEBUG)
+Logger.set_log_filter(category="Model", level=logging.DEBUG)
 
 # Command-line argument parser
 def parse_arguments():
@@ -74,23 +74,26 @@ def run_experiment(seed, args):
     try:
         #models.append(TruthContinousSmallLogLearnModel(seed=args.seed))
         #models.append(TruthContinousSmallTruncNormalLearnModel(seed=args.seed))
-        models.append(TruthContinousSmallModel(seed=args.seed))
-        models.append(TruthContinousSmallModel(seed=args.seed))
+        
+        #models.append(TruthContinousSmallModel(seed=args.seed))
+        #models.append(TruthContinousSmallModel(seed=args.seed))
+        
         #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthSmallModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
-        #models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
-        
+        models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
+        models.append(TruthContinousSmallLogCopyModel(seed=args.seed))
+
         #models.append(TruthContinousModel(seed=args.seed, lognormal_shape_modifier=False))
         #models.append(TruthModel(seed=args.seed))
                 
         result_data_path = f"{args.result_data}/schedule_{type(models[0]).__name__}_{args.seed}.csv"
-        observed_data_path = f"{args.observed_data_path}/data_observe_{type(models[0]).__name__}_{args.seed}.csv"
+        observed_data_path = f"{args.observed_data_path}/data_observe_{type(models[0]).__name__}_{args.instances}_{args.seed}.csv"
         
-        #models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallTruncNormalLearnModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        models.append(CausalContinousSmallModel(seed= args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallModel(seed= args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
         #models.append(CausalModel(seed=args.seed,csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
@@ -101,6 +104,7 @@ def run_experiment(seed, args):
         models.append(AverageOperationModel(csv_file=result_data_path))
         #models.append(AverageModel(csv_file=observed_data_path))
         models.append(LogNormalDistributionModel(csv_file=result_data_path))
+        models.append(NormalDistributionModel(csv_file=result_data_path))
         models.append(HistoDistributionModel(csv_file=result_data_path)) 
         #models.append(BasicModel())
         basic_model = BasicModel()
@@ -122,11 +126,12 @@ def run_experiment(seed, args):
         
         if model == models[0]:
             numb_instances = args.instances
+            model_name = type(model).__name__ + f"_{args.instances}"
         else:
             numb_instances = 50
                         
-        operations, machines = production.generate_data_static(num_instances = numb_instances , seed=1) 
-                                                               #, seed=args.seed)
+        operations, machines = production.generate_data_static(num_instances = numb_instances #, seed=1) 
+                                                               , seed=args.seed)
         
         # operations, machines = production.generate_data_dynamic(amount_products = 2,
         #                                                         product_types_relation = None,
@@ -159,19 +164,19 @@ def run_experiment(seed, args):
         schedule_results = None
 
         # Step 3: Run simulation
-        if isinstance(model, type(models[0])):
+        #if isinstance(model, type(models[0])):
             # Use the planned schedule from the truth model
             # Show the product structure based on the given template
             # production.job_data_metric()
             # Run simulation with the truth model
-            result = run_simulation(machines, operations, model, False, observed_data_path)
-            schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
+        #    result = run_simulation(machines, operations, model, False, observed_data_path)
+        #    schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
 
-        else:
-            # Use the approach model to run the simulation
-            model_feedback_path = os.path.join(os.path.dirname(observed_data_path), "data_observe_"+ model_name + f"_{args.seed}" + ".csv")
-            result = run_simulation(machines, operations, model, args.planned_mode, model_feedback_path)
-            schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
+        #else:
+        # Use the approach model to run the simulation
+        model_feedback_path = os.path.join(os.path.dirname(observed_data_path), "data_observe_"+ model_name + f"_{args.seed}" + ".csv")
+        result = run_simulation(machines, operations, model, args.planned_mode, model_feedback_path)
+        schedule_results = pd.DataFrame([op.to_dict_sim() for op in result])
             
 
         schedules[model_name] = schedule_results
