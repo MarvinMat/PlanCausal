@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-            "args": ["--instances", "100", "--seed", "8122844", "--priority_rule", "dynamic" , "--seed_iterator", "20", "--planned_mode", "--parallel"]
+            "args": ["--instances", "100", "--seed", "8122844", "--priority_rule", "dynamic" , "--seed_iterator", "1"] //, "--planned_mode"] //, "--parallel"]
         }
     ]
 }

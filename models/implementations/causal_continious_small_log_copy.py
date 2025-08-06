@@ -37,8 +37,8 @@ class CausalContinousSmallLogCopyModel(PGMPYModel):
         else:
             self.model = self.learn_causal_model()
         
-        self.use_distributions()
-        #self.learn_distributions(self.truth_model.model.edges)
+        #self.use_distributions()
+        self.learn_distributions(self.truth_model.model.edges)
         #self.logger.debug(f"Learned distributions: {self.distributions}")
         
         super().initialize()

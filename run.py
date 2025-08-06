@@ -92,7 +92,7 @@ def run_experiment(seed, args):
         
         models.append(CausalContinousSmallLogCopyModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalContinousSmallTruncNormalLearnModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
-        #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
+        #models.append(CausalContinousSmallLogLearnModel(seed=args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='GES'))
         #models.append(CausalContinousSmallModel(seed= args.seed, csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='gcastle', structure_learning_method='GES'))
         #models.append(CausalSmallModel(csv_file=observed_data_path, truth_model=models[0], structure_learning_lib='pgmpy', structure_learning_method='ExhaustiveSearch'))
         
@@ -104,7 +104,7 @@ def run_experiment(seed, args):
         models.append(AverageOperationModel(csv_file=result_data_path))
         #models.append(AverageModel(csv_file=observed_data_path))
         models.append(LogNormalDistributionModel(csv_file=result_data_path))
-        models.append(NormalDistributionModel(csv_file=result_data_path))
+        #models.append(NormalDistributionModel(csv_file=result_data_path))
         models.append(HistoDistributionModel(csv_file=result_data_path)) 
         #models.append(BasicModel())
         basic_model = BasicModel()
@@ -124,14 +124,23 @@ def run_experiment(seed, args):
         # Step 1: Generate data
         production = ProductionGenerator()
         
+        # The first model is always the data generator model, to ensure that enough datapoints are generated
+        # for the other models to learn from.
+        # Use a higher number of instances for the first model to ensure enough data for learning
+        # all following models will use the same number of instances of 50
         if model == models[0]:
             numb_instances = args.instances
             model_name = type(model).__name__ + f"_{args.instances}"
         else:
             numb_instances = 50
                         
+                        
+        # Generate static data
         operations, machines = production.generate_data_static(num_instances = numb_instances #, seed=1) 
                                                                , seed=args.seed)
+        
+        # Generate dynamic data
+        # Uncomment the following line to generate dynamic data instead of static data
         
         # operations, machines = production.generate_data_dynamic(amount_products = 2,
         #                                                         product_types_relation = None,

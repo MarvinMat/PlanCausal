@@ -59,7 +59,7 @@ def compare_throughput(schedule_truth, schedule_approach):
     throughput_truth = calculate_throughput(schedule_truth)
     throughput_approach   = calculate_throughput(schedule_approach)
     return {
-        "throughput": round(throughput_approach - throughput_truth , 2)
+        "throughput": round(throughput_approach - throughput_truth, 2)
     }
     
 def compare_throughput_jobwise(schedule_truth, schedule_approach):
@@ -83,7 +83,7 @@ def compare_throughput_jobwise(schedule_truth, schedule_approach):
     
     return {
         'throughput_diff_per_job': throughput_diff_per_job.to_dict(),
-        'avg_throughput_diff': round(throughput_diff_per_job.mean(), 2)
+        'avg_throughput_diff': round(throughput_diff_per_job.abs().mean(), 2)
     }
 
 def calculate_throughput_product(df_schedule):
@@ -126,8 +126,8 @@ def compare_positional_deviations(schedule_truth, schedule_approach):
         suffixes=('_truth', '_approach')
     )
     
-    merged['abs_start_deviation'] = (merged['start_time_approach'] - merged['start_time_truth']).abs()
-    merged['abs_end_deviation'] = (merged['end_time_approach'] - merged['end_time_truth']).abs()
+    merged['abs_start_deviation'] = (merged['start_time_approach'] - merged['start_time_truth'])#.abs()
+    merged['abs_end_deviation'] = (merged['end_time_approach'] - merged['end_time_truth'])#.abs()
     
     return {
         'avg_abs_start_deviation': round(merged['abs_start_deviation'].mean(), 1),
@@ -363,7 +363,7 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
     #metrics.update(compare_throughput_product(schedule_truth, schedule_approach))
     
     # Operation shift
-    #metrics.update(compare_operation_start_end_shifts(schedule_truth, schedule_approach))
+    metrics.update(compare_operation_start_end_shifts(schedule_truth, schedule_approach))
         
     # Duration deviation
     metrics.update(compare_duration_deviation(schedule_truth, schedule_approach))
@@ -388,18 +388,18 @@ def extended_compare_schedule(schedule_truth, schedule_approach):
         'throughput': metrics['throughput'], 
         #'avg_throughput_diff': metrics['avg_throughput_diff'],
         #'throughput (over product)': metrics['throughput(product)'], 
-        #'avg operation shift': metrics['avg_start_shift'],
-        'avg_abs_start_dev': metrics['avg_abs_start_deviation'],
-        'avg_duration_diff': metrics['avg_duration_diff'],
+        'avg operation shift': metrics['avg_start_shift'],
+        #'avg_abs_start_dev': metrics['avg_abs_start_deviation'],
+        #'avg_duration_diff': metrics['avg_duration_diff'],
         #'avg duration dev': metrics['avg_duration_deviation_diff'],
         #'kendall_sequ_sim': metrics['overall_sequence_similarity'],
         'levenshtein_seq': metrics['overall_levenshtein_sequence_similarity'],
         #'ndcg_seq': metrics['overall_ndcg_similarity'],
         #'a1_0_seq': metrics['machine_a1_0_levenshtein_distance'],
         #'a2_0_seq': metrics['machine_a2_0_levenshtein_distance'],
-        'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
+        #'leven_a3_0_seq': metrics['machine_a3_0_levenshtein_distance'],
         #'ndcg_seq_a3': metrics['machine_a3_0_ndcg'],
-        'toolchange_perc': metrics['tool_changes_percentage']
+        #'toolchange_perc': metrics['tool_changes_percentage']
         #'machine_shift_count': metrics['machine_shift_count']        
     }
 

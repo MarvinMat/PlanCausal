@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 import networkx as nx
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.estimators import BayesianEstimator
 from castle.algorithms import PC, GES, CORL, DAG_GNN, Notears
 from pgmpy.estimators import HillClimbSearch, ExhaustiveSearch
@@ -157,7 +157,7 @@ class CausalContinousSmallModel(PGMPYModel):
             raise ValueError("Unsupported learned structure format")
 
         # Now create the Bayesian Network with the edge list
-        model = BayesianNetwork(self.edges)
+        model = DiscreteBayesianNetwork(self.edges)
         model.fit(self.data, estimator=BayesianEstimator, prior_type=self.estimator)
 
         if not model.check_model():

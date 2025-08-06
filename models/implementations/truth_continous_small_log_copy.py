@@ -3,7 +3,7 @@ import numpy as np
 from models.abstract.pgmpy import PGMPYModel
 from models.abstract.model import Model
 from modules.factory.Operation import Operation
-from pgmpy.models import BayesianNetwork
+from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 
 class TruthContinousSmallLogCopyModel(PGMPYModel):
@@ -44,7 +44,7 @@ class TruthContinousSmallLogCopyModel(PGMPYModel):
     
     def create_model(self):
         # Defining the Bayesian network structure manually
-        model = BayesianNetwork([
+        model = DiscreteBayesianNetwork([
             ('last_tool_change', 'relative_processing_time_deviation')
         ])
         
