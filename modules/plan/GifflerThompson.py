@@ -76,7 +76,7 @@ class GifflerThompson:
             current_tool = available_times[selected_machine_idx][1]
             current_duration, inferenced_variables = self.inference(current_operation, current_tool, self.do_calculus)  
             self.observed_data.append(inferenced_variables)
-            if current_duration is None or not isinstance(current_duration, (float, np.float64)) or current_duration <= 0:
+            if current_duration is None or not isinstance(current_duration, (float, np.float64, int)) or current_duration <= 0:
                 print(f"Invalid duration {operation.duration} for operation {current_operation.job_id}_{current_operation.operation_id}: {current_duration}")
                 raise ValueError("Invalid value for new_duration. It must be a positive float.")
             end_time = earliest_start_time + current_duration
